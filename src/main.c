@@ -1,4 +1,5 @@
 #include "chip8_display.h"
+#include "chip8_input.h"
 
 int main()
 {
@@ -28,7 +29,21 @@ int main()
 
   printPantalla(&pantalla);
 
-  SDL_Delay(5000);
+  for (int i = 0; i < 100; i++)
+  {
+    capturarTeclado();
+    uint8_t *pTeclado = getTeclado();
+    printf("Teclas presionadas: ");
+    for (int i = 0; i < 16; i++)
+    {
+      if (pTeclado[i])
+      {
+        printf("%i ", i);
+      }
+    }
+    printf("\n");
+    SDL_Delay(100);
+  }
 
   // Limpiar pantalla
   drawSprite(10, 10, spriteA, 5);

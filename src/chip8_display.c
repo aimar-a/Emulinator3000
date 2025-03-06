@@ -1,5 +1,4 @@
 #include "chip8_display.h"
-#include <stdio.h>
 
 uint8_t pantalla[SCREEN_WIDTH * SCREEN_HEIGHT] = {0};
 
