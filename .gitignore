@@ -1,0 +1,33 @@
+# Compilados y binarios
+*.o
+*.out
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Archivos de depuración y registros
+*.log
+*.dSYM/
+vgcore.*
+
+# Archivos de configuración de VS Code
+.vscode/
+c_cpp_properties.json
+launch.json
+settings.json
+tasks.json
+
+# Archivos de construcción y dependencias
+build/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+
+# Archivos temporales del sistema
+*.swp
+*.swo
+*~
+Thumbs.db
+.DS_Store
