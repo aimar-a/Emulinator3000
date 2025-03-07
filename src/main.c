@@ -1,7 +1,7 @@
 #include "chip8_display.h"
 #include "chip8_input.h"
 
-int main()
+int main(int argc, char *argv[])
 {
   uint8_t spriteA[5] = {0xF0, 0x90, 0xF0, 0x90, 0x90};
   uint8_t spriteI[5] = {0xF0, 0x20, 0x20, 0x20, 0xF0};
