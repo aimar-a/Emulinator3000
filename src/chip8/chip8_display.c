@@ -4,10 +4,10 @@ uint8_t *pantalla;
 Screen screenSDL;
 
 // Inicializa SDL y crea la ventana y el renderer
-int displayInitPantalla(uint8_t *pantalla_)
+int chip8displayInitPantalla(uint8_t *pantalla_)
 {
   pantalla = pantalla_;
-  displayLimpiarPantalla();
+  chip8displayLimpiarPantalla();
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
   {
     printf("Error al inicializar SDL: %s\n", SDL_GetError());
@@ -39,17 +39,17 @@ int displayInitPantalla(uint8_t *pantalla_)
 }
 
 // Limpia la pantalla
-void displayLimpiarPantalla()
+void chip8displayLimpiarPantalla()
 {
   for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++)
   {
     pantalla[i] = 0;
   }
-  displayPrintPantalla();
+  chip8displayPrintPantalla();
 }
 
 // Destruye la ventana y el renderer
-void displayCerrarPantalla()
+void chip8displayCerrarPantalla()
 {
   SDL_DestroyRenderer(screenSDL.renderer);
   SDL_DestroyWindow(screenSDL.window);
@@ -57,7 +57,7 @@ void displayCerrarPantalla()
 }
 
 // Dibuja un sprite en la pantalla
-uint8_t displayDrawSprite(int x, int y, uint8_t *sprite, int height)
+uint8_t chip8displayDrawSprite(int x, int y, uint8_t *sprite, int height)
 {
   uint8_t colision = 0;
   for (int i = 0; i < height; i++)
@@ -79,7 +79,7 @@ uint8_t displayDrawSprite(int x, int y, uint8_t *sprite, int height)
 }
 
 // Dibuja la pantalla en la ventana
-void displayPrintPantalla()
+void chip8displayPrintPantalla()
 {
   SDL_SetRenderDrawColor(screenSDL.renderer, 0, 0, 0, 255);
   SDL_RenderClear(screenSDL.renderer);

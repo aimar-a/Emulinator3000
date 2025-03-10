@@ -15,10 +15,10 @@ typedef struct
   int running;
 } Screen;
 
-int displayInitPantalla(uint8_t *pantalla_);
-void displayLimpiarPantalla();
-void displayCerrarPantalla();
-uint8_t displayDrawSprite(int x, int y, uint8_t *sprite, int height);
-void displayPrintPantalla();
+int chip8displayInitPantalla(uint8_t *pantalla_);
+void chip8displayLimpiarPantalla();
+void chip8displayCerrarPantalla();
+uint8_t chip8displayDrawSprite(int x, int y, uint8_t *sprite, int height);
+void chip8displayPrintPantalla();
 
 #endif // !DISPLAY_H

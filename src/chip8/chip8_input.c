@@ -15,7 +15,7 @@ SDL_KeyCode teclado_equivalente[NUM_KEYS] = {
 };
 
 // Inicializa el teclado
-void inputInitTeclado(uint8_t *teclado_, bool *esc_)
+void chip8inputInitTeclado(uint8_t *teclado_, bool *esc_)
 {
   teclado = teclado_;
   esc = esc_;
@@ -24,7 +24,7 @@ void inputInitTeclado(uint8_t *teclado_, bool *esc_)
 }
 
 // Mapea las teclas del teclado de la máquina
-void inputCapturarTeclado()
+void chip8inputCapturarTeclado()
 {
   SDL_Event evento;
   while (SDL_PollEvent(&evento))
@@ -61,13 +61,13 @@ void inputCapturarTeclado()
 }
 
 // Verifica si una tecla está presionada
-bool inputEstaPresionada(uint8_t key)
+bool chip8inputEstaPresionada(uint8_t key)
 {
   return teclado[key];
 }
 
 // Devuelve las teclas presionadas
-uint8_t *inputGetTeclado()
+uint8_t *chip8inputGetTeclado()
 {
   return teclado;
 }

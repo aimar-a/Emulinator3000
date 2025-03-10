@@ -5,17 +5,17 @@
 uint8_t *delay_timer;
 uint8_t *sound_timer;
 
-void timersInit(uint8_t *delay, uint8_t *sound)
+void chip8timersInit(uint8_t *delay, uint8_t *sound)
 {
   delay_timer = delay;
   *delay_timer = 0;
   sound_timer = sound;
   *sound_timer = 0;
-  timersInitAudio();
+  chip8timersInitAudio();
 }
 
 // Función de audio callback para generar el sonido (onda cuadrada)
-void timersAudioCallback(void *userdata, uint8_t *stream, int len)
+void chip8timersAudioCallback(void *userdata, uint8_t *stream, int len)
 {
   if (*sound_timer > 0)
   {
@@ -32,7 +32,7 @@ void timersAudioCallback(void *userdata, uint8_t *stream, int len)
 }
 
 // Configuración del audio (solo se necesita una vez)
-void timersInitAudio()
+void chip8timersInitAudio()
 {
   SDL_Init(SDL_INIT_AUDIO);
 
@@ -42,7 +42,7 @@ void timersInitAudio()
   want.format = AUDIO_U8;
   want.channels = 1;
   want.samples = 512;
-  want.callback = timersAudioCallback;
+  want.callback = chip8timersAudioCallback;
 
   if (SDL_OpenAudio(&want, &have) < 0)
   {
@@ -54,17 +54,17 @@ void timersInitAudio()
   }
 }
 
-void timersSetDelay(uint8_t value)
+void chip8timersSetDelay(uint8_t value)
 {
   *delay_timer = value;
 }
 
-void timersSetSound(uint8_t value)
+void chip8timersSetSound(uint8_t value)
 {
   *sound_timer = value;
 }
 
-void timersDecrement()
+void chip8timersDecrement()
 {
   if (*delay_timer > 0)
   {
@@ -77,13 +77,7 @@ void timersDecrement()
   }
 }
 
-uint8_t timersGetDelay()
+uint8_t chip8timersGetDelay()
 {
   return *delay_timer;
-}
-
-// BORRAR
-uint8_t timersGetSound()
-{
-  return *sound_timer;
 }
