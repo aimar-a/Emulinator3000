@@ -50,12 +50,12 @@ FX65 	MEM 	reg_load(Vx, &I) 	Fills from V0 to VX (including VX) with values from
 
 Chip8 *chip8;
 
-void opcodesInit(Chip8 *chip8_)
+void chip8opcodesInit(Chip8 *chip8_)
 {
   chip8 = chip8_;
 }
 
-void opcodesEvaluate(uint16_t opcode)
+void chip8opcodesEvaluate(uint16_t opcode)
 {
   uint8_t x = (opcode & 0x0F00) >> 8;
   uint8_t y = (opcode & 0x00F0) >> 4;
@@ -70,7 +70,7 @@ void opcodesEvaluate(uint16_t opcode)
     {
     case 0x00E0:
       // Clear the screen
-      displayLimpiarPantalla();
+      chip8displayLimpiarPantalla();
       break;
     case 0x00EE:
       // Return from a subroutine
@@ -214,7 +214,7 @@ void opcodesEvaluate(uint16_t opcode)
   case 0xD000:
     // Draw sprite at Vx, Vy with width 8 and height N
 
-    chip8->V[0xF] = displayDrawSprite(chip8->V[x], chip8->V[y], &chip8->memoria[chip8->I], n);
+    chip8->V[0xF] = chip8displayDrawSprite(chip8->V[x], chip8->V[y], &chip8->memoria[chip8->I], n);
     break;
   case 0xE000:
     switch (opcode & 0x00FF)
