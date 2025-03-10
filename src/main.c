@@ -21,12 +21,13 @@ int main(int argc, char *argv[])
   opcodesInit(&chip8);
 
   // Load ROM
-  FILE *rom = fopen("../resources/chip8-roms/games/Tetris [Fran Dachille, 1991].ch8", "rb");
+  // FILE *rom = fopen("../resources/chip8-roms/games/Tetris [Fran Dachille, 1991].ch8", "rb");
   // FILE *rom = fopen("../resources/chip8-roms/programs/BMP Viewer - Hello (C8 example) [Hap, 2005].ch8", "rb");
   // FILE *rom = fopen("../resources/chip8-roms/programs/Chip8 emulator Logo [Garstyciuks].ch8", "rb");
   // FILE *rom = fopen("../resources/chip8-roms/games/Airplane.ch8", "rb");
-  // FILE *rom = fopen("../resources/chip8-roms/games/Space Invaders [David Winter].ch8", "rb");
+  FILE *rom = fopen("../resources/chip8-roms/games/Space Invaders [David Winter].ch8", "rb");
   // FILE *rom = fopen("../resources/chip8-roms/programs/Delay Timer Test [Matthew Mikolay, 2010].ch8", "rb");
+  // FILE *rom = fopen("../resources/chip8-roms/programs/Keypad Test [Hap, 2006].ch8", "rb");
 
   if (rom == NULL)
   {
@@ -44,6 +45,7 @@ int main(int argc, char *argv[])
     printf("PC: %u\t", chip8.pc);
     printf("Opcode: 0x%X\t", (chip8.memoria[chip8.pc] << 8) | chip8.memoria[chip8.pc + 1]);
     printf("ST: %u\tDT: %u\n", chip8.sound_timer, chip8.delay_timer);
+
     uint16_t opcode = (chip8.memoria[chip8.pc] << 8) | chip8.memoria[chip8.pc + 1];
     chip8.pc += 2;
 
