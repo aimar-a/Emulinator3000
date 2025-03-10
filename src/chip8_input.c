@@ -2,15 +2,29 @@
 
 #define NUM_KEYS 16
 
-uint8_t teclado[NUM_KEYS] = {0};
+uint8_t *teclado;
+bool *esc;
 SDL_KeyCode teclado_equivalente[NUM_KEYS] = {
-    SDLK_1, SDLK_2, SDLK_3, SDLK_4,
-    SDLK_q, SDLK_w, SDLK_e, SDLK_r,
-    SDLK_a, SDLK_s, SDLK_d, SDLK_f,
-    SDLK_z, SDLK_x, SDLK_c, SDLK_v};
+    SDLK_x,                 // 0
+    SDLK_1, SDLK_2, SDLK_3, // 1, 2, 3
+    SDLK_q, SDLK_w, SDLK_e, // 4, 5, 6
+    SDLK_a, SDLK_s, SDLK_d, // 7, 8, 9
+    SDLK_z, SDLK_c,         // A, B
+    SDLK_4, SDLK_r,         // C, D
+    SDLK_f, SDLK_v          // E, F
+};
+
+// Inicializa el teclado
+void inputInitTeclado(uint8_t *teclado_, bool *esc_)
+{
+  teclado = teclado_;
+  esc = esc_;
+  memset(teclado, 0, NUM_KEYS);
+  esc = false;
+}
 
 // Mapea las teclas del teclado de la máquina
-void capturarTeclado()
+void inputCapturarTeclado()
 {
   SDL_Event evento;
   while (SDL_PollEvent(&evento))
@@ -21,6 +35,10 @@ void capturarTeclado()
     }
     else if (evento.type == SDL_KEYDOWN)
     {
+      if (evento.key.keysym.sym == SDLK_ESCAPE)
+      {
+        *esc = true;
+      }
       for (int i = 0; i < NUM_KEYS; i++)
       {
         if (evento.key.keysym.sym == teclado_equivalente[i])
@@ -43,13 +61,13 @@ void capturarTeclado()
 }
 
 // Verifica si una tecla está presionada
-bool estaPresionada(uint8_t key)
+bool inputEstaPresionada(uint8_t key)
 {
   return teclado[key];
 }
 
 // Devuelve las teclas presionadas
-uint8_t *getTeclado()
+uint8_t *inputGetTeclado()
 {
   return teclado;
 }

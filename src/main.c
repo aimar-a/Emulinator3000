@@ -1,99 +1,62 @@
+#include "chip8_structure.h"
 #include "chip8_display.h"
 #include "chip8_input.h"
 #include "chip8_timers.h"
+#include "chip8_opcodes.h"
 #include <SDL2/SDL.h>
+#include <stdio.h>
 
 int main(int argc, char *argv[])
 {
-  uint8_t spriteA[5] = {0xF0, 0x90, 0xF0, 0x90, 0x90};
-  uint8_t spriteI[5] = {0xF0, 0x20, 0x20, 0x20, 0xF0};
-  uint8_t spriteM[5] = {0x90, 0xF0, 0x90, 0x90, 0x90};
-  uint8_t spriteO[5] = {0xF0, 0x90, 0x90, 0x90, 0xF0};
-  uint8_t spriteN[5] = {0xF0, 0x90, 0x90, 0x90, 0x90};
-  uint8_t spriteZ[5] = {0xF0, 0x10, 0x20, 0x40, 0xF0};
-  uint8_t spriteS[5] = {0xF0, 0x80, 0xF0, 0x10, 0xF0};
-  uint8_t spriteD[5] = {0xE0, 0x90, 0x90, 0x90, 0xE0};
-  uint8_t spriteE[5] = {0xF0, 0x80, 0xF0, 0x80, 0xF0};
-  uint8_t spriteV[5] = {0x90, 0x90, 0x90, 0x90, 0x60};
+  Chip8 chip8;
+  memset(chip8.V, 0, sizeof(chip8.V));
+  chip8.pc = 0x200;
+  chip8.I = 0;
+  chip8.sp = 0;
+  timersInit(&chip8.delay_timer, &chip8.sound_timer);
+  memset(chip8.stack, 0, sizeof(chip8.stack));
+  memset(chip8.memoria, 0, sizeof(chip8.memoria));
+  inputInitTeclado(&chip8.teclado[0], &chip8.esc);
+  displayInitPantalla(&chip8.pantalla[0]);
+  opcodesInit(&chip8);
 
-  Screen pantalla;
-  iniciarPantalla(&pantalla);
+  // Load ROM
+  FILE *rom = fopen("../resources/chip8-roms/games/Tetris [Fran Dachille, 1991].ch8", "rb");
+  // FILE *rom = fopen("../resources/chip8-roms/programs/BMP Viewer - Hello (C8 example) [Hap, 2005].ch8", "rb");
+  // FILE *rom = fopen("../resources/chip8-roms/programs/Chip8 emulator Logo [Garstyciuks].ch8", "rb");
+  // FILE *rom = fopen("../resources/chip8-roms/games/Airplane.ch8", "rb");
+  // FILE *rom = fopen("../resources/chip8-roms/games/Space Invaders [David Winter].ch8", "rb");
+  // FILE *rom = fopen("../resources/chip8-roms/programs/Delay Timer Test [Matthew Mikolay, 2010].ch8", "rb");
 
-  // Dibujar AIMONZAS
-  drawSprite(10, 10, spriteA, 5);
-  drawSprite(16, 10, spriteI, 5);
-  drawSprite(28, 10, spriteO, 5);
-  drawSprite(34, 10, spriteN, 5);
-  drawSprite(22, 10, spriteM, 5);
-  drawSprite(40, 10, spriteZ, 5);
-  drawSprite(46, 10, spriteA, 5);
-  drawSprite(52, 10, spriteS, 5);
-
-  printPantalla(&pantalla);
-
-  for (int i = 0; i < 50; i++)
+  if (rom == NULL)
   {
-    capturarTeclado();
-    uint8_t *pTeclado = getTeclado();
-    printf("Teclas presionadas: ");
-    for (int i = 0; i < 16; i++)
-    {
-      if (pTeclado[i])
-      {
-        printf("%i ", i);
-      }
-    }
-    printf("\n");
-    SDL_Delay(100);
+    perror("No se pudo abrir el archivo");
+    return 1;
   }
+  fread(&chip8.memoria[0x200], 1, 4096 - 0x200, rom);
+  fclose(rom);
 
-  // Limpiar pantalla
-  drawSprite(10, 10, spriteA, 5);
-  drawSprite(16, 10, spriteI, 5);
-  drawSprite(28, 10, spriteO, 5);
-  drawSprite(34, 10, spriteN, 5);
-  drawSprite(22, 10, spriteM, 5);
-  drawSprite(40, 10, spriteZ, 5);
-  drawSprite(46, 10, spriteA, 5);
-  drawSprite(52, 10, spriteS, 5);
-
-  printPantalla(&pantalla);
-
-  SDL_Delay(1000);
-
-  // Dibujar DEIVID
-  drawSprite(10, 10, spriteD, 5);
-  drawSprite(16, 10, spriteE, 5);
-  drawSprite(22, 10, spriteI, 5);
-  drawSprite(28, 10, spriteV, 5);
-  drawSprite(34, 10, spriteI, 5);
-  drawSprite(40, 10, spriteD, 5);
-
-  printPantalla(&pantalla);
-
-  SDL_Init(SDL_INIT_AUDIO);
-  iniciarSonido();
-
-  // Bucle principal del emulador
-  for (int i = 0; i < 1000; i++)
+  // CPU loop while not pressing ESC
+  do
   {
+    // Fetch opcode
+    SDL_Delay(16);
+    printf("PC: %u\t", chip8.pc);
+    printf("Opcode: 0x%X\t", (chip8.memoria[chip8.pc] << 8) | chip8.memoria[chip8.pc + 1]);
+    printf("ST: %u\tDT: %u\n", chip8.sound_timer, chip8.delay_timer);
+    uint16_t opcode = (chip8.memoria[chip8.pc] << 8) | chip8.memoria[chip8.pc + 1];
+    chip8.pc += 2;
 
-    // Simular un ciclo de CPU (~60 veces por segundo)
-    SDL_Delay(16);      // 16 ms = ~60 FPS
-    decrement_timers(); // Decrementar los timers (delay y sonido)
+    displayPrintPantalla();
+    timersDecrement();
+    inputCapturarTeclado();
 
-    printf("ST: %i\t", get_sound_timer());
-    printf("DT: %i\n", get_delay_timer());
-    if (i % 200 == 0)
-    {
-      set_sound_timer(50);
-      set_delay_timer(100);
-    }
-  }
+    // Decode and execute opcode
+    opcodesEvaluate(opcode);
+  } while (!chip8.esc);
 
   SDL_CloseAudio();
-
-  cerrarPantalla(&pantalla);
+  displayCerrarPantalla();
   SDL_Quit();
 
   return 0;
