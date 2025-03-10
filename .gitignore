@@ -5,6 +5,7 @@
 *.dll
 *.so
 *.dylib
+bin/
 
 # Archivos de depuración y registros
 *.log

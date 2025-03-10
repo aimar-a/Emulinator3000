@@ -6,7 +6,7 @@
 #define SCREEN_WIDTH 64
 #define SCREEN_HEIGHT 32
 
-#define SCREEN_SCALE 10
+#define SCREEN_SCALE 26
 
 typedef struct
 {
