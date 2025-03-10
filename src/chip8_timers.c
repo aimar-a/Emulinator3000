@@ -68,12 +68,12 @@ void timersDecrement()
 {
   if (*delay_timer > 0)
   {
-    *delay_timer--;
+    (*delay_timer)--;
   }
 
   if (*sound_timer > 0)
   {
-    *sound_timer--;
+    (*sound_timer)--;
   }
 }
 
