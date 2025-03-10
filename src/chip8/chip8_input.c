@@ -20,7 +20,7 @@ void chip8inputInitTeclado(uint8_t *teclado_, bool *esc_)
   teclado = teclado_;
   esc = esc_;
   memset(teclado, 0, NUM_KEYS);
-  esc = false;
+  *esc = false;
 }
 
 // Mapea las teclas del teclado de la máquina
