@@ -1,5 +1,7 @@
 #include "chip8_display.h"
 #include "chip8_input.h"
+#include "chip8_timers.h"
+#include <SDL2/SDL.h>
 
 int main(int argc, char *argv[])
 {
@@ -29,7 +31,7 @@ int main(int argc, char *argv[])
 
   printPantalla(&pantalla);
 
-  for (int i = 0; i < 100; i++)
+  for (int i = 0; i < 50; i++)
   {
     capturarTeclado();
     uint8_t *pTeclado = getTeclado();
@@ -57,7 +59,7 @@ int main(int argc, char *argv[])
 
   printPantalla(&pantalla);
 
-  SDL_Delay(2000);
+  SDL_Delay(1000);
 
   // Dibujar DEIVID
   drawSprite(10, 10, spriteD, 5);
@@ -69,9 +71,30 @@ int main(int argc, char *argv[])
 
   printPantalla(&pantalla);
 
-  SDL_Delay(5000);
+  SDL_Init(SDL_INIT_AUDIO);
+  iniciarSonido();
+
+  // Bucle principal del emulador
+  for (int i = 0; i < 1000; i++)
+  {
+
+    // Simular un ciclo de CPU (~60 veces por segundo)
+    SDL_Delay(16);      // 16 ms = ~60 FPS
+    decrement_timers(); // Decrementar los timers (delay y sonido)
+
+    printf("ST: %i\t", get_sound_timer());
+    printf("DT: %i\n", get_delay_timer());
+    if (i % 200 == 0)
+    {
+      set_sound_timer(50);
+      set_delay_timer(100);
+    }
+  }
+
+  SDL_CloseAudio();
 
   cerrarPantalla(&pantalla);
+  SDL_Quit();
 
   return 0;
 }

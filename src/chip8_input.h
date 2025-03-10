@@ -14,4 +14,4 @@ bool estaPresionada(uint8_t key);
 // Devuelve las teclas presionadas
 uint8_t *getTeclado();
 
-#endif // !INPUT
+#endif // !INPUT_H
