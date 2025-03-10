@@ -15,19 +15,10 @@ typedef struct
   int running;
 } Screen;
 
-// Inicializa la pantalla
-int iniciarPantalla(Screen *p);
+int displayInitPantalla(uint8_t *pantalla_);
+void displayLimpiarPantalla();
+void displayCerrarPantalla();
+uint8_t displayDrawSprite(int x, int y, uint8_t *sprite, int height);
+void displayPrintPantalla();
 
-// Limpia la pantalla
-void limpiarPantalla(Screen *p);
-
-// Destruye la ventana y el renderer
-void cerrarPantalla(Screen *p);
-
-// Dibuja un sprite en la pantalla
-uint8_t drawSprite(int x, int y, uint8_t *sprite, int height);
-
-// Dibuja la pantalla en la ventana
-void printPantalla(Screen *p);
-
-#endif // !DISPLAY
+#endif // !DISPLAY_H
