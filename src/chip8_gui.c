@@ -1,5 +1,5 @@
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h> // Necesario para texto en la UI
+#include <SDL2/SDL_ttf.h>
 #include <string.h>
 
 int selectedDelay = 5;                 // Valor inicial de SDL_Delay
@@ -37,8 +37,8 @@ void showSettingsWindow()
             {
                 if (event.key.keysym.sym == SDLK_RETURN && delayInputActive)
                 {
-                    selectedDelay = atoi(delayText);
-                    delayInputActive = 0;
+                    selectedDelay = atoi(delayText); // Convertir el texto a un número
+                    delayInputActive = 0;            // Desactivar el campo de texto
                 }
                 else if (event.key.keysym.sym == SDLK_UP)
                 {
@@ -53,20 +53,21 @@ void showSettingsWindow()
             }
             else if (event.type == SDL_TEXTINPUT && delayInputActive)
             {
-                strcat(delayText, event.text.text);
+                strcat(delayText, event.text.text); // Añadir el texto ingresado
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN)
             {
                 int x, y;
                 SDL_GetMouseState(&x, &y);
-                if (x >= 50 && x <= 350 && y >= 50 && y <= 80)
+                if (x >= 50 && x <= 350 && y >= 50 && y <= 80) // Detecta clic en la caja de texto
                 {
                     delayInputActive = 1;
-                    strcpy(delayText, "");
+                    strcpy(delayText, ""); // Limpiar el texto al hacer clic
                 }
             }
         }
 
+        // Mostrar "Delay:"
         SDL_Surface *textSurface = TTF_RenderText_Solid(font, "Delay:", (SDL_Color){255, 255, 255});
         SDL_Texture *textTexture = SDL_CreateTextureFromSurface(settingsRenderer, textSurface);
         SDL_Rect textRect = {50, 20, textSurface->w, textSurface->h};
@@ -74,6 +75,21 @@ void showSettingsWindow()
         SDL_FreeSurface(textSurface);
         SDL_DestroyTexture(textTexture);
 
+        // Dibujar el cuadro para el texto del delay
+        SDL_SetRenderDrawColor(settingsRenderer, 255, 255, 255, 255); // Blanco
+        SDL_Rect inputBoxRect = {50, 50, 300, 30};                    // Rectángulo de la caja de texto
+        SDL_RenderDrawRect(settingsRenderer, &inputBoxRect);          // Dibujar el borde
+        SDL_RenderFillRect(settingsRenderer, &inputBoxRect);          // Rellenar el fondo de la caja de texto (opcional)
+
+        // Mostrar el texto dentro de la caja de texto
+        SDL_Surface *delaySurface = TTF_RenderText_Solid(font, delayText, (SDL_Color){0, 0, 0}); // Texto en negro
+        SDL_Texture *delayTexture = SDL_CreateTextureFromSurface(settingsRenderer, delaySurface);
+        SDL_Rect delayRect = {50, 50, delaySurface->w, delaySurface->h};
+        SDL_RenderCopy(settingsRenderer, delayTexture, NULL, &delayRect);
+        SDL_FreeSurface(delaySurface);
+        SDL_DestroyTexture(delayTexture);
+
+        // Mostrar la ROM seleccionada
         SDL_Surface *romSurface = TTF_RenderText_Solid(font, selectedRom, (SDL_Color){255, 255, 255});
         SDL_Texture *romTexture = SDL_CreateTextureFromSurface(settingsRenderer, romSurface);
         SDL_Rect romRect = {50, 150, romSurface->w, romSurface->h};
@@ -146,4 +162,5 @@ void showInitialWindow(int *startGame)
     SDL_DestroyTexture(settingsButtonTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    SDL_Quit();
 }
