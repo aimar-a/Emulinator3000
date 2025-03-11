@@ -9,7 +9,8 @@
 #include "chip8_input.h"
 #include "chip8_timers.h"
 #include "chip8_opcodes.h"
-void showInitialWindow(int *startGame);
+
+extern int selectedDelay;
 void chip8cpuLaunch(char *rom_path);
 
 #endif // CPU_H

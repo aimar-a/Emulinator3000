@@ -42,10 +42,7 @@ void chip8cpuLaunch(char *rom_path)
 
   do
   {
-    // Fetch opcode
-    SDL_Delay(5);
-    printf("PC: %u\t", chip8.pc);
-    printf("Opcode: 0x%X\n", (chip8.memoria[chip8.pc] << 8) | chip8.memoria[chip8.pc + 1]);
+    SDL_Delay(selectedDelay); // Usa el valor configurado en settings
 
     uint16_t opcode = (chip8.memoria[chip8.pc] << 8) | chip8.memoria[chip8.pc + 1];
     chip8.pc += 2;
@@ -53,8 +50,6 @@ void chip8cpuLaunch(char *rom_path)
     chip8displayPrintPantalla();
     chip8timersDecrement();
     chip8inputCapturarTeclado();
-
-    // Decode and execute opcode
     chip8opcodesEvaluate(opcode);
   } while (!chip8.esc);
 }
