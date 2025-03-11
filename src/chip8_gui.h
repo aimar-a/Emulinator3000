@@ -1,5 +1,5 @@
-#ifndef CPU_H
-#define CPU_H
+#ifndef GUI_H
+#define GUI_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -10,6 +10,5 @@
 #include "chip8_timers.h"
 #include "chip8_opcodes.h"
 void showInitialWindow(int *startGame);
-void chip8cpuLaunch(char *rom_path);
 
-#endif // CPU_H
+#endif
