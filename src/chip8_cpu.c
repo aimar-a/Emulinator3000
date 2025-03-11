@@ -1,3 +1,5 @@
+#include "chip8_cpu.h"
+#include "chip8_gui.h"
 #include "chip8_structure.h"
 #include "chip8_display.h"
 #include "chip8_input.h"
@@ -8,6 +10,14 @@
 
 void chip8cpuLaunch(char *rom_path)
 {
+  int startGame = 0;
+  showInitialWindow(&startGame);
+
+  if (!startGame)
+  {
+    return;
+  }
+
   Chip8 chip8;
   chip8.esc = 0;
   memset(chip8.V, 0, sizeof(chip8.V));
