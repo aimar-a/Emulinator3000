@@ -2,10 +2,11 @@
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
 #include <dirent.h> // Necesario para leer el contenido de un directorio
+#include "chip8_cpu.h"
 
-int selectedDelay = 5;                 // Valor inicial de SDL_Delay
-char selectedRom[128] = "default.ch8"; // ROM seleccionada
-int romListVisible = 0;                // Bandera para mostrar u ocultar la lista de ROMs
+int selectedDelay = 5;                                                                  // Valor inicial de SDL_Delay
+char selectedRom[128] = "resources/chip8-roms/games/Space Invaders [David Winter].ch8"; // ROM seleccionada
+int romListVisible = 0;                                                                 // Bandera para mostrar u ocultar la lista de ROMs
 
 // Función para cargar las ROMs del directorio
 void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *romCount)
@@ -178,7 +179,7 @@ void showSettingsWindow()
     SDL_Quit();
 }
 
-void showInitialWindow(int *startGame)
+void showInitialWindow()
 {
     SDL_Window *window = SDL_CreateWindow("Emulinator3000", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -186,11 +187,11 @@ void showInitialWindow(int *startGame)
     SDL_Event event;
     int running = 1;
 
-    SDL_Surface *playButtonSurface = SDL_LoadBMP("C:/ProgIV/Emulinator3000/resources/Fotos/Playh.bmp");
+    SDL_Surface *playButtonSurface = SDL_LoadBMP("resources/Fotos/Playh.bmp");
     SDL_Texture *playButtonTexture = SDL_CreateTextureFromSurface(renderer, playButtonSurface);
     SDL_FreeSurface(playButtonSurface);
 
-    SDL_Surface *settingsButtonSurface = SDL_LoadBMP("C:/ProgIV/Emulinator3000/resources/Fotos/Settings.bmp");
+    SDL_Surface *settingsButtonSurface = SDL_LoadBMP("resources/Fotos/Settings.bmp");
     SDL_Texture *settingsButtonTexture = SDL_CreateTextureFromSurface(renderer, settingsButtonSurface);
     SDL_FreeSurface(settingsButtonSurface);
 
@@ -201,7 +202,6 @@ void showInitialWindow(int *startGame)
             if (event.type == SDL_QUIT)
             {
                 running = 0;
-                *startGame = 0;
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN)
             {
@@ -210,7 +210,7 @@ void showInitialWindow(int *startGame)
                 if (x >= 220 && x <= 420 && y >= 150 && y <= 200)
                 {
                     running = 0;
-                    *startGame = 1;
+                    chip8cpuLaunch(selectedRom);
                 }
                 else if (x >= 220 && x <= 420 && y >= 250 && y <= 300)
                 {

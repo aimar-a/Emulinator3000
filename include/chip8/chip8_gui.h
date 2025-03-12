@@ -11,7 +11,7 @@
 #include "chip8_opcodes.h"
 
 void showSettingsWindow();
-void showInitialWindow(int *startGame);
+void showInitialWindow();
 void loadRomsFromDirectory(const char *path, char roms[][128], int *romCount);
 
 #endif

@@ -10,14 +10,6 @@
 
 void chip8cpuLaunch(char *rom_path)
 {
-  int startGame = 0;
-  showInitialWindow(&startGame);
-
-  if (!startGame)
-  {
-    return;
-  }
-
   Chip8 chip8;
   chip8.esc = 0;
   memset(chip8.V, 0, sizeof(chip8.V));
