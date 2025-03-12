@@ -23,7 +23,7 @@ tasks.json
 build/
 CMakeCache.txt
 CMakeFiles/
-Makefile
+#Makefile
 cmake_install.cmake
 
 # Archivos temporales del sistema
