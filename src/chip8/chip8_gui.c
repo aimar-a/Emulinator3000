@@ -50,7 +50,7 @@ void showSettingsWindow()
     // Cargar las ROMs desde un directorio
     char romOptions[100][128]; // Asumiendo que hay un máximo de 100 ROMs
     int romCount = 0;
-    loadRomsFromDirectory("../resources/chip8-roms/games", romOptions, &romCount); // Cambia la ruta según corresponda
+    loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount); // Cambia la ruta según corresponda
 
     int romIndex = 0;
     if (romCount > 0)
