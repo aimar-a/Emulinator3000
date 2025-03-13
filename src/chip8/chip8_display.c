@@ -49,7 +49,7 @@ void chip8displayLimpiarPantalla()
 }
 
 // Destruye la ventana y el renderer
-void chip8displayCerrarPantalla()
+void chip8displayDestroyPantalla()
 {
   SDL_DestroyRenderer(screenSDL.renderer);
   SDL_DestroyWindow(screenSDL.window);

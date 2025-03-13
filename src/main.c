@@ -1,4 +1,4 @@
-#include "chip8_gui.h"
+#include "menu.h"
 
 #define SDL_MAIN_HANDLED // Evita que SDL2 defina su propia función main
 #include <SDL2/SDL.h>
@@ -15,6 +15,6 @@ bin/chip8_emulator.exe
 
 int main(int argc, char *argv[])
 {
-  showInitialWindow();
+  menuInicial();
   return 0;
 }
