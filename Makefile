@@ -1,7 +1,7 @@
 # Nombre del ejecutable y carpetas
 TARGET = bin/chip8_emulator
 CC = gcc
-CFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -Wall -Wextra -pedantic -Iinclude -Iinclude/chip8 -Iinclude/menu
+CFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -Wall -Wextra -pedantic -Iinclude -Iinclude/chip8 -Iinclude/menu -Iinclude/nes
 
 # Carpetas
 SRC_DIR = src
@@ -10,7 +10,7 @@ INCLUDE_DIR = include
 BIN_DIR = bin
 
 # Archivos fuente y objetos
-SRC = $(wildcard $(SRC_DIR)/*.c $(SRC_DIR)/chip8/*.c $(SRC_DIR)/menu/*.c)
+SRC = $(wildcard $(SRC_DIR)/*.c $(SRC_DIR)/chip8/*.c $(SRC_DIR)/menu/*.c $(SRC_DIR)/nes/*.c)
 OBJ = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC))
 
 # Regla para compilar el ejecutable
@@ -23,7 +23,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 
 # Crear carpetas si no existen
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)/chip8 $(BUILD_DIR)/menu
+	mkdir -p $(BUILD_DIR)/chip8 $(BUILD_DIR)/menu $(BUILD_DIR)/nes
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
