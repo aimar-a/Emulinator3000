@@ -5,9 +5,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "chip8/chip8_cpu.h"
+#include "chip8_cpu.h"
 
-#include "menu.h"
+#include "menu_cmd.h"
 
 #define ROMS_PATH "resources/chip8-roms"
 
