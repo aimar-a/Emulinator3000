@@ -17,7 +17,7 @@ typedef struct
 
 int chip8displayInitPantalla(uint8_t *pantalla_);
 void chip8displayLimpiarPantalla();
-void chip8displayCerrarPantalla();
+void chip8displayDestroyPantalla();
 uint8_t chip8displayDrawSprite(int x, int y, uint8_t *sprite, int height);
 void chip8displayPrintPantalla();
 

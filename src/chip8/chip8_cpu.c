@@ -44,4 +44,8 @@ void chip8cpuLaunch(char *rom_path)
     chip8inputCapturarTeclado();
     chip8opcodesEvaluate(opcode);
   } while (!chip8.esc);
+
+  chip8displayDestroyPantalla();
+  // chip8inputDestroyTeclado(&chip8.teclado[0]);
+  // chip8timersDestroy(&chip8.delay_timer, &chip8.sound_timer);
 }
