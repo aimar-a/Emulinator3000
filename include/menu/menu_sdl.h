@@ -1,5 +1,5 @@
-#ifndef GUI_H
-#define GUI_H
+#ifndef MENU_SDL_H
+#define MENU_SDL_H
 
 #include <stdint.h>
 #include <stdio.h>

@@ -1,5 +1,4 @@
 #include "chip8_cpu.h"
-#include "chip8_gui.h"
 #include "chip8_structure.h"
 #include "chip8_display.h"
 #include "chip8_input.h"
