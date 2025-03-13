@@ -24,6 +24,7 @@ void chip8cpuLaunch(char *rom_path)
   chip8opcodesInit(&chip8);
 
   FILE *rom = fopen(rom_path, "rb");
+
   if (rom == NULL)
   {
     perror("No se pudo abrir el archivo");
