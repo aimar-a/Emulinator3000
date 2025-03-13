@@ -40,7 +40,7 @@ int showSettingsWindow(char selectedRom[128])
     SDL_Renderer *settingsRenderer = SDL_CreateRenderer(settingsWindow, -1, SDL_RENDERER_ACCELERATED);
 
     TTF_Init();
-    TTF_Font *font = TTF_OpenFont("C:/Windows/Fonts/Arial.ttf", 24);
+    TTF_Font *font = TTF_OpenFont("resources/fonts/Arial.ttf", 24);
 
     SDL_Event event;
     int running = 1;
