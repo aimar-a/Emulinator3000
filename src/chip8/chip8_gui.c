@@ -36,7 +36,7 @@ void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *rom
     closedir(dir); // Cierra el directorio
 }
 
-void showSettingsWindow()
+int showSettingsWindow()
 {
     SDL_Window *settingsWindow = SDL_CreateWindow("Settings", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 400, 300, SDL_WINDOW_SHOWN);
     SDL_Renderer *settingsRenderer = SDL_CreateRenderer(settingsWindow, -1, SDL_RENDERER_ACCELERATED);
@@ -233,7 +233,18 @@ void showInitialWindow()
                 }
                 else if (x >= 220 && x <= 420 && y >= 250 && y <= 300)
                 {
-                    showSettingsWindow();
+                    // Cierra la ventana antes de abrir la de ajustes
+                    SDL_DestroyTexture(playButtonTexture);
+                    SDL_DestroyTexture(settingsButtonTexture);
+                    SDL_DestroyRenderer(renderer);
+                    SDL_DestroyWindow(window);
+
+                    // Si showSettingsWindow() devuelve 1, volvemos a abrir showInitialWindow()
+                    if (showSettingsWindow())
+                    {
+                        showInitialWindow();
+                    }
+                    return;
                 }
             }
         }
