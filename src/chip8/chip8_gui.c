@@ -7,6 +7,8 @@
 int selectedDelay = 5;                                                                  // Valor inicial de SDL_Delay
 char selectedRom[128] = "resources/chip8-roms/games/Space Invaders [David Winter].ch8"; // ROM seleccionada
 int romListVisible = 0;                                                                 // Bandera para mostrar u ocultar la lista de ROMs
+int scrollOffset = 0;                                                                   // Indica el desplazamiento de la lista
+const int maxVisibleRoms = 3;                                                           // Máximo de ROMs visibles sin desplazamiento
 
 // Función para cargar las ROMs del directorio
 void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *romCount)
@@ -50,7 +52,7 @@ void showSettingsWindow()
     // Cargar las ROMs desde un directorio
     char romOptions[100][128]; // Asumiendo que hay un máximo de 100 ROMs
     int romCount = 0;
-    loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount); // Cambia la ruta según corresponda
+    loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount);
 
     int romIndex = 0;
     if (romCount > 0)
@@ -68,38 +70,47 @@ void showSettingsWindow()
         // Evento de entrada
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_QUIT)
+            if (event.type == SDL_QUIT) // Permite cerrar con la "X" de la ventana
             {
                 running = 0;
             }
             else if (event.type == SDL_KEYDOWN)
             {
-                if (event.key.keysym.sym == SDLK_RETURN && delayInputActive)
+                if (event.key.keysym.sym == SDLK_ESCAPE) // Cerrar con ESC
+                {
+                    running = 0;
+                }
+                else if (event.key.keysym.sym == SDLK_RETURN && delayInputActive)
                 {
                     selectedDelay = atoi(delayText);
                     delayInputActive = 0;
                 }
                 else if (event.key.keysym.sym == SDLK_UP)
                 {
-                    // Navegar hacia arriba en la lista de ROMs
-                    if (romListVisible)
+                    if (romListVisible && romCount > 0)
                     {
                         romIndex = (romIndex - 1 + romCount) % romCount;
+                        if (romIndex < scrollOffset)
+                        {
+                            scrollOffset--;
+                        }
                     }
                 }
                 else if (event.key.keysym.sym == SDLK_DOWN)
                 {
-                    // Navegar hacia abajo en la lista de ROMs
-                    if (romListVisible)
+                    if (romListVisible && romCount > 0)
                     {
                         romIndex = (romIndex + 1) % romCount;
+                        if (romIndex >= scrollOffset + maxVisibleRoms)
+                        {
+                            scrollOffset++;
+                        }
                     }
                 }
                 else if (event.key.keysym.sym == SDLK_RETURN && romListVisible)
                 {
-                    // Seleccionar la ROM desde la lista desplegada
                     strcpy(selectedRom, romOptions[romIndex]);
-                    romListVisible = 0; // Ocultar la lista después de seleccionar
+                    romListVisible = 0;
                 }
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN)
@@ -107,21 +118,28 @@ void showSettingsWindow()
                 int x, y;
                 SDL_GetMouseState(&x, &y);
 
-                // Verificar si se hizo clic en el área de la ROM seleccionada
-                if (x >= 50 && x <= 350 && y >= 50 && y <= 80)
+                // Verificar si se hizo clic en la ROM seleccionada
+                if (x >= 50 && x <= 350 && y >= 150 && y <= 180)
                 {
-                    romListVisible = !romListVisible; // Alternar la visibilidad de la lista
+                    romListVisible = !romListVisible;
                 }
 
-                // Verificar si se hizo clic en una de las ROMs de la lista desplegada
+                // Cerrar ventana si se hace clic en un botón imaginario de "Cerrar"
+                if (x >= 360 && x <= 390 && y >= 10 && y <= 40)
+                {
+                    running = 0;
+                }
+
+                // Verificar si se hizo clic en una ROM de la lista desplegada
                 if (romListVisible)
                 {
                     for (int i = 0; i < romCount; ++i)
                     {
-                        if (x >= 50 && x <= 350 && y >= 100 + i * 40 && y <= 140 + i * 40)
+                        int romY = 190 + i * 40;
+                        if (x >= 50 && x <= 350 && y >= romY && y <= romY + 40)
                         {
                             strcpy(selectedRom, romOptions[i]);
-                            romListVisible = 0; // Ocultar la lista después de seleccionar
+                            romListVisible = 0;
                             break;
                         }
                     }
@@ -129,18 +147,19 @@ void showSettingsWindow()
             }
         }
 
-        SDL_SetRenderDrawColor(settingsRenderer, 255, 255, 255, 255); // Color blanco para el borde
-        SDL_Rect inputBoxRect = {50, 50, 300, 30};                    // Tamaño y posición del cuadro de texto
-        SDL_RenderDrawRect(settingsRenderer, &inputBoxRect);          // Dibuja el borde del cuadro de texto
+        // Dibujar la UI de ajustes
+        SDL_SetRenderDrawColor(settingsRenderer, 255, 255, 255, 255);
+        SDL_Rect inputBoxRect = {50, 50, 300, 30};
+        SDL_RenderDrawRect(settingsRenderer, &inputBoxRect);
 
-        SDL_Surface *inputTextSurface = TTF_RenderText_Solid(font, "Delay:", (SDL_Color){255, 255, 255}); // Texto en blanco
+        SDL_Surface *inputTextSurface = TTF_RenderText_Solid(font, "Delay:", (SDL_Color){255, 255, 255});
         SDL_Texture *inputTextTexture = SDL_CreateTextureFromSurface(settingsRenderer, inputTextSurface);
-        SDL_Rect inputTextRect = {50, 50, inputTextSurface->w, inputTextSurface->h}; // Posición del texto
-        SDL_RenderCopy(settingsRenderer, inputTextTexture, NULL, &inputTextRect);    // Dibuja el texto en la pantalla
+        SDL_Rect inputTextRect = {50, 50, inputTextSurface->w, inputTextSurface->h};
+        SDL_RenderCopy(settingsRenderer, inputTextTexture, NULL, &inputTextRect);
         SDL_FreeSurface(inputTextSurface);
         SDL_DestroyTexture(inputTextTexture);
 
-        // Mostrar la ROM seleccionada (caja de selección)
+        // Mostrar la ROM seleccionada
         SDL_Surface *selectedRomSurface = TTF_RenderText_Solid(font, selectedRom, (SDL_Color){255, 255, 255});
         SDL_Texture *selectedRomTexture = SDL_CreateTextureFromSurface(settingsRenderer, selectedRomSurface);
         SDL_Rect selectedRomRect = {50, 150, selectedRomSurface->w, selectedRomSurface->h};
@@ -148,20 +167,20 @@ void showSettingsWindow()
         SDL_FreeSurface(selectedRomSurface);
         SDL_DestroyTexture(selectedRomTexture);
 
-        // Mostrar la lista desplegada de ROMs si está visible
+        // Mostrar la lista de ROMs
         if (romListVisible)
         {
-            for (int i = 0; i < romCount; ++i)
+            for (int i = 0; i < maxVisibleRoms && (i + scrollOffset) < romCount; ++i)
             {
-                SDL_Surface *romSurface = TTF_RenderText_Solid(font, romOptions[i], (SDL_Color){255, 255, 255});
+                int romY = 190 + i * 40;
+                SDL_Surface *romSurface = TTF_RenderText_Solid(font, romOptions[i + scrollOffset], (SDL_Color){255, 255, 255});
                 SDL_Texture *romTexture = SDL_CreateTextureFromSurface(settingsRenderer, romSurface);
-                SDL_Rect romRect = {50, 100 + i * 40, romSurface->w, romSurface->h};
+                SDL_Rect romRect = {50, romY, romSurface->w, romSurface->h};
                 SDL_RenderCopy(settingsRenderer, romTexture, NULL, &romRect);
 
-                // Resaltar la ROM seleccionada en la lista
-                if (i == romIndex)
+                if ((i + scrollOffset) == romIndex)
                 {
-                    SDL_SetRenderDrawColor(settingsRenderer, 0, 255, 0, 255); // Resaltar en verde
+                    SDL_SetRenderDrawColor(settingsRenderer, 0, 255, 0, 255);
                     SDL_RenderDrawRect(settingsRenderer, &romRect);
                 }
 
@@ -173,10 +192,10 @@ void showSettingsWindow()
         SDL_RenderPresent(settingsRenderer);
     }
 
+    // Cerrar y liberar recursos de la ventana de ajustes
     SDL_DestroyRenderer(settingsRenderer);
     SDL_DestroyWindow(settingsWindow);
-    TTF_Quit();
-    SDL_Quit();
+    TTF_CloseFont(font);
 }
 
 void showInitialWindow()
