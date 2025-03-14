@@ -14,7 +14,7 @@ void nes_launch()
   NES nes;
 
   nes_reset(&nes);
-  nes.rom = nes_load_rom("resources/nes-roms/Tetris.nes");
+  nes.rom = nes_load_rom(&nes, "resources/nes-roms/Tetris.nes");
   nes_run(&nes);
 }
 
