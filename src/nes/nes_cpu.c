@@ -3,6 +3,8 @@
 #include "nes_structure.h"
 #include "nes_display.h"
 #include "nes_controller.h"
+#include "nes_memory.h"
+#include "nes_rom.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
@@ -11,7 +13,7 @@ void nes_launch()
 {
   NES nes;
   nes_reset(&nes);
-  nes_load_rom(&nes, "resources/nes-roms/Tetris.nes");
+  nes.rom = nes_load_rom("resources/nes-roms/Tetris.nes");
   nes_run(&nes);
 }
 
@@ -33,21 +35,6 @@ void nes_reset(NES *nes)
   {
     nes->memory[i] = 0;
   }
-}
-
-void nes_load_rom(NES *nes, const char *filename)
-{
-  FILE *file = fopen(filename, "rb");
-  if (file == NULL)
-  {
-    printf("Error: Couldn't open file %s\n", filename);
-    exit(1);
-  }
-  fseek(file, 0, SEEK_END);
-  long size = ftell(file);
-  rewind(file);
-  fread(nes->memory + 0x8000, 1, size, file);
-  fclose(file);
 }
 
 void nes_run(NES *nes)

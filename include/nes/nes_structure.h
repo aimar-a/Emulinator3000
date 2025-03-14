@@ -14,6 +14,7 @@ typedef struct
 
   // Memoria
   uint8_t memory[0x10000]; // 64KB de memoria
+  NES_ROM *rom;            // ROM cargada
 
   // Display
   uint8_t screen[256 * 240]; // 256x240 pixels
