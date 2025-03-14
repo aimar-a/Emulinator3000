@@ -17,6 +17,12 @@ typedef struct
 
   // Display
   uint8_t screen[256 * 240]; // 256x240 pixels
+
+  // Input
+  bool controller_strobe;      // Strobe
+  uint8_t controller_shift[2]; // Shift
+  uint8_t controller_state[2]; // Estado de los botones
+
 } NES;
 
 #endif

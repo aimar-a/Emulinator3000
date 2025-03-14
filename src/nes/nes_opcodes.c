@@ -5,6 +5,7 @@ void nes_evaluate_opcode(NES *nes)
 {
   uint8_t opcode = nes->memory[nes->PC];
   nes->PC++;
+  printf("PC: %04X, Opcode: %02X\n", nes->PC, opcode);
   switch (opcode)
   {
   case 0x00:
