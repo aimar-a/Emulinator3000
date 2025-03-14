@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include "nes_memory.h"
 
 uint8_t nes_read(NES *nes, uint16_t address)
@@ -77,7 +80,12 @@ void nes_write(NES *nes, uint16_t address, uint8_t value)
 
 void init_nrom(NES *nes)
 {
-  // No se necesita configuración especial
+
+  // Para NROM no hay una configuración compleja, ya que es muy sencillo
+  nes->mapper_bank = 0;
+  nes->chr_bank = 0;
+  nes->interrupt_enable = false;
+  nes->mapper_state = 0;
 }
 
 uint8_t read_nrom(NES *nes, uint16_t address)

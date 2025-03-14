@@ -1,8 +1,10 @@
+
 #ifndef NES_STRUCTURE_H
 #define NES_STRUCTURE_H
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "nes_rom.h"
 
 typedef struct
 {

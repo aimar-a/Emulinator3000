@@ -37,6 +37,31 @@ NES_ROM *nes_load_rom(NES *nes, const char *filename)
   rom->prg_size = rom->header[4]; // Cantidad de bancos de 16 KB
   rom->chr_size = rom->header[5]; // Cantidad de bancos de 8 KB
 
+  uint8_t byte6 = nes->memory[6];
+  uint8_t byte7 = nes->memory[7];
+
+  nes->current_mapper = (byte7 & 0xF0) | (byte6 & 0x0F);
+  // Se elige el mapeado adecuado
+  switch (nes->current_mapper)
+  {
+  case 0:
+    init_nrom(nes);
+    break;
+  case 1:
+    init_mmc1(nes);
+    break;
+  case 3:
+    init_cnrom(nes);
+    break;
+  case 4:
+    init_mmc3(nes);
+    break;
+  // Agrega más casos si es necesario
+  default:
+    printf("Unsupported mapper: %d\n", nes->current_mapper);
+    exit(1);
+  }
+
   // Reservar memoria para PRG-ROM (16 KB por banco)
   rom->prg_rom = malloc(rom->prg_size * 16384);
   if (!rom->prg_rom)

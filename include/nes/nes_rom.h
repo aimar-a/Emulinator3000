@@ -2,6 +2,7 @@
 #define NES_ROM_H
 
 #include <stdint.h>
+#include "nes_structure.h" // Incluir la definición completa de NES
 
 typedef struct
 {
@@ -12,6 +13,6 @@ typedef struct
   uint8_t chr_size;   // Tamaño de CHR-ROM en bloques de 8 KB
 } NES_ROM;
 
-NES_ROM *nes_load_rom(const char *filename);
+NES_ROM *nes_load_rom(NES *nes, const char *filename);
 
 #endif
