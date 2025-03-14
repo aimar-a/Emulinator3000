@@ -250,7 +250,7 @@ int showSettingsWindow(char selectedRom[128])
             if (openParen != NULL)
                 *openParen = '\0';
 
-            SDL_Color white = {255, 255, 255, 255};
+                        SDL_Color white = {255, 255, 255, 255};
             SDL_Surface *romSurface = TTF_RenderText_Solid(font, displayName, white);
             SDL_Texture *romTexture = SDL_CreateTextureFromSurface(settingsRenderer, romSurface);
             SDL_Rect romRect = {romX, romY, romSurface->w, romSurface->h};
