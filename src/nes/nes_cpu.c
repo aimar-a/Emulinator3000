@@ -5,6 +5,7 @@
 #include "nes_controller.h"
 #include "nes_memory.h"
 #include "nes_rom.h"
+#include "nes_mapper.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
@@ -14,7 +15,11 @@ void nes_launch()
   NES nes;
 
   nes_reset(&nes);
-  nes.rom = nes_load_rom(&nes, "resources/nes-roms/Tetris.nes");
+  nes_load_rom(&nes, "resources/nes-roms/Super_mario_brothers.nes");
+  nes_rom_to_memory(&nes, nes.rom->prg_rom, nes.rom->prg_size * 16384);
+  nes.PC = nes.memory[0xFFFC] | (nes.memory[0xFFFD] << 8);
+  printf("PC: %04X\n", nes.PC);
+  printf("pc in memory: %02X %02X\n", nes.memory[0xFFFC], nes.memory[0xFFFD]);
   nes_run(&nes);
 }
 

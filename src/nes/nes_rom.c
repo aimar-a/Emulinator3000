@@ -1,16 +1,16 @@
 #include "nes_rom.h"
 #include "nes_structure.h"
+#include "nes_mapper.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 
-NES_ROM *nes_load_rom(NES *nes, const char *filename)
+void nes_load_rom(NES *nes, const char *filename)
 {
   FILE *file = fopen(filename, "rb");
   if (!file)
   {
     printf("Error: No se pudo abrir la ROM.\n");
-    return NULL;
   }
 
   NES_ROM *rom = malloc(sizeof(NES_ROM));
@@ -18,7 +18,6 @@ NES_ROM *nes_load_rom(NES *nes, const char *filename)
   {
     printf("Error: No se pudo asignar memoria para la ROM.\n");
     fclose(file);
-    return NULL;
   }
 
   // Leer cabecera iNES (16 bytes)
@@ -30,37 +29,12 @@ NES_ROM *nes_load_rom(NES *nes, const char *filename)
     printf("Error: No es un archivo .nes válido.\n");
     free(rom);
     fclose(file);
-    return NULL;
   }
 
   // Obtener tamaño de PRG-ROM y CHR-ROM
   rom->prg_size = rom->header[4]; // Cantidad de bancos de 16 KB
   rom->chr_size = rom->header[5]; // Cantidad de bancos de 8 KB
-
-  uint8_t byte6 = nes->memory[6];
-  uint8_t byte7 = nes->memory[7];
-
-  nes->current_mapper = (byte7 & 0xF0) | (byte6 & 0x0F);
-  // Se elige el mapeado adecuado
-  switch (nes->current_mapper)
-  {
-  case 0:
-    init_nrom(nes);
-    break;
-  case 1:
-    init_mmc1(nes);
-    break;
-  case 3:
-    init_cnrom(nes);
-    break;
-  case 4:
-    init_mmc3(nes);
-    break;
-  // Agrega más casos si es necesario
-  default:
-    printf("Unsupported mapper: %d\n", nes->current_mapper);
-    exit(1);
-  }
+  nes->current_mapper = ((rom->header[7] & 0xF0) | (rom->header[6] >> 4));
 
   // Reservar memoria para PRG-ROM (16 KB por banco)
   rom->prg_rom = malloc(rom->prg_size * 16384);
@@ -69,7 +43,6 @@ NES_ROM *nes_load_rom(NES *nes, const char *filename)
     printf("Error: No se pudo asignar memoria para PRG-ROM.\n");
     free(rom);
     fclose(file);
-    return NULL;
   }
   fread(rom->prg_rom, 1, rom->prg_size * 16384, file);
 
@@ -83,7 +56,6 @@ NES_ROM *nes_load_rom(NES *nes, const char *filename)
       free(rom->prg_rom);
       free(rom);
       fclose(file);
-      return NULL;
     }
     fread(rom->chr_rom, 1, rom->chr_size * 8192, file);
   }
@@ -94,5 +66,6 @@ NES_ROM *nes_load_rom(NES *nes, const char *filename)
 
   fclose(file);
   printf("ROM cargada correctamente: %d KB PRG, %d KB CHR\n", rom->prg_size * 16, rom->chr_size * 8);
-  return rom;
+
+  nes->rom = rom;
 }
