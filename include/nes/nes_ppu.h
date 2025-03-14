@@ -51,3 +51,5 @@ typedef struct
   uint8_t sprite_ram_data_buffer;       // Buffer de datos de RAM de sprites
   bool odd_frame;                       // Bandera de frame impar
 } PPU;
+
+#endif
