@@ -60,6 +60,9 @@ void showWarningWindow()
 
     while (running)
     {
+
+        SDL_Color white = {255, 255, 255, 255};
+        SDL_Color black = {0, 0, 0, 0};
         SDL_SetRenderDrawColor(warningRenderer, 240, 240, 240, 255); // Fondo gris claro, similar al estilo de Windows
         SDL_RenderClear(warningRenderer);
 
@@ -69,7 +72,7 @@ void showWarningWindow()
         SDL_RenderDrawRect(warningRenderer, &borderRect);
 
         // Dibujar el mensaje de advertencia
-        SDL_Surface *messageSurface = TTF_RenderText_Solid(font, " Debes seleccionar una ROM!", (SDL_Color){0, 0, 0});
+        SDL_Surface *messageSurface = TTF_RenderText_Solid(font, " Debes seleccionar una ROM!", black);
         SDL_Texture *messageTexture = SDL_CreateTextureFromSurface(warningRenderer, messageSurface);
         SDL_Rect messageRect = {80, 40, messageSurface->w, messageSurface->h}; // Mensaje centrado
         SDL_RenderCopy(warningRenderer, messageTexture, NULL, &messageRect);
@@ -84,7 +87,8 @@ void showWarningWindow()
         SDL_RenderDrawRect(warningRenderer, &buttonRectBackground);  // Borde del botón
 
         // Dibujar el texto del botón "Aceptar"
-        SDL_Surface *buttonSurface = TTF_RenderText_Solid(font, "Aceptar", (SDL_Color){255, 255, 255});
+
+        SDL_Surface *buttonSurface = TTF_RenderText_Solid(font, "Aceptar", white);
         SDL_Texture *buttonTexture = SDL_CreateTextureFromSurface(warningRenderer, buttonSurface);
         SDL_Rect buttonTextRect = {170, 130, buttonSurface->w, buttonSurface->h}; // Texto centrado dentro del botón
         SDL_RenderCopy(warningRenderer, buttonTexture, NULL, &buttonTextRect);
@@ -246,7 +250,8 @@ int showSettingsWindow(char selectedRom[128])
             if (openParen != NULL)
                 *openParen = '\0';
 
-            SDL_Surface *romSurface = TTF_RenderText_Solid(font, displayName, (SDL_Color){255, 255, 255});
+            SDL_Color white = {255, 255, 255, 255};
+            SDL_Surface *romSurface = TTF_RenderText_Solid(font, displayName, white);
             SDL_Texture *romTexture = SDL_CreateTextureFromSurface(settingsRenderer, romSurface);
             SDL_Rect romRect = {romX, romY, romSurface->w, romSurface->h};
             SDL_RenderCopy(settingsRenderer, romTexture, NULL, &romRect);
@@ -264,7 +269,8 @@ int showSettingsWindow(char selectedRom[128])
         // Dibujar el botón "Jugar"
         int playButtonX = 30 + (winW / 2 - 100);
         int playButtonY = winH - 120;
-        SDL_Surface *playSurface = TTF_RenderText_Solid(font, "Jugar", (SDL_Color){255, 255, 255});
+        SDL_Color white = {255, 255, 255, 255};
+        SDL_Surface *playSurface = TTF_RenderText_Solid(font, "Jugar", white);
         SDL_Texture *playTexture = SDL_CreateTextureFromSurface(settingsRenderer, playSurface);
         SDL_Rect playRect = {playButtonX, playButtonY, playSurface->w, playSurface->h};
         SDL_RenderCopy(settingsRenderer, playTexture, NULL, &playRect);
@@ -275,7 +281,8 @@ int showSettingsWindow(char selectedRom[128])
         int prevButtonX = winW / 4 - 50;
         if (currentPage > 0)
         {
-            SDL_Surface *prevSurface = TTF_RenderText_Solid(font, "Anterior", (SDL_Color){255, 255, 255});
+
+            SDL_Surface *prevSurface = TTF_RenderText_Solid(font, "Anterior", white);
             SDL_Texture *prevTexture = SDL_CreateTextureFromSurface(settingsRenderer, prevSurface);
             SDL_Rect prevRect = {prevButtonX, playButtonY, prevSurface->w, prevSurface->h};
             SDL_RenderCopy(settingsRenderer, prevTexture, NULL, &prevRect);
@@ -287,7 +294,8 @@ int showSettingsWindow(char selectedRom[128])
         int nextButtonX = (winW * 3) / 4 - 50;
         if (currentPage < totalPages - 1)
         {
-            SDL_Surface *nextSurface = TTF_RenderText_Solid(font, "Siguiente", (SDL_Color){255, 255, 255});
+
+            SDL_Surface *nextSurface = TTF_RenderText_Solid(font, "Siguiente", white);
             SDL_Texture *nextTexture = SDL_CreateTextureFromSurface(settingsRenderer, nextSurface);
             SDL_Rect nextRect = {nextButtonX, playButtonY, nextSurface->w, nextSurface->h};
             SDL_RenderCopy(settingsRenderer, nextTexture, NULL, &nextRect);
