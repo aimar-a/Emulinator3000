@@ -17,7 +17,7 @@ bin/chip8_emulator.exe
 
 int main(int argc, char *argv[])
 {
-  nes_launch();
+  showInitialWindow();
 
   return 0;
 }

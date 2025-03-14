@@ -59,10 +59,14 @@ void chip8displayDestroyPantalla()
 // Dibuja un sprite en la pantalla
 uint8_t chip8displayDrawSprite(int x, int y, uint8_t *sprite, int height)
 {
+  int n = 8; //por defecto en el modo chip8 el sprite tendra 8 pixeles de ancho
   uint8_t colision = 0;
   for (int i = 0; i < height; i++)
   {
-    for (int j = 0; j < 8; j++)
+    if(height==16){ //si el parametro de height es 16 es decir esta en modo superchip8 el sprite tendra 16 pixeles de ancho
+      n=16;
+    }
+    for (int j = 0; j < n; j++)
     {
       if ((sprite[i] & (0x80 >> j)) != 0)
       {
