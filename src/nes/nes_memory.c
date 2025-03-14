@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include "nes_memory.h"
 
 uint8_t nes_read(NES *nes, uint16_t address)
@@ -30,9 +33,9 @@ uint8_t nes_read(NES *nes, uint16_t address)
   {
     return nes->memory[address];
   }
-  else
+  else if (address >= 0x8000)
   {
-    return nes->memory[address % 0x8000];
+    return nes->rom->prg_rom[nes->mapper_bank + (address - 0x8000)];
   }
 }
 
@@ -71,6 +74,6 @@ void nes_write(NES *nes, uint16_t address, uint8_t value)
   }
   else
   {
-    nes->memory[address % 0x8000] = value;
+    nes->rom->prg_rom[nes->mapper_bank + (address - 0x8000)] = value;
   }
 }
