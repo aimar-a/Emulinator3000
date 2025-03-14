@@ -4,6 +4,8 @@
 #include "menu_sdl.h"
 #include "menu_cmd.h"
 
+#include "nes_cpu.h"
+
 /*
 
 PARA EJECUTAR EL CODIGO: (dentro de la consola MinGW32)
@@ -15,6 +17,7 @@ bin/chip8_emulator.exe
 
 int main(int argc, char *argv[])
 {
-  showInitialWindow();
+  nes_launch();
+
   return 0;
 }
