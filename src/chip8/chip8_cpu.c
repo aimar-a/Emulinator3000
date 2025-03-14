@@ -7,6 +7,21 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 
+
+void inicializarMemoria(Chip8 *chip8, bool modosuperchip8) {
+  if (modosuperchip8) {
+      // Si está en SuperChip8, se reserva memoria para 128KB
+      chip8->memoria = (uint8_t *)malloc(131072); // 128KB
+  } else {
+      // Si está en Chip8, se reserva memoria para 4KB
+      chip8->memoria = (uint8_t *)malloc(4096);  // 4KB
+  }
+
+  if (chip8->memoria == NULL) { //para combrobar si ha habido algun fallo al reservar la memoria
+      printf("Error: No se pudo asignar memoria.\n");
+      exit(1);
+  }
+}
 void chip8cpuLaunch(char *rom_path)
 {
   Chip8 chip8;

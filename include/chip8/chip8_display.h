@@ -3,7 +3,8 @@
 
 #include <SDL2/SDL.h>
 
-#define SCREEN_WIDTH 64
+//superchip8: las defino como int para que en caso de activar superchip8 se puedan cambiar sus valores
+#define SCREEN_WIDTH 64 
 #define SCREEN_HEIGHT 32
 
 #define SCREEN_SCALE 26

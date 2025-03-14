@@ -45,6 +45,7 @@ FX65 	MEM 	reg_load(Vx, &I) 	Fills from V0 to VX (including VX) with values from
 #include "chip8_structure.h"
 #include "chip8_display.h"
 #include "chip8_opcodes.h"
+#include "superchip8bool.h"
 #include <stdio.h>
 #include <stdint.h>
 
@@ -62,7 +63,7 @@ void chip8opcodesEvaluate(uint16_t opcode)
   uint8_t n = opcode & 0x000F;
   uint8_t nn = opcode & 0x00FF;
   uint16_t nnn = opcode & 0x0FFF;
-
+  bool modosuperchip8 = false; //por defecto estamos en chip8 
   switch (opcode & 0xF000)
   {
   case 0x0000:
@@ -76,6 +77,26 @@ void chip8opcodesEvaluate(uint16_t opcode)
       // Return from a subroutine
       chip8->pc = chip8->stack[chip8->sp];
       chip8->sp--;
+      break;
+    
+    case 0x00FD: //exit interpreter
+
+      printf("opcode 0x00FD: exit interpreter");
+      exit(0);      
+      break;
+
+    case 0x00FE: //Activar modo chip8 
+      modosuperchip8 = false;
+     // SCREEN_WIDTH=64;
+     // SCREEN_HEIGHT=32; 
+      chip8displayLimpiarPantalla();
+      break;
+
+    case 0x00FF://Activar modo super chip8 
+      modosuperchip8=true;
+      //SCREEN_WIDTH=128;
+      //SCREEN_HEIGHT=64;
+      chip8displayLimpiarPantalla();
       break;
     default:
       // Call RCA 1802 program at address NNN
@@ -204,8 +225,15 @@ void chip8opcodesEvaluate(uint16_t opcode)
     chip8->I = nnn;
     break;
   case 0xB000:
-    // Jump to address NNN + V0
-    chip8->pc = nnn + chip8->V[0];
+    if(modosuperchip8){    // Jump to address XNN + VX if superchip8 mode
+
+      chip8->pc = nnn + chip8->V[x];
+
+
+    }else{     // Jump to address NNN + V0 if chip 8 mode
+
+      chip8->pc = nnn + chip8->V[0];
+    }
     break;
   case 0xC000:
     // Set Vx to random number & NN
@@ -213,7 +241,9 @@ void chip8opcodesEvaluate(uint16_t opcode)
     break;
   case 0xD000:
     // Draw sprite at Vx, Vy with width 8 and height N
-
+    if(n==0 && modosuperchip8){ //superChip8
+      n=16;
+    }
     chip8->V[0xF] = chip8displayDrawSprite(chip8->V[x], chip8->V[y], &chip8->memoria[chip8->I], n);
     break;
   case 0xE000:
@@ -274,7 +304,13 @@ void chip8opcodesEvaluate(uint16_t opcode)
       break;
     case 0x0029:
       // Set I to location of sprite for character in Vx
-      chip8->I = chip8->V[x] * 5;
+      if(modosuperchip8){
+
+        chip8->I = chip8->V[x]*10; //superchip8
+      }else{
+        chip8->I = chip8->V[x] * 5;
+
+      }
       break;
     case 0x0033:
       // Store BCD representation of Vx in memory locations I, I+1, I+2
@@ -296,13 +332,39 @@ void chip8opcodesEvaluate(uint16_t opcode)
         chip8->V[i] = chip8->memoria[chip8->I + i];
       }
       break;
+    
+      
+      case 0x0075:
+      // Store V0 to Vx in memory starting at address I
+      if(modosuperchip8){
+        for(int i=0; i<=x; i++){
+
+          chip8->memoria[chip8->I + i] = chip8->V[i];
+        }
+      }
+      break;
+      case 0x0085:
+      // Load V0 to Vx from memory starting at address I
+      if(modosuperchip8){
+        for(int i=0; i<=x; i++){
+
+          chip8->V[i] = chip8->memoria[chip8->I + i];
+          
+        }
+      }
+      break;
+      
+
     default:
       printf("Unknown opcode: 0x%X\n", opcode);
       break;
     }
     break;
+
   default:
     printf("Unknown opcode: 0x%X\n", opcode);
     break;
+
+
   }
 }
