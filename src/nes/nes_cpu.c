@@ -10,7 +10,9 @@
 void nes_launch()
 {
   NES nes;
+
   nes_reset(&nes);
+
   nes_load_rom(&nes, "resources/nes-roms/Tetris.nes");
   nes_run(&nes);
 }
@@ -46,7 +48,7 @@ void nes_load_rom(NES *nes, const char *filename)
   fseek(file, 0, SEEK_END);
   long size = ftell(file);
   rewind(file);
-  fread(nes->memory + 0x8000, 1, size, file);
+  fread(nes->memory + 0x8000, 1, 0x8000, file);
   fclose(file);
 }
 

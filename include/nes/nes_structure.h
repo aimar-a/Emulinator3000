@@ -23,6 +23,12 @@ typedef struct
   uint8_t controller_shift[2]; // Shift
   uint8_t controller_state[2]; // Estado de los botones
 
+  // Mappers
+  uint8_t mapper_bank;    // Banco de memoria PRG
+  uint8_t chr_bank;       // Banco de memoria CHR (para gráficos)
+  bool interrupt_enable;  // Habilitar interrupciones (para algunos mappers)
+  uint8_t mapper_state;   // Estado del mapper (se usa en MMC1, MMC3, etc.)
+  uint8_t current_mapper; // Tipo de mapper actual (como Mapper 0, 1, 3, etc.)
 } NES;
 
 #endif
