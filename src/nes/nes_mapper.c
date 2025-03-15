@@ -3,9 +3,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
-void nes_rom_to_memory(NES *nes, uint8_t *rom, size_t rom_size)
+void nes_rom_to_memory(NES *nes, uint8_t *prg_rom, size_t prg_size)
 {
+  // Cargar banco intercambiable en $8000-$BFFF (Primer banco)
+  memcpy(nes->memory + 0x8000, prg_rom, 0x4000);
+
+  // Cargar último banco en $C000-$FFFF (Último banco siempre fijo)
+  memcpy(nes->memory + 0xC000, prg_rom + prg_size - 0x4000, 0x4000);
+  return;
+
   switch (nes->current_mapper)
   {
   case 0:

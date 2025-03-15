@@ -33,9 +33,13 @@ uint8_t nes_read(NES *nes, uint16_t address)
   {
     return nes->memory[address];
   }
-  else if (address >= 0x8000)
+  else if (address < 0x10000)
   {
-    return nes->rom->prg_rom[nes->mapper_bank + (address - 0x8000)];
+    return nes->memory[address];
+  }
+  else
+  {
+    printf("Read from ROM: %04X\n", address);
   }
 }
 
@@ -72,8 +76,12 @@ void nes_write(NES *nes, uint16_t address, uint8_t value)
   {
     nes->memory[address] = value;
   }
+  else if (address < 0x10000)
+  {
+    nes->memory[address] = value;
+  }
   else
   {
-    nes->rom->prg_rom[nes->mapper_bank + (address - 0x8000)] = value;
+    printf("Write to ROM: %04X\n", address);
   }
 }
