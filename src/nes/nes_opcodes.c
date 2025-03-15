@@ -5,7 +5,7 @@ void nes_evaluate_opcode(NES *nes)
 {
   uint8_t opcode = nes->memory[nes->PC];
   nes->PC++;
-  printf("PC: %04X, Opcode: %02X\n", nes->PC, opcode);
+  printf("PC: %04X, Opcode: %02X (%02X %02X)\n", nes->PC, opcode, nes->memory[nes->PC], nes->memory[nes->PC + 1]);
   switch (opcode)
   {
   case 0x00:
@@ -271,6 +271,12 @@ void nes_evaluate_opcode(NES *nes)
     break;
   case 0x99:
     nes_sta(nes, nes_absolute_y(nes));
+    break;
+  case 0x9A:
+    nes_txs(nes);
+    break;
+  case 0x9D:
+    nes_sta(nes, nes_absolute_x(nes));
     break;
   case 0xA0:
     nes_ldy(nes, nes_immediate(nes));

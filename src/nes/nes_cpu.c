@@ -19,7 +19,6 @@ void nes_launch()
   nes_rom_to_memory(&nes, nes.rom->prg_rom, nes.rom->prg_size * 16384);
   nes.PC = nes.memory[0xFFFC] | (nes.memory[0xFFFD] << 8);
   printf("PC: %04X\n", nes.PC);
-  printf("pc in memory: %02X %02X\n", nes.memory[0xFFFC], nes.memory[0xFFFD]);
   nes_run(&nes);
 }
 
