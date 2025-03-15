@@ -14,6 +14,10 @@ void nes_rom_to_memory(NES *nes, uint8_t *prg_rom, size_t prg_size)
   memcpy(nes->memory + 0xC000, prg_rom + prg_size - 0x4000, 0x4000);
   return;
 
+  // por ahora no vamos a usar mappers q son una movida
+  // vamos a hacer q funcione con el super mario bros q no necesita mappers
+  // y luego veremos como implementar los mappers
+
   switch (nes->current_mapper)
   {
   case 0:
