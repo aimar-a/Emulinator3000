@@ -39,7 +39,7 @@ uint8_t nes_read(NES *nes, uint16_t address)
   }
   else
   {
-    printf("Read from ROM: %04X\n", address);
+    printf("NO IMPLEMENTADO, Read from ROM: %04X\n", address);
   }
 }
 
@@ -82,6 +82,6 @@ void nes_write(NES *nes, uint16_t address, uint8_t value)
   }
   else
   {
-    printf("Write to ROM: %04X\n", address);
+    printf("NO IMPLEMENTADO, Write to ROM: %04X\n", address);
   }
 }
