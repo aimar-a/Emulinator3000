@@ -1,13 +1,14 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+
 #include <SDL2/SDL.h>
 
-//superchip8: las defino como int para que en caso de activar superchip8 se puedan cambiar sus valores
-#define SCREEN_WIDTH 64 
-#define SCREEN_HEIGHT 32
+extern int SCREEN_WIDTH;
+extern int SCREEN_HEIGHT;
 
-#define SCREEN_SCALE 26
+extern int SCREEN_SCALE;
+
 
 typedef struct
 {
@@ -16,6 +17,7 @@ typedef struct
   int running;
 } Screen;
 
+ 
 int chip8displayInitPantalla(uint8_t *pantalla_);
 void chip8displayLimpiarPantalla();
 void chip8displayDestroyPantalla();

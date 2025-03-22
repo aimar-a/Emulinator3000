@@ -1,11 +1,33 @@
 #include "chip8_display.h"
+#include "superchip8bool.h"
+#include "chip8_structure.h"
+#include <stdbool.h>
 
 uint8_t *pantalla;
 Screen screenSDL;
 
+
+
+
+//valores por defecto (display chip8: 64x32)
+int SCREEN_WIDTH = 64;
+int SCREEN_HEIGHT = 32;
+
+int SCREEN_SCALE = 26;
+
 // Inicializa SDL y crea la ventana y el renderer
 int chip8displayInitPantalla(uint8_t *pantalla_)
 {
+
+  //si estamos en modosuperchip8 cambiamos los valores del display
+  if(modosuperchip8==true){
+    //128x64 pixeles en modo superchip8
+    SCREEN_WIDTH = 128;
+    SCREEN_HEIGHT = 64;
+  
+    SCREEN_SCALE = 13;//equivalente a escala del chip8
+  }
+
   pantalla = pantalla_;
   chip8displayLimpiarPantalla();
   if (SDL_Init(SDL_INIT_VIDEO) < 0)

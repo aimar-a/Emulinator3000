@@ -7,6 +7,9 @@
 
 
 
+//extern uint8_t pantalla_chip8[64 * 32];
+//extern uint8_t pantalla_superchip8[128 * 64];
+
 typedef struct
 {
   uint8_t V[16]; // Registros de propósito general
@@ -21,12 +24,13 @@ typedef struct
   uint8_t *memoria; //declaramos la memoria con un puntero para poder cambiar de tamaño dependiendo de si es chip8 o superchip8
 
   uint8_t teclado[16];   // Teclado de 16 teclas
-  uint8_t pantalla[64 * 32];
+  uint8_t *pantalla;
+
 
   bool esc;
 } Chip8;
 
-void inicializarMemoria(Chip8 *chip8, bool modosuperchip8); //funcino en chip8_cpu.c
+void inicializarMemoria(Chip8 *chip8, bool modosuperchip8); 
 
 
 #endif

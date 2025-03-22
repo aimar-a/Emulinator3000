@@ -51,6 +51,8 @@ FX65 	MEM 	reg_load(Vx, &I) 	Fills from V0 to VX (including VX) with values from
 
 Chip8 *chip8;
 
+bool modosuperchip8 = false; //por defecto estamos en chip8 
+
 void chip8opcodesInit(Chip8 *chip8_)
 {
   chip8 = chip8_;
@@ -63,7 +65,6 @@ void chip8opcodesEvaluate(uint16_t opcode)
   uint8_t n = opcode & 0x000F;
   uint8_t nn = opcode & 0x00FF;
   uint16_t nnn = opcode & 0x0FFF;
-  bool modosuperchip8 = false; //por defecto estamos en chip8 
   switch (opcode & 0xF000)
   {
   case 0x0000:
