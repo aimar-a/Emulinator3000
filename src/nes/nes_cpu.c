@@ -6,6 +6,7 @@
 #include "nes_memory.h"
 #include "nes_rom.h"
 #include "nes_mapper.h"
+#include "nes_ppu.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
@@ -18,7 +19,7 @@ void nes_launch()
   nes_load_rom(&nes, "resources/nes-roms/Super_mario_brothers.nes");
   nes_rom_to_memory(&nes, nes.rom->prg_rom, nes.rom->prg_size * 16384);
   nes.PC = nes.memory[0xFFFC] | (nes.memory[0xFFFD] << 8);
-  printf("PC: %04X\n", nes.PC);
+  printf("Start PC: %04X\n", nes.PC);
   nes_run(&nes);
 }
 
@@ -44,11 +45,22 @@ void nes_reset(NES *nes)
 
 void nes_run(NES *nes)
 {
+  int cont = 0;
   while (true)
   {
-    SDL_Delay(16);
+    SDL_Delay(8); // TODO: deberian de ser 0.186 ms en la version final
+    if (cont == 0)
+    {
+      nes_evaluate_opcode(nes);
+    }
     nes_controller_update(nes);
-    nes_evaluate_opcode(nes);
+    ppu_main_loop(&nes->ppu, nes->screen);
     nes_display_draw(nes->screen);
+
+    cont++;
+    if (cont == 2)
+    {
+      cont = 0;
+    }
   }
 }
