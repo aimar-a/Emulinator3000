@@ -3,6 +3,7 @@
 #include <SDL2/SDL_ttf.h> // Si usas texto en la UI
 #include "menu_sdl.h"
 #include "menu_cmd.h"
+#include "bd.h"
 
 #include "nes_cpu.h"
 
@@ -17,6 +18,10 @@ bin/chip8_emulator.exe
 
 int main(int argc, char *argv[])
 {
+  //creamos la BD con sus estructuras en el caso en el que no existan
+  crearBD();
+
+
   nes_launch();
 
   return 0;
