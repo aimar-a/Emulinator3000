@@ -3,10 +3,14 @@
 
 #include <stdint.h>
 #include <stddef.h>
-
 #include "nes_structure.h"
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 
-void nes_rom_to_memory(NES *nes, uint8_t *rom, size_t rom_size);
+void nes_rom_to_memory(NES *nes);
 void nes_rom_free(NES *nes);
 
 void init_nrom(NES *nes);

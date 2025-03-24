@@ -1,5 +1,3 @@
-#include <SDL2/SDL.h>
-
 #include "nes_display.h"
 
 #define SCREEN_WIDTH 256

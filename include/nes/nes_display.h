@@ -2,6 +2,7 @@
 #define NES_DISPLAY_H
 
 #include <stdint.h>
+#include <SDL2/SDL.h>
 
 void nes_display_init();
 void nes_display_draw(uint8_t *pantalla);

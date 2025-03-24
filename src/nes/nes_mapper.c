@@ -1,17 +1,27 @@
 #include "nes_mapper.h"
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
 
-void nes_rom_to_memory(NES *nes, uint8_t *prg_rom, size_t prg_size)
+void nes_rom_to_memory(NES *nes)
 {
+  if (!nes->memory)
+  {
+    printf("Error: nes->memory no está inicializado\n");
+    exit(1);
+  }
+  if (!nes->rom->prg_rom)
+  {
+    printf("Error: nes->rom->prg_rom no está inicializado\n");
+    exit(1);
+  }
+
   // Cargar banco intercambiable en $8000-$BFFF (Primer banco)
-  memcpy(nes->memory + 0x8000, prg_rom, 0x4000);
+  memcpy(nes->memory + 0x8000, nes->rom->prg_rom, 0x4000);
 
   // Cargar último banco en $C000-$FFFF (Último banco siempre fijo)
-  memcpy(nes->memory + 0xC000, prg_rom + prg_size - 0x4000, 0x4000);
+  memcpy(nes->memory + 0xC000, nes->rom->prg_rom + nes->rom->prg_size - 0x4000, 0x4000);
+
+  // Cargar bancos de 8 KB de CHR-ROM en $0000-$1FFF
+  // memcpy(nes->ppu.vram, nes->rom->chr_rom, nes->rom->chr_size * 8192);
+
   return;
 
   // por ahora no vamos a usar mappers q son una movida
@@ -38,16 +48,6 @@ void nes_rom_to_memory(NES *nes, uint8_t *prg_rom, size_t prg_size)
   default:
     printf("Unsupported mapper: %d\n", nes->current_mapper);
     exit(1);
-  }
-}
-
-void nes_rom_free(NES *nes)
-{
-  if (nes->rom)
-  {
-    free(nes->rom->prg_rom);
-    free(nes->rom->chr_rom);
-    free(nes->rom);
   }
 }
 

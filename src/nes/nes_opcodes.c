@@ -1,12 +1,10 @@
 #include "nes_opcodes.h"
-#include "nes_memory.h"
-#include <stdio.h>
 
 void nes_evaluate_opcode(NES *nes)
 {
   uint8_t opcode = nes_read(nes, nes->PC);
   nes->PC++;
-  printf("PC: %04X, Opcode: %02X (%02X %02X)\n", nes->PC, opcode, nes->memory[nes->PC], nes->memory[nes->PC + 1]);
+  printf("PC: %04X, Opcode: %02X (%02X %02X)\n", nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1));
   switch (opcode)
   {
   case 0x00:

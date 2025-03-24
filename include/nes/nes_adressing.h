@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "nes_structure.h"
+#include "nes_memory.h"
 
 uint16_t nes_immediate(NES *nes);
 uint16_t nes_absolute(NES *nes);

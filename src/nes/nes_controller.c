@@ -1,6 +1,4 @@
 #include "nes_controller.h"
-#include "nes_structure.h"
-#include <SDL2/SDL.h>
 
 void nes_controller_update(NES *nes)
 {

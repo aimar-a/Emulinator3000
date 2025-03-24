@@ -1,39 +1,33 @@
 #include "nes_ppu.h"
-#include "nes_structure.h"
 
 void ppu_main_loop(PPU *ppu, uint8_t *screen)
 {
+  printf("Scanline: %d\n", ppu->scanline);
+  ppu->scanline++;
   // esto aqui deberia de hacer cosas pero no se el que :)
-}
-
-uint8_t ppu_read(PPU *ppu, uint16_t address)
-{
-  if (address < 0x2000)
+  if (ppu->scanline < 240)
   {
-    return ppu->vram[address % 0x2000];
+    // Renderizar scanline
+    // render_scanline(ppu, screen);
   }
-  else if (address < 0x3F00)
+  else if (ppu->scanline == 240)
   {
-    return ppu->vram[address % 0x2000];
+    // No hacer nada
   }
-  else
+  else if (ppu->scanline == 241)
   {
-    return ppu->palette[address % 32];
+    // Iniciar VBlank
+    ppu->status |= 0x80;
   }
-}
-
-void ppu_write(PPU *ppu, uint16_t address, uint8_t value)
-{
-  if (address < 0x2000)
+  else if (ppu->scanline == 261)
   {
-    ppu->vram[address % 0x2000] = value;
-  }
-  else if (address < 0x3F00)
-  {
-    ppu->vram[address % 0x2000] = value;
+    // Terminar VBlank
+    ppu->status &= ~0x80;
+    ppu->scanline = 0;
   }
   else
   {
-    ppu->palette[address % 32] = value;
+    // Renderizar scanline
+    // render_scanline(ppu, screen);
   }
 }

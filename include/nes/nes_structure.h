@@ -10,15 +10,31 @@ typedef struct
   uint8_t vram[0x4000]; // 16 KB de VRAM (aunque solo se usan 4 KB directamente)
   uint8_t oam[256];     // 256 Bytes para los sprites (Object Attribute Memory)
   uint8_t palette[32];  // 32 Bytes para la paleta de colores
-  uint16_t v;           // Registro de dirección de la PPU (PPUADDR)
-  uint16_t t;           // Registro temporal de dirección
-  uint8_t x;            // Fine X Scroll
-  uint8_t w;            // Toggle de escritura
-  uint8_t control;      // Registro de control (PPUCTRL)
-  uint8_t mask;         // Registro de máscara (PPUMASK)
-  uint8_t status;       // Registro de estado (PPUSTATUS)
-  uint8_t oam_addr;     // Dirección de OAM (OAMADDR)
-  uint8_t buffer;       // Buffer de lectura de VRAM (lecturas retardadas)
+
+  // Registros
+  /*
+PPUCTRL 	$2000 	VPHB SINN 	W 	NMI enable (V), PPU master/slave (P), sprite height (H), background tile select (B), sprite tile select (S), increment mode (I), nametable select / X and Y scroll bit 8 (NN)
+PPUMASK 	$2001 	BGRs bMmG 	W 	color emphasis (BGR), sprite enable (s), background enable (b), sprite left column enable (M), background left column enable (m), greyscale (G)
+PPUSTATUS 	$2002 	VSO- ---- 	R 	vblank (V), sprite 0 hit (S), sprite overflow (O); read resets write pair for $2005/$2006
+OAMADDR 	$2003 	AAAA AAAA 	W 	OAM read/write address
+OAMDATA 	$2004 	DDDD DDDD 	RW 	OAM data read/write
+PPUSCROLL 	$2005 	XXXX XXXX YYYY YYYY 	Wx2 	X and Y scroll bits 7-0 (two writes: X scroll, then Y scroll)
+PPUADDR 	$2006 	..AA AAAA AAAA AAAA 	Wx2 	VRAM address (two writes: most significant byte, then least significant byte)
+PPUDATA 	$2007 	DDDD DDDD 	RW 	VRAM data read/write
+OAMDMA 	$4014 	AAAA AAAA 	W 	OAM DMA high address
+  */
+  uint8_t ctrl;    // PPUCTRL ($2000)
+  uint8_t mask;    // PPUMASK ($2001)
+  uint8_t status;  // PPUSTATUS ($2002)
+  uint8_t oamaddr; // OAMADDR ($2003)
+  uint8_t oamdata; // OAMDATA ($2004)
+  uint8_t scroll;  // PPUSCROLL ($2005)
+  uint16_t addr;   // PPUADDR ($2006)
+  uint8_t data;    // PPUDATA ($2007)
+  uint8_t dma;     // OAMDMA ($4014)
+
+  // Scanline
+  uint16_t scanline; // Línea actual de la pantalla
 } PPU;
 
 typedef struct
@@ -39,11 +55,11 @@ typedef struct
   uint8_t P;       // Registro de estado
 
   // PPU
-  PPU ppu;
+  PPU *ppu;
 
   // Memoria
-  uint8_t memory[0x10000]; // 64KB de memoria
-  NES_ROM *rom;            // ROM cargada
+  uint8_t memory[0x8000]; // 64KB de memoria (deberia de ser 0x10000 pero vamos a leer el programa desde la rom, sin cargarlo a memoria)
+  NES_ROM *rom;           // ROM cargada
 
   // Display
   uint8_t screen[256 * 240]; // 256x240 pixels

@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
 #include "nes_structure.h"
+#include <SDL2/SDL.h>
 
 void nes_controller_update(NES *nes);
 void nes_write_controller(NES *nes, uint16_t address, uint8_t value);

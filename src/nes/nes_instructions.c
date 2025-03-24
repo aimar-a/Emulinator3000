@@ -1,21 +1,4 @@
-#include "nes_structure.h"
 #include "nes_instructions.h"
-#include "nes_memory.h"
-#include "nes_registers.h"
-#include "nes_interrupts.h"
-#include "nes_ppu.h"
-#include "nes_apu.h"
-#include "nes_controller.h"
-#include "nes_mapper.h"
-#include "nes_rom.h"
-#include "nes_log.h"
-#include "nes_display.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <stdbool.h>
-#include <stdint.h>
 
 #define CARRY 0x01
 #define ZERO 0x02

@@ -2,6 +2,17 @@
 #define NES_CPU_H
 
 #include "nes_structure.h"
+#include "nes_opcodes.h"
+#include "nes_structure.h"
+#include "nes_display.h"
+#include "nes_controller.h"
+#include "nes_memory.h"
+#include "nes_rom.h"
+#include "nes_mapper.h"
+#include "nes_ppu.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <SDL2/SDL.h>
 
 void nes_launch();
 void nes_reset(NES *nes);
