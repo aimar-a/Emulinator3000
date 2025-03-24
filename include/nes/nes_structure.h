@@ -35,6 +35,9 @@ OAMDMA 	$4014 	AAAA AAAA 	W 	OAM DMA high address
 
   // Scanline
   uint16_t scanline; // Línea actual de la pantalla
+
+  // Ciclo
+  uint16_t cycle; // Ciclo actual de la PPU
 } PPU;
 
 typedef struct

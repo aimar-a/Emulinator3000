@@ -7,6 +7,7 @@
 #include "nes_memory.h"
 #include <stdio.h>
 
-void nes_evaluate_opcode(NES *nes);
+// Evaluates the current opcode and returns the cycles used
+uint8_t nes_evaluate_opcode(NES *nes);
 
 #endif

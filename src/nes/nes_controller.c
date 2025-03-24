@@ -10,6 +10,9 @@ void nes_controller_update(NES *nes)
       bool state = event.type == SDL_KEYDOWN;
       switch (event.key.keysym.sym)
       {
+      case SDLK_ESCAPE:
+        exit(0);
+        break;
       case SDLK_w:
         nes_set_button(nes, 0, 4, state);
         break;

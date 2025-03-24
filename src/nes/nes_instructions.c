@@ -436,7 +436,7 @@ void nes_jsr(NES *nes)
   nes->PC--;
   nes_push(nes, nes->PC >> 8);
   nes_push(nes, nes->PC & 0xFF);
-  nes->PC = nes_read(nes, nes->PC) | (nes_read(nes, nes->PC + 1) << 8);
+  nes->PC = nes_read(nes, nes->PC + 1) | (nes_read(nes, nes->PC + 2) << 8);
 }
 
 void nes_lda(NES *nes, uint8_t value)

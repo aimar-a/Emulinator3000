@@ -1,33 +1,60 @@
 #include "nes_ppu.h"
 
-void ppu_main_loop(PPU *ppu, uint8_t *screen)
+void ppu_step(NES *nes)
 {
-  printf("Scanline: %d\n", ppu->scanline);
-  ppu->scanline++;
-  // esto aqui deberia de hacer cosas pero no se el que :)
-  if (ppu->scanline < 240)
+  // Avanzar ciclo de la PPU
+  nes->ppu->cycle++;
+
+  if (nes->ppu->scanline < 240)
   {
-    // Renderizar scanline
-    // render_scanline(ppu, screen);
+    // Renderizar scanline si estamos en el área visible
+    if (nes->ppu->cycle == 1)
+    {
+      // Inicio de una nueva línea, resetear variables si es necesario
+    }
+    if (nes->ppu->cycle >= 1 && nes->ppu->cycle <= 256)
+    {
+      // Dibujar píxeles en la pantalla
+      render_scanline(nes->ppu, nes->screen, nes->ppu->scanline);
+    }
   }
-  else if (ppu->scanline == 240)
+  else if (nes->ppu->scanline == 240)
   {
-    // No hacer nada
+    // Inicio de VBlank
+    if (nes->ppu->cycle == 1)
+    {
+      nes->ppu->status |= 0x80; // Flag de VBlank
+      if (nes->ppu->ctrl & 0x80)
+      {
+        // TODO: Implementar interrupción NMI (ni idea de lo q es)
+        // trigger_nmi(); // Generar interrupción si está habilitada
+      }
+    }
   }
-  else if (ppu->scanline == 241)
+  else if (nes->ppu->scanline == 261)
   {
-    // Iniciar VBlank
-    ppu->status |= 0x80;
+    // Scanline de pre-renderizado
+    if (nes->ppu->cycle == 1)
+    {
+      nes->ppu->status &= ~0x80; // Borrar flag de VBlank
+    }
   }
-  else if (ppu->scanline == 261)
+
+  // Fin del ciclo de la scanline
+  if (nes->ppu->cycle >= 341)
   {
-    // Terminar VBlank
-    ppu->status &= ~0x80;
-    ppu->scanline = 0;
+    nes->ppu->cycle = 0;
+    nes->ppu->scanline++;
+
+    if (nes->ppu->scanline > 261)
+    {
+      nes->ppu->scanline = 0; // Iniciar nuevo cuadro
+    }
+    printf("Scanline: %d\n", nes->ppu->scanline);
   }
-  else
-  {
-    // Renderizar scanline
-    // render_scanline(ppu, screen);
-  }
+}
+
+void render_scanline(PPU *ppu, uint8_t *screen, uint16_t scanline)
+{
+  // TODO: Implementar renderizado de scanline
 }

@@ -2,6 +2,7 @@
 
 uint8_t nes_read(NES *nes, uint16_t address)
 {
+  // printf("Reading address: %04X\n", address);
   if (address < 0x8000)
   {
     if (address == 0x2000)
@@ -51,6 +52,7 @@ uint8_t nes_read(NES *nes, uint16_t address)
 
 void nes_write(NES *nes, uint16_t address, uint8_t value)
 {
+  // printf("Writing address: %04X, value: %02X\n", address, value);
   if (address < 0x8000)
   {
     if (address == 0x2000)

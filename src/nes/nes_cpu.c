@@ -7,6 +7,7 @@ void nes_launch()
   nes->ppu = (PPU *)malloc(sizeof(PPU));
 
   nes_reset(nes);
+  nes_display_init(nes->screen);
   nes_load_rom(nes, "resources/nes-roms/Super_mario_brothers.nes");
   // nes_rom_to_memory(nes); no vamos a cargar la ROM a memoria porque solo da problemas
   nes->PC = nes_read(nes, nes->rom->prg_size - 0x6) | (nes_read(nes, nes->rom->prg_size - 0x5) << 8);
@@ -34,40 +35,91 @@ void nes_launch()
 
 void nes_reset(NES *nes)
 {
+  // CPU
   nes->A = 0;
   nes->X = 0;
   nes->Y = 0;
-  nes->PC = 0x8000;
+  nes->PC = 0;
   nes->SP = 0xFD;
   nes->P = 0x24;
+
+  for (int i = 0; i < 0x8000; i++)
+  {
+    nes->memory[i] = 0;
+  }
+
   nes->controller_strobe = false;
   for (int i = 0; i < 2; i++)
   {
     nes->controller_shift[i] = 0;
     nes->controller_state[i] = 0;
   }
-  for (int i = 0; i < 0x8000; i++)
+
+  nes->mapper_bank = 0;
+  nes->chr_bank = 0;
+  nes->interrupt_enable = false;
+  nes->mapper_state = 0;
+  nes->current_mapper = 0;
+
+  // PPU
+  for (int i = 0; i < 0x4000; i++)
   {
-    nes->memory[i] = 0;
+    nes->ppu->vram[i] = 0;
   }
+  for (int i = 0; i < 256; i++)
+  {
+    nes->ppu->oam[i] = 0;
+  }
+  for (int i = 0; i < 32; i++)
+  {
+    nes->ppu->palette[i] = 0;
+  }
+  nes->ppu->ctrl = 0;
+  nes->ppu->mask = 0;
+  nes->ppu->status = 0;
+  nes->ppu->oamaddr = 0;
+  nes->ppu->oamdata = 0;
+  nes->ppu->scroll = 0;
+  nes->ppu->addr = 0;
+  nes->ppu->data = 0;
+  nes->ppu->dma = 0;
+
+  nes->ppu->scanline = 0;
 }
 
 void nes_run(NES *nes)
 {
   int cont = 0;
+
+  // El tiempo por ciclo de la CPU en milisegundos
+  const float cpu_cycle_time_ms = 1000.0f / 1790000.0f; // 1.79 MHz
+  const float ppu_cycle_time_ms = 1000.0f / 5370000.0f; // 5.37 MHz
+
   while (true)
   {
-    SDL_Delay(8); // TODO: deberian de ser 0.186 ms en la version final
-    if (cont == 0)
-    {
-      nes_evaluate_opcode(nes);
-    }
+    int cycles = nes_evaluate_opcode(nes); // Calcula los ciclos de CPU para la instrucción actual
+
+    // Tiempo de espera para simular el tiempo real de un ciclo de la CPU
+    SDL_Delay(cpu_cycle_time_ms * cycles); // Espera el tiempo correspondiente a los ciclos de CPU
+
+    // Actualiza los controladores
     nes_controller_update(nes);
-    ppu_main_loop(nes->ppu, nes->screen);
+
+    // Ejecuta los ciclos de la PPU correspondientes al número de ciclos de CPU
+    for (int i = 0; i < cycles * 3; i++)
+    {
+      // Sincroniza el ciclo de la PPU
+      ppu_step(nes);
+
+      // Retraso para simular el tiempo real de un ciclo de la PPU
+      SDL_Delay(ppu_cycle_time_ms); // Espera el tiempo correspondiente a un ciclo de la PPU
+    }
+
+    // Dibuja la pantalla
     nes_display_draw(nes->screen);
 
     cont++;
-    if (cont == 2)
+    if (cont == 3)
     {
       cont = 0;
     }

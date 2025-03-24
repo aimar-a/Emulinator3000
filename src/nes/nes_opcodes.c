@@ -1,6 +1,6 @@
 #include "nes_opcodes.h"
 
-void nes_evaluate_opcode(NES *nes)
+uint8_t nes_evaluate_opcode(NES *nes)
 {
   uint8_t opcode = nes_read(nes, nes->PC);
   nes->PC++;
@@ -8,17 +8,19 @@ void nes_evaluate_opcode(NES *nes)
   switch (opcode)
   {
   case 0x00:
+    printf("ERROR: Opcode 0x00 not implemented\n");
+    exit(1);
     nes_brk(nes);
-    break;
+    return 7;
   case 0x01:
     nes_ora(nes, nes_indirect_x(nes));
-    break;
+    return 1;
   case 0x05:
     nes_ora(nes, nes_zero_page(nes));
-    break;
+    return 2;
   case 0x06:
     nes_asl(nes, nes_zero_page(nes));
-    break;
+    return 5;
   case 0x08:
     nes_php(nes);
     break;
@@ -462,6 +464,9 @@ void nes_evaluate_opcode(NES *nes)
     break;
   default:
     printf("Unknown opcode %02X\n", opcode);
+    exit(1);
     break;
   }
+
+  return 4; // TODO: Return the correct number of cycles 4 each opcode
 }
