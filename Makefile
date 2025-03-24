@@ -1,5 +1,5 @@
 # Nombre del ejecutable y carpetas
-TARGET = bin/chip8_emulator
+TARGET = bin/emulinator3000
 CC = gcc
 CFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -Wall -Wextra -pedantic -Iinclude -Iinclude/chip8 -Iinclude/menu -Iinclude/nes -Iinclude/database 
 
@@ -23,7 +23,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 
 # Crear carpetas si no existen
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)/chip8 $(BUILD_DIR)/menu $(BUILD_DIR)/nes
+	mkdir -p $(BUILD_DIR)/chip8 $(BUILD_DIR)/menu $(BUILD_DIR)/nes $(BUILD_DIR)/database
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
