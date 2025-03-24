@@ -22,18 +22,17 @@ void nes_display_draw(uint8_t *pantalla)
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
 
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-  for (int i = 0; i < SCREEN_WIDTH; i++)
+  for (int j = 0; j < SCREEN_HEIGHT; j++)
   {
-    for (int j = 0; j < SCREEN_HEIGHT; j++)
+    for (int i = 0; i < SCREEN_WIDTH; i++)
     {
-      if (pantalla[i + j * SCREEN_WIDTH] == 1)
-      {
-        SDL_Rect pixel = {i * SCREEN_SCALE, j * SCREEN_SCALE, SCREEN_SCALE, SCREEN_SCALE};
-        SDL_RenderFillRect(renderer, &pixel);
-      }
+      uint8_t color = pantalla[i + j * SCREEN_WIDTH];
+      SDL_SetRenderDrawColor(renderer, color, color, color, 255);
+      SDL_Rect pixel = {i * SCREEN_SCALE, j * SCREEN_SCALE, SCREEN_SCALE, SCREEN_SCALE};
+      SDL_RenderFillRect(renderer, &pixel);
     }
   }
+
   SDL_RenderPresent(renderer);
 }
 

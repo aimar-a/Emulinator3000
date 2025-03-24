@@ -9,7 +9,7 @@ typedef struct
 {
   uint8_t vram[0x4000]; // 16 KB de VRAM (aunque solo se usan 4 KB directamente)
   uint8_t oam[256];     // 256 Bytes para los sprites (Object Attribute Memory)
-  uint8_t palette[32];  // 32 Bytes para la paleta de colores
+  uint8_t palette[64];  // 64 Bytes para la paleta de colores
 
   // Registros
   /*
@@ -32,6 +32,11 @@ OAMDMA 	$4014 	AAAA AAAA 	W 	OAM DMA high address
   uint16_t addr;   // PPUADDR ($2006)
   uint8_t data;    // PPUDATA ($2007)
   uint8_t dma;     // OAMDMA ($4014)
+  // Copilot usa estas también (no se lo q hacen)
+  uint16_t t;           // Temporal
+  uint16_t v;           // VRAM
+  uint8_t x;            // Fine X scroll
+  uint8_t write_toggle; // Toggle de escritura
 
   // Scanline
   uint16_t scanline; // Línea actual de la pantalla
