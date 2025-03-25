@@ -2,7 +2,7 @@
 
 void chip8_log(const char *format, ...)
 {
-  FILE *log_file = fopen("log/chip8_log.txt", "a");
+  FILE *log_file = fopen("log/chip8_log.log", "a");
   if (!log_file)
     return;
 
