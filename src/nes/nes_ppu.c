@@ -2,32 +2,30 @@
 
 void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que hacer primero los ciclos y dentro los scanlines?)
 {                       // TODO: Implementar el resto de la PPU (registros y lo que hace cada uno, y creo q gestion de memoria y algo mas habra q hacer)
-  // Avanzar ciclo de la PPU
   nes->ppu->cycle++;
 
   registers_operations(nes);
 
   if (nes->ppu->scanline < 240)
   {
-    // Renderizar scanline si estamos en el área visible
     if (nes->ppu->cycle == 1)
     {
-      // Inicio de una nueva línea, resetear variables si es necesario
+      nes_log("INFO: Starting new scanline %d", nes->ppu->scanline);
     }
     if (nes->ppu->cycle >= 1 && nes->ppu->cycle <= 256)
     {
-      // Dibujar píxeles en la pantalla
       render_scanline(nes);
     }
   }
   else if (nes->ppu->scanline == 240)
   {
-    // Inicio de VBlank
     if (nes->ppu->cycle == 1)
     {
-      nes->ppu->status |= 0x80; // Flag de VBlank
+      nes->ppu->status |= 0x80;
+      nes_log("INFO: Entering VBlank");
       if (nes->ppu->ctrl & 0x80)
       {
+        nes_log("INFO: NMI interrupt triggered");
         // TODO: Implementar interrupción NMI (ni idea de lo q es) (creo que deberia de hacerlo solo la cpu con sus instrucciones)
         // trigger_nmi(); // Generar interrupción si está habilitada
       }
@@ -35,14 +33,13 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
   }
   else if (nes->ppu->scanline == 261)
   {
-    // Scanline de pre-renderizado
     if (nes->ppu->cycle == 1)
     {
-      nes->ppu->status &= ~0x80; // Borrar flag de VBlank
+      nes->ppu->status &= ~0x80;
+      nes_log("INFO: Exiting VBlank");
     }
   }
 
-  // Fin del ciclo de la scanline
   if (nes->ppu->cycle >= 341)
   {
     nes->ppu->cycle = 0;
@@ -50,9 +47,10 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
 
     if (nes->ppu->scanline > 261)
     {
-      nes->ppu->scanline = 0; // Iniciar nuevo cuadro
+      nes->ppu->scanline = 0;
+      nes_log("INFO: Starting new frame");
     }
-    printf("Scanline: %d\n", nes->ppu->scanline);
+    nes_log("INFO: Scanline: %d", nes->ppu->scanline);
   }
 }
 
@@ -68,11 +66,11 @@ void render_scanline(NES *nes)
 
     if (sprite_pixel && (nes->ppu->mask & 0x10))
     {
-      nes->screen[nes->ppu->scanline * 256 + x] = sprite_palette; // Sprite
+      nes->screen[nes->ppu->scanline * 256 + x] = sprite_palette;
     }
     else
     {
-      nes->screen[nes->ppu->scanline * 256 + x] = bg_palette; // Fondo
+      nes->screen[nes->ppu->scanline * 256 + x] = bg_palette;
     }
   }
 }
@@ -80,7 +78,7 @@ void render_scanline(NES *nes)
 uint8_t get_background_pixel(NES *nes, int x, int y)
 {
   if (!(nes->ppu->mask & 0x08))
-    return 0; // Si el fondo está desactivado
+    return 0;
 
   uint16_t base_nametable = 0x2000 | ((nes->ppu->ctrl & 0x03) * 0x400);
   uint16_t tile_x = x / 8;
@@ -101,7 +99,7 @@ uint8_t get_background_pixel(NES *nes, int x, int y)
 uint8_t get_sprite_pixel(NES *nes, int x, int y)
 {
   if (!(nes->ppu->mask & 0x10))
-    return 0; // Si los sprites están desactivados
+    return 0;
 
   for (int i = 0; i < 64; i++)
   {
@@ -118,7 +116,7 @@ uint8_t get_sprite_pixel(NES *nes, int x, int y)
       uint8_t color = ((bitplane1 >> bit) & 1) | (((bitplane2 >> bit) & 1) << 1);
 
       if (color)
-        return color + 4; // Sprites usan una paleta diferente
+        return color + 4;
     }
   }
   return 0;
@@ -137,12 +135,10 @@ void registers_operations(NES *nes)
   }
   else if (nes->ppu->cycle == 260)
   {
-    // Copiar horizontalmente
     nes->ppu->v = (nes->ppu->v & ~0x041F) | (nes->ppu->t & 0x041F);
   }
   else if (nes->ppu->cycle >= 280 && nes->ppu->cycle <= 304)
   {
-    // Copiar verticalmente
     nes->ppu->v = (nes->ppu->v & ~0x7BE0) | (nes->ppu->t & 0x7BE0);
   }
 }
@@ -155,15 +151,19 @@ void ppu_write(NES *nes, uint16_t address, uint8_t data)
   case 0x2000:
     nes->ppu->ctrl = data;
     nes->ppu->t = (nes->ppu->t & ~0xC00) | ((data & 0x03) << 10);
+    nes_log("INFO: PPUCTRL written with 0x%02X", data);
     break;
   case 0x2001:
     nes->ppu->mask = data;
+    nes_log("INFO: PPUMASK written with 0x%02X", data);
     break;
   case 0x2003:
     nes->ppu->oamaddr = data;
+    nes_log("INFO: OAMADDR written with 0x%02X", data);
     break;
   case 0x2004:
     nes->ppu->oam[nes->ppu->oamaddr++] = data;
+    nes_log("INFO: OAMDATA written with 0x%02X", data);
     break;
   case 0x2005:
     if (nes->ppu->write_toggle == 0)
@@ -178,6 +178,7 @@ void ppu_write(NES *nes, uint16_t address, uint8_t data)
       nes->ppu->t = (nes->ppu->t & ~0x7000) | ((data & 0x07) << 12);
       nes->ppu->write_toggle = 0;
     }
+    nes_log("INFO: PPUSCROLL written with 0x%02X", data);
     break;
   case 0x2006:
     if (nes->ppu->write_toggle == 0)
@@ -191,12 +192,18 @@ void ppu_write(NES *nes, uint16_t address, uint8_t data)
       nes->ppu->v = nes->ppu->t;
       nes->ppu->write_toggle = 0;
     }
+    nes_log("INFO: PPUADDR written with 0x%02X", data);
     break;
   case 0x2007:
     nes->ppu->vram[nes->ppu->v++] = data;
+    nes_log("INFO: PPUDATA written with 0x%02X", data);
     break;
   case 0x4014:
     nes->ppu->dma = data;
+    nes_log("INFO: OAMDMA written with 0x%02X", data);
+    break;
+  default:
+    nes_log("WARNING: Unknown PPU register write at 0x%04X with 0x%02X", address, data);
     break;
   }
 }

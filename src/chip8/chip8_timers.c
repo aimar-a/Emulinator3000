@@ -1,6 +1,4 @@
 #include "chip8_timers.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_audio.h>
 
 uint8_t *delay_timer;
 uint8_t *sound_timer;
@@ -11,6 +9,7 @@ void chip8timersInit(uint8_t *delay, uint8_t *sound)
   *delay_timer = 0;
   sound_timer = sound;
   *sound_timer = 0;
+  chip8_log("INFO: Timers initialized with delay and sound set to 0.\n");
   chip8timersInitAudio();
 }
 
@@ -46,10 +45,12 @@ void chip8timersInitAudio()
 
   if (SDL_OpenAudio(&want, &have) < 0)
   {
-    printf("Error al inicializar audio: %s\n", SDL_GetError());
+    chip8_log("ERROR: No se pudo abrir el audio: %s\n", SDL_GetError());
+    exit(1);
   }
   else
   {
+    chip8_log("INFO: Audio initialized successfully.\n");
     SDL_PauseAudio(0); // Iniciar el audio
   }
 }
@@ -57,11 +58,13 @@ void chip8timersInitAudio()
 void chip8timersSetDelay(uint8_t value)
 {
   *delay_timer = value;
+  chip8_log("INFO: Delay timer set to %d.\n", value);
 }
 
 void chip8timersSetSound(uint8_t value)
 {
   *sound_timer = value;
+  chip8_log("INFO: Sound timer set to %d.\n", value);
 }
 
 void chip8timersDecrement()
@@ -69,11 +72,13 @@ void chip8timersDecrement()
   if (*delay_timer > 0)
   {
     (*delay_timer)--;
+    chip8_log("INFO: Delay timer decremented to %d.\n", *delay_timer);
   }
 
   if (*sound_timer > 0)
   {
     (*sound_timer)--;
+    chip8_log("INFO: Sound timer decremented to %d.\n", *sound_timer);
   }
 }
 

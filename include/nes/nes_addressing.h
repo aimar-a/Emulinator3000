@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "nes_structure.h"
 #include "nes_memory.h"
+#include "nes_logger.h"
 
 uint8_t nes_immediate(NES *nes);
 uint16_t nes_absolute(NES *nes);

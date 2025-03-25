@@ -1,14 +1,16 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-
 #include <SDL2/SDL.h>
+#include "superchip8bool.h"
+#include "chip8_structure.h"
+#include <stdbool.h>
+#include "chip8_logger.h"
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
 extern int SCREEN_SCALE;
-
 
 typedef struct
 {
@@ -17,7 +19,6 @@ typedef struct
   int running;
 } Screen;
 
- 
 int chip8displayInitPantalla(uint8_t *pantalla_);
 void chip8displayLimpiarPantalla();
 void chip8displayDestroyPantalla();

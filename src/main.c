@@ -18,11 +18,11 @@ bin/chip8_emulator.exe
 
 int main(int argc, char *argv[])
 {
-  //creamos la BD con sus estructuras en el caso en el que no existan
+  // creamos la BD con sus estructuras en el caso en el que no existan
   crearBD();
 
-
-  nes_launch();
+  // nes_launch();
+  menuInicial();
 
   return 0;
 }

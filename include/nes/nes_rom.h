@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "nes_logger.h"
 
-void nes_load_rom(NES *nes, const char *filename);
+int nes_load_rom(NES *nes, const char *filename);
 
 #endif

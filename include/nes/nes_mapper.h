@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include "nes_logger.h"
 
 void nes_rom_to_memory(NES *nes);
 void nes_rom_free(NES *nes);

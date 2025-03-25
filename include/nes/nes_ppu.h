@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "nes_structure.h"
 #include <stdio.h>
+#include "nes_logger.h"
 
 typedef struct
 {

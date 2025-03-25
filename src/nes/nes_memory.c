@@ -2,18 +2,18 @@
 
 uint8_t nes_read(NES *nes, uint16_t address)
 {
-  // printf("Reading address: %04X\n", address);
+  nes_log("INFO: Reading address: %04X\n", address);
   if (address < 0x8000)
   {
     if (address == 0x2000)
     {
-      printf("ERROR: PPUCTRL is not readable\n");
+      nes_log("ERROR: PPUCTRL is not readable\n");
       exit(1);
       return nes->ppu->ctrl;
     }
     else if (address == 0x2001)
     {
-      printf("ERROR: PPUMASK is not readable\n");
+      nes_log("ERROR: PPUMASK is not readable\n");
       exit(1);
       return nes->ppu->mask;
     }
@@ -25,7 +25,7 @@ uint8_t nes_read(NES *nes, uint16_t address)
     }
     else if (address == 0x2003)
     {
-      printf("ERROR: OAMADDR is not readable\n");
+      nes_log("ERROR: OAMADDR is not readable\n");
       exit(1);
       return nes->ppu->oamaddr;
     }
@@ -35,13 +35,13 @@ uint8_t nes_read(NES *nes, uint16_t address)
     }
     else if (address == 0x2005)
     {
-      printf("ERROR: PPUSCROLL is not readable\n");
+      nes_log("ERROR: PPUSCROLL is not readable\n");
       exit(1);
       return nes->ppu->scroll;
     }
     else if (address == 0x2006)
     {
-      printf("ERROR: PPUADDR is not readable\n");
+      nes_log("ERROR: PPUADDR is not readable\n");
       exit(1);
       return nes->ppu->addr;
     }
@@ -51,7 +51,7 @@ uint8_t nes_read(NES *nes, uint16_t address)
     }
     else if (address == 0x4014)
     {
-      printf("ERROR: OAMDMA is not readable\n");
+      nes_log("ERROR: OAMDMA is not readable\n");
       exit(1);
       return nes->ppu->dma;
     }
@@ -66,7 +66,7 @@ uint8_t nes_read(NES *nes, uint16_t address)
 
 void nes_write(NES *nes, uint16_t address, uint8_t value)
 {
-  // printf("Writing address: %04X, value: %02X\n", address, value);
+  nes_log("INFO: Writing address: %04X, value: %02X\n", address, value);
   if (address < 0x8000)
   {
     if (address == 0x2000)
@@ -80,7 +80,7 @@ void nes_write(NES *nes, uint16_t address, uint8_t value)
     }
     else if (address == 0x2002)
     {
-      printf("ERROR: PPUSTATUS is not writable\n");
+      nes_log("ERROR: PPUSTATUS is not writable\n");
       exit(1);
       nes->ppu->status = value;
     }

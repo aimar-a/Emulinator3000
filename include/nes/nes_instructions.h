@@ -10,7 +10,6 @@
 #include "nes_controller.h"
 #include "nes_mapper.h"
 #include "nes_rom.h"
-#include "nes_log.h"
 #include "nes_display.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +17,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include "nes_logger.h"
 
 void nes_adc(NES *nes, uint8_t value);
 void nes_and(NES *nes, uint8_t value);

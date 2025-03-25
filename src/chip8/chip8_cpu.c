@@ -1,42 +1,33 @@
 #include "chip8_cpu.h"
-#include "chip8_structure.h"
-#include "chip8_display.h"
-#include "chip8_input.h"
-#include "chip8_timers.h"
-#include "chip8_opcodes.h"
-#include <SDL2/SDL.h>
-#include <stdio.h>
 
-
-
-
-void inicializarMemoria(Chip8 *chip8, bool modosuperchip8) {
-  if (modosuperchip8) {
-      // Si está en SuperChip8, se reserva memoria para 128KB
-      chip8->memoria = (uint8_t *)malloc(131072); // 128KB
-
-      //y se configura la pantalla con 128x64
-      chip8->pantalla = (uint8_t *)malloc(128 * 64 * sizeof(uint8_t));
-
-  } else {
-      // Si está en Chip8, se reserva memoria para 4KB
-      chip8->memoria = (uint8_t *)malloc(4096);  // 4KB
-
-      //y se configura la pantalla con 64x32
-      chip8->pantalla = (uint8_t *)malloc(64 * 32 * sizeof(uint8_t));
-
+void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
+{
+  if (modosuperchip8)
+  {
+    chip8_log("INFO: Inicializando memoria para SuperChip8\n");
+    chip8->memoria = (uint8_t *)malloc(131072); // 128KB
+    chip8->pantalla = (uint8_t *)malloc(128 * 64 * sizeof(uint8_t));
+  }
+  else
+  {
+    chip8_log("INFO: Inicializando memoria para Chip8\n");
+    chip8->memoria = (uint8_t *)malloc(4096); // 4KB
+    chip8->pantalla = (uint8_t *)malloc(64 * 32 * sizeof(uint8_t));
   }
 
-  if (chip8->memoria == NULL) { //para combrobar si ha habido algun fallo al reservar la memoria
-      printf("Error: No se pudo asignar memoria.\n");
-      exit(1);
-  }
-
-  if (chip8->pantalla == NULL) {
-    printf("Error al asignar memoria para pantalla SuperChip8\n");
+  if (chip8->memoria == NULL)
+  {
+    chip8_log("ERROR: No se pudo asignar memoria para memoria\n");
     exit(1);
+  }
+
+  if (chip8->pantalla == NULL)
+  {
+    chip8_log("ERROR: No se pudo asignar memoria para pantalla\n");
+    exit(1);
+  }
 }
-}
+
 void chip8cpuLaunch(char *rom_path)
 {
   Chip8 chip8;
@@ -46,9 +37,10 @@ void chip8cpuLaunch(char *rom_path)
   chip8.I = 0;
   chip8.sp = 0;
 
-  inicializarMemoria(&chip8, modosuperchip8);  //inicializamos memoria y config de la pantalla (chip8/superchip8)
+  chip8_log("INFO: Inicializando memoria y configuración de la pantalla\n");
+  inicializarMemoria(&chip8, modosuperchip8);
 
-
+  chip8_log("INFO: Inicializando temporizadores\n");
   chip8timersInit(&chip8.delay_timer, &chip8.sound_timer);
   memset(chip8.stack, 0, sizeof(chip8.stack));
   memset(chip8.memoria, 0, sizeof(chip8.memoria));
@@ -60,15 +52,17 @@ void chip8cpuLaunch(char *rom_path)
 
   if (rom == NULL)
   {
-    perror("No se pudo abrir el archivo");
+    chip8_log("ERROR: No se pudo abrir el archivo ROM\n");
     exit(1);
   }
+  chip8_log("INFO: Cargando ROM en memoria\n");
   fread(&chip8.memoria[0x200], 1, 4096 - 0x200, rom);
   fclose(rom);
 
+  chip8_log("INFO: Iniciando ciclo de ejecución\n");
   do
   {
-    SDL_Delay(selectedDelay); // Usa el valor configurado en settings
+    SDL_Delay(selectedDelay);
 
     uint16_t opcode = (chip8.memoria[chip8.pc] << 8) | chip8.memoria[chip8.pc + 1];
     chip8.pc += 2;
@@ -79,6 +73,7 @@ void chip8cpuLaunch(char *rom_path)
     chip8opcodesEvaluate(opcode);
   } while (!chip8.esc);
 
+  chip8_log("INFO: Finalizando ejecución y liberando recursos\n");
   chip8displayDestroyPantalla();
   // chip8inputDestroyTeclado(&chip8.teclado[0]);
   // chip8timersDestroy(&chip8.delay_timer, &chip8.sound_timer);

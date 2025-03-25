@@ -1,0 +1,15 @@
+#include "chip8_logger.h"
+
+void chip8_log(const char *format, ...)
+{
+  FILE *log_file = fopen("log/chip8_log.txt", "a");
+  if (!log_file)
+    return;
+
+  va_list args;
+  va_start(args, format);
+  vfprintf(log_file, format, args);
+  va_end(args);
+
+  fclose(log_file);
+}

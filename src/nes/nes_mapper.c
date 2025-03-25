@@ -4,12 +4,12 @@ void nes_rom_to_memory(NES *nes)
 {
   if (!nes->memory)
   {
-    printf("Error: nes->memory no está inicializado\n");
+    nes_log("ERROR: nes->memory no está inicializado\n");
     exit(1);
   }
   if (!nes->rom->prg_rom)
   {
-    printf("Error: nes->rom->prg_rom no está inicializado\n");
+    nes_log("ERROR: nes->rom->prg_rom no está inicializado\n");
     exit(1);
   }
 
@@ -46,14 +46,14 @@ void nes_rom_to_memory(NES *nes)
     init_mmc3(nes);
     break;
   default:
-    printf("Unsupported mapper: %d\n", nes->current_mapper);
+    nes_log("ERROR: Unsupported mapper: %d\n", nes->current_mapper);
     exit(1);
   }
 }
 
 void init_nrom(NES *nes)
 {
-
+  nes_log("INFO: Initializing NROM mapper\n");
   // Para NROM no hay una configuración compleja, ya que es muy sencillo
   nes->mapper_bank = 0;
   nes->chr_bank = 0;
@@ -82,8 +82,10 @@ void write_nrom(NES *nes, uint16_t address, uint8_t value)
     nes->memory[address] = value; // Escribir en RAM
   }
 }
+
 void init_mmc1(NES *nes)
 {
+  nes_log("INFO: Initializing MMC1 mapper\n");
   nes->mapper_state = 0; // Inicia en el estado base
 }
 
@@ -115,6 +117,7 @@ void write_mmc1(NES *nes, uint16_t address, uint8_t value)
 
 void init_unrom(NES *nes)
 {
+  nes_log("INFO: Initializing UNROM mapper\n");
   nes->mapper_bank = 0;
 }
 
@@ -141,6 +144,7 @@ void write_unrom(NES *nes, uint16_t address, uint8_t value)
 
 void init_cnrom(NES *nes)
 {
+  nes_log("INFO: Initializing CNROM mapper\n");
   nes->mapper_bank = 0; // Banco de gráficos (CHR) inicial
 }
 
@@ -169,6 +173,7 @@ void write_cnrom(NES *nes, uint16_t address, uint8_t value)
 
 void init_mmc3(NES *nes)
 {
+  nes_log("INFO: Initializing MMC3 mapper\n");
   nes->mapper_bank = 0; // Banco de PRG inicial
   nes->chr_bank = 0;    // Banco de CHR inicial
   nes->interrupt_enable = false;

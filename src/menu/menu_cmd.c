@@ -1,12 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include "chip8_cpu.h"
-
 #include "menu_cmd.h"
 
 #define ROMS_PATH "resources/chip8-roms"
@@ -36,7 +27,7 @@ void menuInicial()
       printf("Emulando Game Boy...\n");
       break;
     case 3:
-      printf("Emulando NES...\n");
+      nes_launch();
       break;
     case 0:
       printf("Saliendo...\n");

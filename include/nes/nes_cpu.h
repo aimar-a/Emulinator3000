@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
+#include "nes_logger.h"
 
 void nes_launch();
 void nes_reset(NES *nes);
