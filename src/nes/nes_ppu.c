@@ -28,7 +28,7 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
       nes->ppu->status |= 0x80; // Flag de VBlank
       if (nes->ppu->ctrl & 0x80)
       {
-        // TODO: Implementar interrupción NMI (ni idea de lo q es)
+        // TODO: Implementar interrupción NMI (ni idea de lo q es) (creo que deberia de hacerlo solo la cpu con sus instrucciones)
         // trigger_nmi(); // Generar interrupción si está habilitada
       }
     }
