@@ -1,0 +1,41 @@
+FASE 1:
+
+-Ficheros de configuracion (para configurar cosas ej: usuario, contra, rutas, ruta y nombre bd; escala de la pantalla del chip8/nes, etc)
+
+-Base de datos:
+  Lo que falte por hacer lo podeis ir poniendo aqui para organizaros
+
+-Menu sencillo por consola: (como albisu no va a acabar el menu SDL pa la Fase 1 lo hacemos en consola)
+  Anadir login/registro usuario
+  Menu de usuario, amigos... (juntar con la parte de bd)
+  Menu para configurar cosas del fichero configuracion
+
+-No entiendo una verga pero pinta q es para cargar iniciales realistas a la bd:
+De manera opcional se contempla la posibilidad de que todos o parte de los
+datos que el servidor vaya a manejar sean importados (habrá que construir
+el código que lo haga) de alguna de las fuentes disponibles en los distintos
+portales de datos abiertos existentes. A modo de ejemplo:
+• https://data.europa.eu
+• https://datos.gob.es/
+• https://opendata.euskadi.eus
+• https://www.bilbao.eus/opendata
+
+-Manual Word: 
+Un documento Word que muestre una especie de manual de usuario con las
+distintas pantallas del menú que se atraviesan a lo largo de la ejecución del
+proyecto. No hace falta que incluyas ninguna descripción con texto en este
+documento, es suficiente con incluir las pantallas que muestren todas las
+posibles combinaciones que pueden darse en la ejecución del programa.
+
+-Logger: (no es obligatorio hacerlo para la Fase 1 creo)
+  Para registrar lo q ocurre (errores o interacciones importantes) y tal, en vez de por prints con el logger
+
+
+
+PARA LA ENTREGA FINAL
+
+-Acabar la NES
+  ppu
+  (mappers)
+  sonido
+  ...
