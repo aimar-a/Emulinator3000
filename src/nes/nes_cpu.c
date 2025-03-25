@@ -141,7 +141,10 @@ void nes_run(NES *nes)
     SDL_Delay(cpu_cycle_time_ms * cycles); // Espera el tiempo correspondiente a los ciclos de CPU
 
     // Actualiza los controladores
-    nes_controller_update(nes);
+    if (nes_controller_update(nes))
+    {
+      break;
+    }
 
     // Ejecuta los ciclos de la PPU correspondientes al número de ciclos de CPU
     for (int i = 0; i < cycles * 3; i++)
@@ -162,4 +165,10 @@ void nes_run(NES *nes)
       cont = 0;
     }
   }
+
+  nes_log("INFO: NES emulation stopped\n");
+  nes_display_destroy(nes->screen);
+  free(nes->ppu);
+  free(nes->rom);
+  free(nes);
 }

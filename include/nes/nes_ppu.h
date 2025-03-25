@@ -6,6 +6,7 @@
 #include "nes_structure.h"
 #include <stdio.h>
 #include "nes_logger.h"
+#include <stdlib.h>
 
 typedef struct
 {

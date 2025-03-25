@@ -2,12 +2,21 @@
 
 #define ROMS_PATH "resources/chip8-roms"
 
+void clearScreen()
+{
+#ifdef _WIN32
+  system("cls");
+#else
+  system("clear");
+#endif
+}
+
 void menuInicial()
 {
   int option = -1;
   while (option != 0)
   {
-    system("cls");
+    clearScreen();
     printf("Bienvenido al emulador EMULINATOR 3000\n");
     printf("Seleccione la consola que desea emular:\n");
     printf("1. CHIP-8\n");
@@ -44,7 +53,7 @@ void menuChip8()
   int option = -1;
   while (option != 0)
   {
-    system("cls");
+    clearScreen();
     printf("CHIP-8\n");
     printf("Seleccione una opción:\n");
     printf("1. Cargar ROM\n");
@@ -131,7 +140,7 @@ void menuListaROMs()
 
   do
   {
-    system("cls");
+    clearScreen();
     printf("Listado de ROMs (Página %d de %d):\n", pagina + 1, totalPaginas);
 
     for (int i = pagina * 20; i < (pagina + 1) * 20 && i < romCount; i++)

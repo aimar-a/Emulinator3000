@@ -10,7 +10,7 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
   {
     if (nes->ppu->cycle == 1)
     {
-      nes_log("INFO: Starting new scanline %d", nes->ppu->scanline);
+      nes_log("INFO: Starting new scanline %d\n", nes->ppu->scanline);
     }
     if (nes->ppu->cycle >= 1 && nes->ppu->cycle <= 256)
     {
@@ -25,7 +25,7 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
       nes_log("INFO: Entering VBlank");
       if (nes->ppu->ctrl & 0x80)
       {
-        nes_log("INFO: NMI interrupt triggered");
+        nes_log("INFO: NMI interrupt triggered\n");
         // TODO: Implementar interrupción NMI (ni idea de lo q es) (creo que deberia de hacerlo solo la cpu con sus instrucciones)
         // trigger_nmi(); // Generar interrupción si está habilitada
       }
@@ -36,7 +36,7 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
     if (nes->ppu->cycle == 1)
     {
       nes->ppu->status &= ~0x80;
-      nes_log("INFO: Exiting VBlank");
+      nes_log("INFO: Exiting VBlank\n");
     }
   }
 
@@ -48,7 +48,7 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
     if (nes->ppu->scanline > 261)
     {
       nes->ppu->scanline = 0;
-      nes_log("INFO: Starting new frame");
+      nes_log("INFO: Starting new frame\n");
     }
     nes_log("INFO: Scanline: %d", nes->ppu->scanline);
   }
@@ -151,19 +151,19 @@ void ppu_write(NES *nes, uint16_t address, uint8_t data)
   case 0x2000:
     nes->ppu->ctrl = data;
     nes->ppu->t = (nes->ppu->t & ~0xC00) | ((data & 0x03) << 10);
-    nes_log("INFO: PPUCTRL written with 0x%02X", data);
+    nes_log("INFO: PPUCTRL written with 0x%02X\n", data);
     break;
   case 0x2001:
     nes->ppu->mask = data;
-    nes_log("INFO: PPUMASK written with 0x%02X", data);
+    nes_log("INFO: PPUMASK written with 0x%02X\n", data);
     break;
   case 0x2003:
     nes->ppu->oamaddr = data;
-    nes_log("INFO: OAMADDR written with 0x%02X", data);
+    nes_log("INFO: OAMADDR written with 0x%02X\n", data);
     break;
   case 0x2004:
     nes->ppu->oam[nes->ppu->oamaddr++] = data;
-    nes_log("INFO: OAMDATA written with 0x%02X", data);
+    nes_log("INFO: OAMDATA written with 0x%02X\n", data);
     break;
   case 0x2005:
     if (nes->ppu->write_toggle == 0)
@@ -178,7 +178,7 @@ void ppu_write(NES *nes, uint16_t address, uint8_t data)
       nes->ppu->t = (nes->ppu->t & ~0x7000) | ((data & 0x07) << 12);
       nes->ppu->write_toggle = 0;
     }
-    nes_log("INFO: PPUSCROLL written with 0x%02X", data);
+    nes_log("INFO: PPUSCROLL written with 0x%02X\n", data);
     break;
   case 0x2006:
     if (nes->ppu->write_toggle == 0)
@@ -192,18 +192,19 @@ void ppu_write(NES *nes, uint16_t address, uint8_t data)
       nes->ppu->v = nes->ppu->t;
       nes->ppu->write_toggle = 0;
     }
-    nes_log("INFO: PPUADDR written with 0x%02X", data);
+    nes_log("INFO: PPUADDR written with 0x%02X\n", data);
     break;
   case 0x2007:
     nes->ppu->vram[nes->ppu->v++] = data;
-    nes_log("INFO: PPUDATA written with 0x%02X", data);
+    nes_log("INFO: PPUDATA written with 0x%02X\n", data);
     break;
   case 0x4014:
     nes->ppu->dma = data;
-    nes_log("INFO: OAMDMA written with 0x%02X", data);
+    nes_log("INFO: OAMDMA written with 0x%02X\n", data);
     break;
   default:
-    nes_log("WARNING: Unknown PPU register write at 0x%04X with 0x%02X", address, data);
+    nes_log("ERROR: Unknown PPU register write at 0x%04X with 0x%02X\n", address, data);
+    exit(1);
     break;
   }
 }

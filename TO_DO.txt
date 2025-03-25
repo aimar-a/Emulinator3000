@@ -28,7 +28,9 @@ documento, es suficiente con incluir las pantallas que muestren todas las
 posibles combinaciones que pueden darse en la ejecución del programa.
 
 -Logger: (no es obligatorio hacerlo para la Fase 1 creo)
-  Para registrar lo q ocurre (errores o interacciones importantes) y tal, en vez de por prints con el logger
+  bd
+  menu
+  main?
 
 
 

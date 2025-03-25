@@ -16,6 +16,9 @@ bin/chip8_emulator.exe
 
 */
 
+// Dejo esto por aqui q es de un tio q ha hecho la super chip8, hay juegos en el repo para descargar y probar (@Davidrs05)
+// https://github.com/zaymat/super-chip8/tree/master
+
 int main(int argc, char *argv[])
 {
   // creamos la BD con sus estructuras en el caso en el que no existan
