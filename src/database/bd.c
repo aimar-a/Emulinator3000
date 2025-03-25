@@ -140,11 +140,10 @@ void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-
+    printf("✅ Partida '%i' guardada correctamente.\n", idjuego);
 }
 
 void insertarJuego(char* titulo, char* rom, int puntrecord, char* usuariorecord){
-
 
     sqlite3_stmt *stmt;
 
@@ -161,7 +160,7 @@ void insertarJuego(char* titulo, char* rom, int puntrecord, char* usuariorecord)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   
-
+    printf("✅ Juego '%s' insertado correctamente.\n",titulo);
 }
 
 void insertarTiempoJugado(int tiempojugado, char* user, int idjuego){
@@ -179,8 +178,7 @@ void insertarTiempoJugado(int tiempojugado, char* user, int idjuego){
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-
-
+    printf("✅ Tiempo jugado '%i' guardado correctamente.\n", tiempojugado);
 }
 
 void insertarLogros(char* nombre, char* descripcion, int idjuego){
@@ -199,7 +197,7 @@ void insertarLogros(char* nombre, char* descripcion, int idjuego){
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-
+    printf("✅ Logro '%s' insertado correctamente.\n", nombre);
 }
 
 void insertarLogrosUsuarios(char* user, int idlogro, char* fecha ){ //en principio guardamos la FECHA como texto ya veremos mas adelante si hay que cambiarlo o no
@@ -217,13 +215,15 @@ void insertarLogrosUsuarios(char* user, int idlogro, char* fecha ){ //en princip
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    printf("✅ Logro '%i' del usuario '%s' insertado correctamente.\n", idlogro, user);
 }
 
 void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guardamos ESTADO como texto ya veremos mas adelante si hay que cambiarlo o no
 
     sqlite3_stmt *stmt;
 
-    char sql[] = "INSERT INTO LOGROS_USUARIO (user1, user2, estado) VALUES (?, ?, ?);";
+    char sql[] = "INSERT INTO AMIGOS (user1, user2, estado) VALUES (?, ?, ?);";
 
     sqlite3_prepare_v2(db, sql, strlen(sql)+1, &stmt, 0);
 
@@ -235,7 +235,38 @@ void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guar
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-
-
-
+    printf("✅ Usuarios '%s' y '%s' han registrados su amistad en estado '%s' correctamente.\n", user1, user2, estado);
 }
+
+// Creamos las funciones para actualizar las tablas
+
+void actualizarTiempoJugado(int tiempoJugado, char* user, int id_juego) {
+    sqlite3_stmt *stmt;
+
+    char sql[] = "UPDATE TIEMPO_JUGADO SET tiempo_jugado = ? WHERE user = ? AND id_juego = ?;";
+
+    sqlite3_bind_int(stmt, 1, tiempoJugado);
+    sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 3, id_juego);
+
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    printf("✅ Tiempo Jugado '%i' actualizado correctamente.\n", tiempoJugado);
+}
+
+void actualizarEstado_Amigos(char* user1, char* user2, char* estado) {
+    sqlite3_stmt *stmt;
+
+    char sql[] = "UPDATE AMIGOS estado = ? WHERE user1 = ? AND user2 = ?";
+
+    sqlite3_bind_text(stmt, 1, estado, strlen(estado), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, user1, strlen(user1), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, user2, strlen(user2), SQLITE_STATIC);
+
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    printf("✅ El estado entre el user '%s' y el user '%s' ha sido actualizado a '%S' correctamente", user1, user2, estado);
+}
+
