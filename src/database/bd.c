@@ -240,6 +240,8 @@ void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guar
 
 // Creamos las funciones para actualizar las tablas
 
+// updateTiempoJugado(de un usuario a un juego)
+
 void updateTiempoJugado(int tiempoJugado, char* user, int id_juego) {
     sqlite3_stmt *stmt;
 
@@ -254,6 +256,8 @@ void updateTiempoJugado(int tiempoJugado, char* user, int id_juego) {
 
     printf("✅ Tiempo Jugado '%i' actualizado correctamente.\n", tiempoJugado);
 }
+
+// updateEstado_Amigos(entre dos usuarios)
 
 void updateEstado_Amigos(char* user1, char* user2, char* estado) {
     sqlite3_stmt *stmt;
@@ -284,7 +288,9 @@ void updateContrasena(char* newcontrasena, char* user){
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    printf("✅ Contraseña del usuario '%s' aactualizada correctamente.", user);
 }
+
 //updateUsuarioRecord (Juego)
 
 void updateUsuarioRecord(char* usuario, int idjuego){
@@ -299,11 +305,11 @@ void updateUsuarioRecord(char* usuario, int idjuego){
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-
-
-
+    printf("✅ Record del usuario '%s' actualizada correctamente.", usuario);
 }
+
 //updatePuntuacionRecord (Juego)
+
 void updatePuntuacionRecord(int newPunt, int idjuego){
     sqlite3_stmt *stmt;
 
@@ -315,8 +321,6 @@ void updatePuntuacionRecord(int newPunt, int idjuego){
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-
-
-
+    printf("✅ Puntuación record del juego '%i' actualizada correctamente a '%i'.", idjuego, newPunt);
 }
 
