@@ -208,8 +208,7 @@ void chip8opcodesEvaluate(uint16_t opcode)
       chip8->V[x] <<= 1;
       break;
     default:
-      chip8_log("ERROR: Unknown opcode: 0x%X\n", opcode);
-      exit(1);
+      chip8_log("WARNING: Unknown opcode: 0x%X\n", opcode);
       break;
     }
     break;
@@ -266,8 +265,7 @@ void chip8opcodesEvaluate(uint16_t opcode)
       }
       break;
     default:
-      chip8_log("ERROR: Unknown opcode: 0x%X\n", opcode);
-      exit(1);
+      chip8_log("WARNING: Unknown opcode: 0x%X\n", opcode);
       break;
     }
     break;
@@ -357,14 +355,12 @@ void chip8opcodesEvaluate(uint16_t opcode)
       }
       break;
     default:
-      chip8_log("ERROR: Unknown opcode: 0x%X\n", opcode);
-      exit(1);
+      chip8_log("WARNING: Unknown opcode: 0x%X\n", opcode);
       break;
     }
     break;
   default:
-    chip8_log("ERROR: Unknown opcode: 0x%X\n", opcode);
-    exit(1);
+    chip8_log("WARNING: Unknown opcode: 0x%X\n", opcode);
     break;
   }
 }
