@@ -13,7 +13,10 @@ void insertarLogrosUsuarios(char* user, int idlogro, char* fecha );
 void insertarAmigos(char* user1, char* user2, char* estado);
 
 // Funciones para actualizar los datos en las tablas
-void actualizarTiempoJugado(int tiempoJugado, char* user, int id_juego);
-void actualizarEstado_Amigos(char* user1, char* user2, char* estado);
+void updateTiempoJugado(int tiempoJugado, char* user, int id_juego);
+void updateEstado_Amigos(char* user1, char* user2, char* estado);
+void updateContrasena(char* newcontrasena, char* user);
+void updateUsuarioRecord(char* usuario, int idjuego);
+void updatePuntuacionRecord(int newPunt, int idjuego);
 
 #endif 

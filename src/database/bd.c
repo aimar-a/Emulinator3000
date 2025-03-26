@@ -240,7 +240,7 @@ void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guar
 
 // Creamos las funciones para actualizar las tablas
 
-void actualizarTiempoJugado(int tiempoJugado, char* user, int id_juego) {
+void updateTiempoJugado(int tiempoJugado, char* user, int id_juego) {
     sqlite3_stmt *stmt;
 
     char sql[] = "UPDATE TIEMPO_JUGADO SET tiempo_jugado = ? WHERE user = ? AND id_juego = ?;";
@@ -255,7 +255,7 @@ void actualizarTiempoJugado(int tiempoJugado, char* user, int id_juego) {
     printf("✅ Tiempo Jugado '%i' actualizado correctamente.\n", tiempoJugado);
 }
 
-void actualizarEstado_Amigos(char* user1, char* user2, char* estado) {
+void updateEstado_Amigos(char* user1, char* user2, char* estado) {
     sqlite3_stmt *stmt;
 
     char sql[] = "UPDATE AMIGOS estado = ? WHERE user1 = ? AND user2 = ?";
@@ -268,5 +268,55 @@ void actualizarEstado_Amigos(char* user1, char* user2, char* estado) {
     sqlite3_finalize(stmt);
 
     printf("✅ El estado entre el user '%s' y el user '%s' ha sido actualizado a '%S' correctamente", user1, user2, estado);
+}
+
+
+//updateContrasena (de usuario)
+
+void updateContrasena(char* newcontrasena, char* user){
+    sqlite3_stmt *stmt;
+
+    char sql[] = "UPDATE USUARIO contraseña = ? WHERE user = ?";
+
+    sqlite3_bind_text(stmt, 1, newcontrasena, strlen(newcontrasena), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_STATIC);
+
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+}
+//updateUsuarioRecord (Juego)
+
+void updateUsuarioRecord(char* usuario, int idjuego){
+
+    sqlite3_stmt *stmt;
+
+    char sql[] = "UPDATE JUEGO usuario_record = ? WHERE user = ?";
+
+    sqlite3_bind_text(stmt, 1, usuario, strlen(usuario), SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 2, idjuego);
+
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+
+
+
+}
+//updatePuntuacionRecord (Juego)
+void updatePuntuacionRecord(int newPunt, int idjuego){
+    sqlite3_stmt *stmt;
+
+    char sql[] = "UPDATE JUEGO puntuacion_record = ? WHERE user = ?";
+
+    sqlite3_bind_int(stmt, 1, newPunt);
+    sqlite3_bind_int(stmt, 2, idjuego);
+
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+
+
+
 }
 
