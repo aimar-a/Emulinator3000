@@ -3,7 +3,8 @@ FASE 1:
 -Ficheros de configuracion (para configurar cosas ej: usuario, contra, rutas, ruta y nombre bd; escala de la pantalla del chip8/nes, etc)
 
 -Base de datos:
-  Lo que falte por hacer lo podeis ir poniendo aqui para organizaros
+  implementar las funciones en el emulador 
+  si lo vemos necesario hacer mas funciones
 
 -Menu sencillo por consola: (como albisu no va a acabar el menu SDL pa la Fase 1 lo hacemos en consola)
   Anadir login/registro usuario
