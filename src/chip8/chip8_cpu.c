@@ -30,6 +30,9 @@ void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
 
 void chip8cpuLaunch(char *rom_path)
 {
+  chip8_log_clear();
+  chip8_log("INFO: Inicializando CPU\n");
+
   Chip8 chip8;
   chip8.esc = 0;
   memset(chip8.V, 0, sizeof(chip8.V));

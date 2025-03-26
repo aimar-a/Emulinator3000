@@ -5,5 +5,6 @@
 #include <stdarg.h>
 
 void nes_log(const char *format, ...);
+void nes_log_clear();
 
 #endif

@@ -2,6 +2,9 @@
 
 void nes_launch()
 {
+  nes_log_clear();
+  nes_log("INFO: Launching NES\n");
+
   NES *nes = (NES *)malloc(sizeof(NES));
   if (!nes)
   {
@@ -114,7 +117,9 @@ void nes_reset(NES *nes)
   nes->ppu->oamaddr = 0;
   nes->ppu->oamdata = 0;
   nes->ppu->scroll = 0;
+  nes->ppu->scroll_high = false;
   nes->ppu->addr = 0;
+  nes->ppu->addr_high = false;
   nes->ppu->data = 0;
   nes->ppu->dma = 0;
 
