@@ -2,7 +2,6 @@
 
 void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que hacer primero los ciclos y dentro los scanlines?)
 {                       // TODO: Implementar el resto de la PPU (registros y lo que hace cada uno, y creo q gestion de memoria y algo mas habra q hacer)
-  nes_log("INFO: PPU scanline %d, cycle %d\n", nes->ppu->scanline, nes->ppu->cycle);
   nes->ppu->cycle++;
 
   // 1️⃣ Pre-Render (Scanline -1):
@@ -27,6 +26,8 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
     if (nes->ppu->cycle == 1)
     {
       nes_log("INFO: Starting new scanline %d\n", nes->ppu->scanline);
+      // Dibuja la pantalla
+      nes_display_draw(nes->screen);
     }
     if (nes->ppu->cycle >= 1 && nes->ppu->cycle <= 256)
     {
@@ -44,7 +45,7 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
       if (nes->ppu->cycle == 1)
       {
         nes->ppu->status |= 0x80;
-        nes_log("INFO: Entering VBlank");
+        nes_log("INFO: Entering VBlank\n");
         if (nes->ppu->ctrl & 0x80)
         {
           nes_log("INFO: NMI interrupt triggered\n");
@@ -63,9 +64,11 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
     if (nes->ppu->scanline > 261)
     {
       nes->ppu->scanline = 0;
+      nes->ppu->frame++;
       nes_log("INFO: Starting new frame\n");
+      printf("Frame: %d\n", nes->ppu->frame);
     }
-    nes_log("INFO: Scanline: %d", nes->ppu->scanline);
+    nes_log("INFO: Scanline: %d\n", nes->ppu->scanline);
   }
 }
 

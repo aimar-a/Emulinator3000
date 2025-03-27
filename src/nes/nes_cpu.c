@@ -143,7 +143,7 @@ void nes_run(NES *nes)
     int cycles = nes_evaluate_opcode(nes); // Calcula los ciclos de CPU para la instrucción actual
 
     // Tiempo de espera para simular el tiempo real de un ciclo de la CPU
-    SDL_Delay(cpu_cycle_time_ms * cycles); // Espera el tiempo correspondiente a los ciclos de CPU
+    // SDL_Delay(cpu_cycle_time_ms * cycles); // Espera el tiempo correspondiente a los ciclos de CPU
 
     // Actualiza los controladores
     if (nes_controller_update(nes))
@@ -158,16 +158,7 @@ void nes_run(NES *nes)
       ppu_step(nes);
 
       // Retraso para simular el tiempo real de un ciclo de la PPU
-      SDL_Delay(ppu_cycle_time_ms); // Espera el tiempo correspondiente a un ciclo de la PPU
-    }
-
-    // Dibuja la pantalla
-    nes_display_draw(nes->screen);
-
-    cont++;
-    if (cont == 3)
-    {
-      cont = 0;
+      // SDL_Delay(ppu_cycle_time_ms); // Espera el tiempo correspondiente a un ciclo de la PPU
     }
   }
 

@@ -2,10 +2,10 @@
 
 uint8_t nes_read(NES *nes, uint16_t address)
 {
-  nes_log("INFO: CPU Reading address: %04X\n", address);
+  nes_log("INFO: CPU Reading address: 0x%04X\n", address);
   if (address < 0x8000)
   {
-    if (address <= 0x2000 && address <= 0x2007 || address == 0x4014)
+    if (address >= 0x2000 && address <= 0x2007 || address == 0x4014)
     {
       return ppu_read_register(nes->ppu, address);
     }
@@ -17,17 +17,17 @@ uint8_t nes_read(NES *nes, uint16_t address)
   }
   else
   {
-    nes_log("ERROR: Invalid memory address: %04X\n", address);
+    nes_log("ERROR: Invalid memory address: 0x%04X\n", address);
     exit(1);
   }
 }
 
 void nes_write(NES *nes, uint16_t address, uint8_t value)
 {
-  nes_log("INFO: CPU Writing address: %04X, value: %02X\n", address, value);
+  nes_log("INFO: CPU Writing address: 0x%04X, value: 0x%02X\n", address, value);
   if (address < 0x8000)
   {
-    if (address <= 0x2000 && address <= 0x2007 || address == 0x4014)
+    if (address >= 0x2000 && address <= 0x2007 || address == 0x4014)
     {
       ppu_write_register(nes->ppu, address, value);
     }
@@ -42,7 +42,7 @@ void nes_write(NES *nes, uint16_t address, uint8_t value)
   }
   else
   {
-    nes_log("ERROR: Invalid memory address: %04X\n", address);
+    nes_log("ERROR: Invalid memory address: 0x%04X\n", address);
     exit(1);
   }
 }

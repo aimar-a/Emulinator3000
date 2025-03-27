@@ -10,6 +10,7 @@ FASE 1:
   Anadir login/registro usuario
   Menu de usuario, amigos... (juntar con la parte de bd)
   Menu para configurar cosas del fichero configuracion
+  hacer q cuando se meta algo q no es un numero no explote
 
 -No entiendo una verga pero pinta q es para cargar iniciales realistas a la bd:
 De manera opcional se contempla la posibilidad de que todos o parte de los

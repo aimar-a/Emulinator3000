@@ -12,8 +12,6 @@ void nes_log(const char *format, ...)
   va_end(args);
 
   fclose(log_file);
-
-  printf(format, args); // Por ahora también lo imprimimos en consola pa no tener que abrir el archivo
 }
 
 void nes_log_clear()
