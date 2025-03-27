@@ -27,12 +27,26 @@
  */
 void nes_push(NES *nes, uint8_t value);
 /**
+ * Pushes an address onto the NES stack.
+ *
+ * @param nes A pointer to the NES system.
+ * @param address The address to be pushed onto the stack.
+ */
+void nes_push_address(NES *nes, uint16_t address);
+/**
  * Pulls a value from the NES stack.
  *
  * @param nes A pointer to the NES system.
  * @return The value pulled from the stack.
  */
 uint8_t nes_pull(NES *nes);
+/**
+ * Pulls an address from the NES stack.
+ *
+ * @param nes A pointer to the NES system.
+ * @return The address pulled from the stack.
+ */
+uint16_t nes_pull_address(NES *nes);
 
 // --------------------------------------
 // NES CPU Instructions
@@ -213,14 +227,16 @@ void nes_iny(NES *nes);
 /**
  * Jumps to the address specified by the operand.
  * @param nes Pointer to the NES structure.
+ * @param address Memory address to jump to.
  */
-void nes_jmp(NES *nes);
+void nes_jmp(NES *nes, uint16_t address);
 
 /**
  * Jumps to the subroutine at the address specified by the operand.
  * @param nes Pointer to the NES structure.
+ * @param address Memory address to jump to.
  */
-void nes_jsr(NES *nes);
+void nes_jsr(NES *nes, uint16_t address);
 
 /**
  * Loads the accumulator with the value at the given address.

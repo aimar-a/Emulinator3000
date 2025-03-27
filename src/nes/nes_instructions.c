@@ -11,14 +11,40 @@
 // esto deberia de ir en otro sitio pero por ahora se queda aqui
 void nes_push(NES *nes, uint8_t value)
 {
+  if (nes->SP == 0x00)
+  {
+    nes_log("ERROR: Stack overflow\n");
+    exit(1);
+  }
   nes_write(nes, 0x100 | nes->SP, value);
   nes->SP--;
+  nes_log("INFO: Pushed value: 0x%02X to stack at address: 0x%04X\n", value, 0x100 | nes->SP);
+}
+
+void nes_push_address(NES *nes, uint16_t address)
+{
+  nes_push(nes, (address >> 8) & 0xFF);
+  nes_push(nes, address & 0xFF);
 }
 
 uint8_t nes_pull(NES *nes)
 {
+  if (nes->SP == 0xFF)
+  {
+    nes_log("ERROR: Stack underflow\n");
+    exit(1);
+  }
   nes->SP++;
-  return nes_read(nes, 0x100 | nes->SP);
+  uint8_t value = nes_read(nes, 0x100 | nes->SP);
+  nes_log("INFO: Pulled value: 0x%02X from stack at address: 0x%04X\n", value, 0x100 | nes->SP);
+  return value;
+}
+
+uint16_t nes_pull_address(NES *nes)
+{
+  uint8_t low = nes_pull(nes);
+  uint8_t high = nes_pull(nes);
+  return (high << 8) | low;
 }
 // hasta aqui
 
@@ -106,6 +132,7 @@ void nes_bcc(NES *nes)
   if (!(nes->P & CARRY))
   {
     nes->PC += (int8_t)nes_read(nes, nes->PC);
+    nes->PC++;
   }
   else
   {
@@ -118,6 +145,7 @@ void nes_bcs(NES *nes)
   if (nes->P & CARRY)
   {
     nes->PC += (int8_t)nes_read(nes, nes->PC);
+    nes->PC++;
   }
   else
   {
@@ -130,6 +158,7 @@ void nes_beq(NES *nes)
   if (nes->P & ZERO)
   {
     nes->PC += (int8_t)nes_read(nes, nes->PC);
+    nes->PC++;
   }
   else
   {
@@ -163,6 +192,7 @@ void nes_bmi(NES *nes)
   if (nes->P & NEGATIVE)
   {
     nes->PC += (int8_t)nes_read(nes, nes->PC);
+    nes->PC++;
   }
   else
   {
@@ -175,6 +205,7 @@ void nes_bne(NES *nes)
   if (!(nes->P & ZERO))
   {
     nes->PC += (int8_t)nes_read(nes, nes->PC);
+    nes->PC++;
   }
   else
   {
@@ -187,7 +218,7 @@ void nes_bpl(NES *nes)
   if (!(nes->P & NEGATIVE))
   {
     nes->PC += (int8_t)nes_read(nes, nes->PC);
-    nes->PC++; // TODO: Check if this is correct
+    nes->PC++;
   }
   else
   {
@@ -198,11 +229,10 @@ void nes_bpl(NES *nes)
 void nes_brk(NES *nes)
 {
   nes->PC++;
-  nes_push(nes, nes->PC >> 8);
-  nes_push(nes, nes->PC & 0xFF);
+  nes_push_address(nes, nes->PC);
   nes_push(nes, nes->P | BREAK);
   nes->P |= INTERRUPT;
-  nes->PC = nes_read(nes, 0xFFFE) | (nes_read(nes, 0xFFFF) << 8);
+  nes->PC = nes_read_address(nes, 0xFFFE);
 }
 
 void nes_bvc(NES *nes)
@@ -210,6 +240,7 @@ void nes_bvc(NES *nes)
   if (!(nes->P & OVERFLOW))
   {
     nes->PC += (int8_t)nes_read(nes, nes->PC);
+    nes->PC++;
   }
   else
   {
@@ -222,6 +253,7 @@ void nes_bvs(NES *nes)
   if (nes->P & OVERFLOW)
   {
     nes->PC += (int8_t)nes_read(nes, nes->PC);
+    nes->PC++;
   }
   else
   {
@@ -433,17 +465,15 @@ void nes_iny(NES *nes)
   }
 }
 
-void nes_jmp(NES *nes)
+void nes_jmp(NES *nes, uint16_t address)
 {
-  nes->PC = nes_read(nes, nes->PC) | (nes_read(nes, nes->PC + 1) << 8);
+  nes->PC = address;
 }
 
-void nes_jsr(NES *nes)
+void nes_jsr(NES *nes, uint16_t address)
 {
-  nes->PC--;
-  nes_push(nes, nes->PC >> 8);
-  nes_push(nes, nes->PC & 0xFF);
-  nes->PC = nes_read(nes, nes->PC + 1) | (nes_read(nes, nes->PC + 2) << 8);
+  nes_push_address(nes, nes->PC); // TODO: Check if this is correct
+  nes->PC = address;
 }
 
 void nes_lda(NES *nes, uint16_t address)
@@ -631,14 +661,12 @@ void nes_ror(NES *nes, uint16_t address)
 void nes_rti(NES *nes)
 {
   nes->P = nes_pull(nes) | BREAK;
-  nes->PC = nes_pull(nes);
-  nes->PC |= nes_pull(nes) << 8;
+  nes->PC = nes_pull_address(nes);
 }
 
 void nes_rts(NES *nes)
 {
-  nes->PC = nes_pull(nes);
-  nes->PC |= nes_pull(nes) << 8;
+  nes->PC = nes_pull_address(nes);
   nes->PC++;
 }
 
@@ -860,8 +888,8 @@ void nes_ror_a(NES *nes)
 
 void nes_jmp_indirect(NES *nes)
 {
-  uint16_t address = nes_read(nes, nes->PC) | (nes_read(nes, nes->PC + 1) << 8);
-  nes->PC = nes_read(nes, address) | (nes_read(nes, address + 1) << 8);
+  uint16_t address = nes_read_address(nes, nes->PC);
+  nes->PC = nes_read_address(nes, address);
 }
 
 void nes_lsr_a(NES *nes)

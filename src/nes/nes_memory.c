@@ -29,6 +29,11 @@ uint8_t nes_read(NES *nes, uint16_t address)
   return value;
 }
 
+uint16_t nes_read_address(NES *nes, uint16_t address)
+{
+  return nes_read(nes, address) | (nes_read(nes, address + 1) << 8);
+}
+
 void nes_write(NES *nes, uint16_t address, uint8_t value)
 {
   nes_log("INFO: CPU Writing address: 0x%04X, value: 0x%02X\n", address, value);

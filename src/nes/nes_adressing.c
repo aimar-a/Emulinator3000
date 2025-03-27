@@ -54,6 +54,15 @@ uint8_t nes_zero_page_y(NES *nes)
   return (address + nes->Y) & 0xFF;
 }
 
+uint16_t nes_indirect(NES *nes)
+{
+  uint8_t address = nes_read(nes, nes->PC);
+  nes->PC += 1;
+  uint16_t pointer = nes_read(nes, address) | (nes_read(nes, (address + 1) & 0xFF) << 8);
+  nes_log("INFO: Indirect pointer calculated: 0x%04X\n", pointer);
+  return pointer;
+}
+
 uint16_t nes_indirect_x(NES *nes)
 {
   uint8_t address = (nes_read(nes, nes->PC) + nes->X) & 0xFF;

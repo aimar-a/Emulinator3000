@@ -65,6 +65,14 @@ uint8_t nes_zero_page_x(NES *nes);
 uint8_t nes_zero_page_y(NES *nes);
 
 /**
+ * Reads a zero page address from the program counter (PC), uses the result as a pointer to read a 16-bit address, and increments the PC.
+ *
+ * @param nes Pointer to the NES structure.
+ * @return The 16-bit address read from the zero page address.
+ */
+uint16_t nes_indirect(NES *nes);
+
+/**
  * Reads a zero page address from the program counter (PC), adds the X register to it, and uses the result as a pointer to read a 16-bit address.
  * Increments the PC.
  *
