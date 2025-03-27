@@ -109,6 +109,12 @@ void crearBD() {
 //creamos las funciones para insertar datos en las tablas
 void insertarUsuarios(char* user, char* contraseña) {
 
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
+
     sqlite3_stmt *stmt;
 
     char sql[] = "INSERT INTO USUARIOS (user, contraseña) VALUES (?, ?);";
@@ -121,9 +127,17 @@ void insertarUsuarios(char* user, char* contraseña) {
     sqlite3_finalize(stmt);
 
     printf("✅ Usuario '%s' insertado correctamente.\n", user);
+
+    sqlite3_close(db);
 }
 
 void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
 
     sqlite3_stmt *stmt;
 
@@ -141,9 +155,17 @@ void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
     sqlite3_finalize(stmt);
 
     printf("✅ Partida '%i' guardada correctamente.\n", idjuego);
+
+    sqlite3_close(db);
 }
 
 void insertarJuego(char* titulo, char* rom, int puntrecord, char* usuariorecord){
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
 
     sqlite3_stmt *stmt;
 
@@ -161,9 +183,18 @@ void insertarJuego(char* titulo, char* rom, int puntrecord, char* usuariorecord)
     sqlite3_finalize(stmt);
   
     printf("✅ Juego '%s' insertado correctamente.\n",titulo);
+
+    sqlite3_close(db);
 }
 
 void insertarTiempoJugado(int tiempojugado, char* user, int idjuego){
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
+
     sqlite3_stmt *stmt;
 
     char sql[] = "INSERT INTO TIEMPO_JUGADO (tiempo_jugado, user, id_juego) VALUES (?, ?, ?);";
@@ -179,9 +210,17 @@ void insertarTiempoJugado(int tiempojugado, char* user, int idjuego){
     sqlite3_finalize(stmt);
 
     printf("✅ Tiempo jugado '%i' guardado correctamente.\n", tiempojugado);
+
+    sqlite3_close(db);
 }
 
 void insertarLogros(char* nombre, char* descripcion, int idjuego){
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
 
     sqlite3_stmt *stmt;
 
@@ -198,9 +237,17 @@ void insertarLogros(char* nombre, char* descripcion, int idjuego){
     sqlite3_finalize(stmt);
 
     printf("✅ Logro '%s' insertado correctamente.\n", nombre);
+
+    sqlite3_close(db);
 }
 
 void insertarLogrosUsuarios(char* user, int idlogro, char* fecha ){ //en principio guardamos la FECHA como texto ya veremos mas adelante si hay que cambiarlo o no
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
 
     sqlite3_stmt *stmt;
 
@@ -217,9 +264,17 @@ void insertarLogrosUsuarios(char* user, int idlogro, char* fecha ){ //en princip
     sqlite3_finalize(stmt);
 
     printf("✅ Logro '%i' del usuario '%s' insertado correctamente.\n", idlogro, user);
+
+    sqlite3_close(db);
 }
 
 void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guardamos ESTADO como texto ya veremos mas adelante si hay que cambiarlo o no
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
 
     sqlite3_stmt *stmt;
 
@@ -236,6 +291,8 @@ void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guar
     sqlite3_finalize(stmt);
 
     printf("✅ Usuarios '%s' y '%s' han registrados su amistad en estado '%s' correctamente.\n", user1, user2, estado);
+
+    sqlite3_close(db);
 }
 
 // Creamos las funciones para actualizar las tablas
@@ -243,6 +300,13 @@ void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guar
 // updateTiempoJugado(de un usuario a un juego)
 
 void updateTiempoJugado(int tiempoJugado, char* user, int id_juego) {
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
+
     sqlite3_stmt *stmt;
 
     char sql[] = "UPDATE TIEMPO_JUGADO SET tiempo_jugado = ? WHERE user = ? AND id_juego = ?;";
@@ -255,11 +319,20 @@ void updateTiempoJugado(int tiempoJugado, char* user, int id_juego) {
     sqlite3_finalize(stmt);
 
     printf("✅ Tiempo Jugado '%i' actualizado correctamente.\n", tiempoJugado);
+
+    sqlite3_close(db);
 }
 
 // updateEstado_Amigos(entre dos usuarios)
 
 void updateEstado_Amigos(char* user1, char* user2, char* estado) {
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
+
     sqlite3_stmt *stmt;
 
     char sql[] = "UPDATE AMIGOS estado = ? WHERE user1 = ? AND user2 = ?";
@@ -272,12 +345,21 @@ void updateEstado_Amigos(char* user1, char* user2, char* estado) {
     sqlite3_finalize(stmt);
 
     printf("✅ El estado entre el user '%s' y el user '%s' ha sido actualizado a '%S' correctamente", user1, user2, estado);
+
+    sqlite3_close(db);
 }
 
 
 //updateContrasena (de usuario)
 
 void updateContrasena(char* newcontrasena, char* user){
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
+
     sqlite3_stmt *stmt;
 
     char sql[] = "UPDATE USUARIO contraseña = ? WHERE user = ?";
@@ -289,11 +371,19 @@ void updateContrasena(char* newcontrasena, char* user){
     sqlite3_finalize(stmt);
 
     printf("✅ Contraseña del usuario '%s' aactualizada correctamente.", user);
+
+    sqlite3_close(db);
 }
 
 //updateUsuarioRecord (Juego)
 
 void updateUsuarioRecord(char* usuario, int idjuego){
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
 
     sqlite3_stmt *stmt;
 
@@ -306,11 +396,20 @@ void updateUsuarioRecord(char* usuario, int idjuego){
     sqlite3_finalize(stmt);
 
     printf("✅ Record del usuario '%s' actualizada correctamente.", usuario);
+
+    sqlite3_close(db);
 }
 
 //updatePuntuacionRecord (Juego)
 
 void updatePuntuacionRecord(int newPunt, int idjuego){
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+        return;
+    }
+
     sqlite3_stmt *stmt;
 
     char sql[] = "UPDATE JUEGO puntuacion_record = ? WHERE user = ?";
@@ -322,5 +421,7 @@ void updatePuntuacionRecord(int newPunt, int idjuego){
     sqlite3_finalize(stmt);
 
     printf("✅ Puntuación record del juego '%i' actualizada correctamente a '%i'.", idjuego, newPunt);
+
+    sqlite3_close(db);
 }
 
