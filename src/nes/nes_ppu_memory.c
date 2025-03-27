@@ -3,7 +3,7 @@
 // Función para leer de la memoria de la PPU
 uint8_t ppu_read_ram(PPU *ppu, uint16_t addr)
 {
-  nes_log("INFO: Reading PPU address 0x%04X\n", addr);
+  nes_log("INFO: PPU Reading address 0x%04X\n", addr);
   if (addr < 0x2000)
   {
     ppu->data = ppu->vram[addr % 0x2000];
@@ -18,7 +18,7 @@ uint8_t ppu_read_ram(PPU *ppu, uint16_t addr)
   }
   else
   {
-    nes_log("ERROR: Invalid PPU address 0x%04X\n", addr);
+    nes_log("ERROR: PPU Invalid address 0x%04X\n", addr);
     exit(1);
   }
 }
@@ -26,7 +26,7 @@ uint8_t ppu_read_ram(PPU *ppu, uint16_t addr)
 // Función para escribir en la memoria de la PPU
 void ppu_write_ram(PPU *ppu, uint16_t addr, uint8_t data)
 {
-  nes_log("INFO: Writing PPU address 0x%04X\n", addr);
+  nes_log("INFO: PPU Writing address 0x%04X, data: 0x%02X\n", addr, data);
   if (addr < 0x2000)
   {
     ppu->vram[addr % 0x2000] = data;
@@ -41,7 +41,14 @@ void ppu_write_ram(PPU *ppu, uint16_t addr, uint8_t data)
   }
   else
   {
-    nes_log("ERROR: Invalid PPU address 0x%04X\n", addr);
+    nes_log("ERROR: PPU Invalid address 0x%04X\n", addr);
     exit(1);
   }
+}
+
+// Función para leer de la memoria de OAM
+void ppu_write_oam(PPU *ppu, uint8_t addr, uint8_t data)
+{
+  nes_log("INFO: Writing OAM address 0x%02X, data: 0x%02X\n", addr, data);
+  ppu->oam[addr] = data;
 }

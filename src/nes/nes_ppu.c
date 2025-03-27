@@ -1,5 +1,6 @@
 #include "nes_ppu.h"
 
+// Avanza un ciclo de la PPU de forma clasica
 void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que hacer primero los ciclos y dentro los scanlines?)
 {                       // TODO: Implementar el resto de la PPU (registros y lo que hace cada uno, y creo q gestion de memoria y algo mas habra q hacer)
   nes->ppu->cycle++;
@@ -65,11 +66,33 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
     {
       nes->ppu->scanline = 0;
       nes->ppu->frame++;
-      nes_log("INFO: Starting new frame\n");
+      nes_log("INFO: Frame: %d\n", nes->ppu->frame);
       printf("Frame: %d\n", nes->ppu->frame);
     }
     nes_log("INFO: Scanline: %d\n", nes->ppu->scanline);
   }
+}
+
+// Genera un frame de la pantalla de forma optimizada
+void ppu_step_optimized(NES *nes)
+{
+  nes->ppu->status &= ~0x80;
+  nes_log("INFO: Exiting VBlank\n");
+  nes->ppu->scroll = 0; // TODO: nose que hay que asignar aqui
+  nes->ppu->addr = 0;   // TODO: nose que hay que asignar aqui
+
+  nes->ppu->scanline = 0;
+  for (; nes->ppu->scanline < 240; nes->ppu->scanline++)
+  {
+    render_scanline(nes);
+  }
+  nes_display_draw(nes->screen);
+
+  nes->ppu->frame++;
+  nes_log("INFO: Frame: %d\n", nes->ppu->frame);
+
+  nes->ppu->status |= 0x80;
+  nes_log("INFO: Entering VBlank\n");
 }
 
 void render_scanline(NES *nes)
@@ -93,6 +116,7 @@ void render_scanline(NES *nes)
   }
 }
 
+// Devuelve el color de un pixel del fondo
 uint8_t get_background_pixel(NES *nes, int x, int y)
 {
   if (!(nes->ppu->mask & 0x08))
@@ -114,6 +138,7 @@ uint8_t get_background_pixel(NES *nes, int x, int y)
   return color;
 }
 
+// Devuelve el color de un pixel de un sprite
 uint8_t get_sprite_pixel(NES *nes, int x, int y)
 {
   if (!(nes->ppu->mask & 0x10))
