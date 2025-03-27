@@ -4,12 +4,11 @@ uint8_t nes_evaluate_opcode(NES *nes)
 {
   uint8_t opcode = nes_read(nes, nes->PC);
   nes->PC++;
-  nes_log("INFO: PC: %04X, Opcode: %02X (%02X %02X)\n", nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1));
+  nes_log("INFO: PC: 0x%04X, Opcode: 0x%02X (0x%02X 0x%02X)\n", nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1));
+  printf("INFO: PC: 0x%04X, Opcode: 0x%02X (0x%02X 0x%02X)\n", nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1));
   switch (opcode)
   {
   case 0x00:
-    nes_log("ERROR: Opcode 0x00 not implemented\n");
-    exit(1);
     nes_brk(nes);
     return 7;
   case 0x01:
@@ -463,10 +462,10 @@ uint8_t nes_evaluate_opcode(NES *nes)
     nes_inc(nes, nes_absolute_x(nes));
     return 7;
   default:
-    nes_log("ERROR: Unknown opcode %02X\n", opcode);
+    nes_log("ERROR: Unknown opcode 0x%02X\n", opcode);
     exit(1);
     break;
   }
-  nes_log("ERROR: Opcode %02X not implemented\n", opcode);
+  nes_log("ERROR: Opcode 0x%02X not implemented\n", opcode);
   exit(1);
 }

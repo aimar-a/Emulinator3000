@@ -187,6 +187,7 @@ void nes_bpl(NES *nes)
   if (!(nes->P & NEGATIVE))
   {
     nes->PC += (int8_t)nes_read(nes, nes->PC);
+    nes->PC++; // TODO: Check if this is correct
   }
   else
   {

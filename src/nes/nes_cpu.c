@@ -53,7 +53,7 @@ void nes_launch()
   nes_log("INFO: ROM loaded successfully\n");
 
   nes->PC = nes_read(nes, nes->rom->prg_size - 0x6) | (nes_read(nes, nes->rom->prg_size - 0x5) << 8);
-  nes_log("INFO: Program Counter set to %04X\n", nes->PC);
+  nes_log("INFO: Program Counter set to 0x%04X\n", nes->PC);
 
   nes->ppu->scanline = 0;
 
@@ -142,6 +142,8 @@ void nes_run(NES *nes)
   {
     int cycles = nes_evaluate_opcode(nes); // Calcula los ciclos de CPU para la instrucción actual
 
+    ppu_step_optimized(nes); // Dibuja un frame de la pantalla
+
     // Tiempo de espera para simular el tiempo real de un ciclo de la CPU
     // SDL_Delay(cpu_cycle_time_ms * cycles); // Espera el tiempo correspondiente a los ciclos de CPU
 
@@ -155,7 +157,7 @@ void nes_run(NES *nes)
     for (int i = 0; i < cycles * 3; i++)
     {
       // Sincroniza el ciclo de la PPU
-      ppu_step(nes);
+      // ppu_step(nes);
 
       // Retraso para simular el tiempo real de un ciclo de la PPU
       // SDL_Delay(ppu_cycle_time_ms); // Espera el tiempo correspondiente a un ciclo de la PPU
