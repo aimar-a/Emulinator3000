@@ -1,4 +1,7 @@
 #include "menu_cmd.h"
+#include "bd.h"
+#include <stdbool.h>
+#include <windows.h> //para usar "sleep" (funciona en windows en linux/mac es diferente)
 
 #define ROMS_PATH "resources/chip8-roms"
 
@@ -11,6 +14,119 @@ void clearScreen()
 #endif
 }
 
+char * currentUser;
+
+void menuUsuario(){
+
+  //opciones: 
+  //  1.Iniciar sesion --> Lleva a otro menu donde poner Usuario y contraseña 
+  //  2.Regsitrar --> Lleva a otro menu donde poner NUEVOUSUARIO y NUEVACONTRASEÑA
+
+  // 4.En MenuInicial meter opcion de cambiar Contraseña
+  // 5. el SALIR  de menuInicial tiene que ir a menuUsuario
+
+  bool pass = false;
+
+  while(pass==false){
+
+    char buffer1[3];
+    
+    clearScreen();
+    printf("Seleccione una de las siguientes opciones\n");
+    printf("\n1.INICIAR SESIÓN: \n");
+    printf("\n2.REGISTRARSE: \n");
+    printf("\n0. Salir\n");
+    printf("\nOpción: ");
+
+    fgets(buffer1, sizeof(buffer1), stdin);
+
+    if(buffer1[0]=='1'){
+      clearScreen();
+      printf("\nIntroduce tu Usuario: ");
+      char buffer2[22];
+      fgets(buffer2, sizeof(buffer2), stdin);
+      buffer2[strcspn(buffer2, "\n")] = '\0';  // Eliminar el salto de línea al final
+
+      printf("\nIntroduce tu Contraseña: ");
+      char buffer3[22];
+      fgets(buffer3, sizeof(buffer3), stdin);
+      buffer3[strcspn(buffer3, "\n")] = '\0';  // Eliminar el salto de línea al final
+
+  
+      //implementacion BD (comprobar si existe un usuario con esa contraseña)
+      if(existeUsuarioYPas(buffer2, buffer3)==true){
+        pass = true;
+        printf("\nhas accedido correctamente");
+        currentUser=buffer2;
+        clearScreen();
+        menuInicial();
+        break;
+      }else{
+
+        printf("\nUsuario o contraseña incorrectos");
+        Sleep(1000);
+
+      }
+      
+
+    } else if (buffer1[0]=='2'){
+      clearScreen();
+      printf("\nUsuario: ");
+      char buffer4[22];
+      fgets(buffer4, sizeof(buffer4), stdin);
+      buffer4[strcspn(buffer4, "\n")] = '\0';  // Eliminar el salto de línea al final
+
+      printf("\nContraseña: ");
+      char buffer5[22];
+      fgets(buffer5, sizeof(buffer5), stdin);
+      buffer5[strcspn(buffer5, "\n")] = '\0';  // Eliminar el salto de línea al final
+
+      
+
+
+
+      //implementacion BD (insertar usuario)
+      if(buffer4[0]!='\0' && buffer5[0]!='\0make'){
+
+        if(existeUsuario(buffer4)!=true){
+          currentUser=buffer4;
+          insertarUsuarios(buffer4, buffer5);
+          printf("\nRegistro Exitoso");
+          Sleep(1000);
+          clearScreen();
+          menuInicial();
+          break;
+        }else{
+          printf("\nEse nombre de usuario ya existe, prueba a poner otro nombre");
+          Sleep(500);
+          printf("\nVolviendo al menu....");
+          Sleep(1000);         
+          clearScreen();
+          
+        }
+
+      }else{
+
+        printf("\nNo se pueden guardar como usuario o contraseña valores vacios");
+        Sleep(500);
+        printf("\nVolviendo al menu....");
+        Sleep(1000);      
+        clearScreen();
+      }
+
+  
+
+    } else if (buffer1[0]=='0'){
+
+      printf("\nCerrando....");
+      Sleep(1000);
+      break;
+
+    }
+
+
+  }}
+
 void menuInicial()
 {
   char option = 'w';
@@ -18,6 +134,8 @@ void menuInicial()
   {
     option = ' ';
     clearScreen();
+    printf("Estas jugando con el usuario: %s\n", currentUser);
+    printf("4. Cambiar contraseña del usuario\n");
     printf("Bienvenido al emulador EMULINATOR 3000\n");
     printf("Seleccione la consola que desea emular:\n");
     printf("1. CHIP-8\n");
@@ -39,8 +157,11 @@ void menuInicial()
     case '3':
       nes_launch();
       break;
-    case '0':
-      printf("Saliendo...\n");
+    case '0': 
+      clearScreen();
+      printf("\nVolviendo al menu de Inicio de sesion o Registro....");
+      Sleep(1000);
+      menuUsuario();
       break;
     default:
       printf("Opción inválida\n");

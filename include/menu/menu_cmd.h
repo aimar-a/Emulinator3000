@@ -11,6 +11,7 @@
 #include "nes_cpu.h"
 #include "menu_sdl.h"
 
+void menuUsuario();
 void menuInicial();
 void menuChip8();
 void menuListaROMs();

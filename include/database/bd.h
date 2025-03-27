@@ -1,6 +1,7 @@
 #ifndef _BD_H_
 #define _BD_H_
 
+#include <stdbool.h>
 void crearBD();
 
 // Funciones para insertar datos en las tablas
@@ -18,5 +19,10 @@ void updateEstado_Amigos(char* user1, char* user2, char* estado);
 void updateContrasena(char* newcontrasena, char* user);
 void updateUsuarioRecord(char* usuario, int idjuego);
 void updatePuntuacionRecord(int newPunt, int idjuego);
+
+//mas funciones
+bool existeUsuarioYPas(char* name, char* pass);
+bool existeUsuario(char* name);
+
 
 #endif 

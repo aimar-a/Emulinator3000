@@ -23,8 +23,11 @@ int main(int argc, char *argv[])
 {
   // creamos la BD con sus estructuras en el caso en el que no existan
   crearBD();
-  // nes_launch();
-  menuInicial();
+
+  //nes_launch();
+  //menuInicial();
+  menuUsuario();
+
 
   return 0;
 }

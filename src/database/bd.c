@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "sqlite3.h"
 #include <string.h>
+#include "bd.h"
 
 sqlite3 *db;
 
@@ -16,8 +17,8 @@ void crearBD() {
 
     // Creamos la tabla USUARIOS
     char sql1[] = "CREATE TABLE IF NOT EXISTS USUARIOS ("
-                  "user VARCHAR(8) PRIMARY KEY,"
-                  "contraseña VARCHAR(8) NOT NULL);";
+                  "user VARCHAR(20) PRIMARY KEY,"
+                  "contraseña VARCHAR(20) NOT NULL);";
     
     sqlite3_prepare_v2(db, sql1, -1, &stmt, NULL);
     sqlite3_step(stmt);
@@ -26,10 +27,10 @@ void crearBD() {
     // Creamos la tabla JUEGO
     char sql2[] = "CREATE TABLE IF NOT EXISTS JUEGO ("
                   "id_juego INTEGER PRIMARY KEY AUTOINCREMENT,"
-                  "titulo VARCHAR(20) NOT NULL,"
-                  "rom VARCHAR(20) NOT NULL,"
+                  "titulo VARCHAR(100) NOT NULL,"
+                  "rom VARCHAR(100) NOT NULL,"
                   "puntuacion_record INT NOT NULL,"
-                  "usuario_record VARCHAR(8),"
+                  "usuario_record VARCHAR(20),"
                   "FOREIGN KEY (usuario_record) REFERENCES USUARIOS(user));";
 
     sqlite3_prepare_v2(db, sql2, -1, &stmt, NULL);
@@ -39,7 +40,7 @@ void crearBD() {
     // Creamos la tabla PARTIDA
     char sql3[] = "CREATE TABLE IF NOT EXISTS PARTIDA ("
                   "id_partida INTEGER PRIMARY KEY AUTOINCREMENT,"
-                  "user VARCHAR(8) NOT NULL,"
+                  "user VARCHAR(20) NOT NULL,"
                   "id_juego INTEGER NOT NULL,"
                   "tiempo_jugado INT NOT NULL,"
                   "puntuacion_maxima INT NOT NULL,"
@@ -53,7 +54,7 @@ void crearBD() {
     // Creamos la tabla TIEMPO_JUGADO
     char sql4[] = "CREATE TABLE IF NOT EXISTS TIEMPO_JUGADO ("
                   "tiempo_jugado INT DEFAULT 0,"
-                  "user VARCHAR(8),"
+                  "user VARCHAR(20),"
                   "id_juego INTEGER,"
                   "PRIMARY KEY (user, id_juego),"
                   "FOREIGN KEY (user) REFERENCES USUARIOS(user),"
@@ -77,7 +78,7 @@ void crearBD() {
 
     // Creamos la tabla LOGROS_USUARIO
     char sql6[] = "CREATE TABLE IF NOT EXISTS LOGROS_USUARIO ("
-                  "user VARCHAR(8),"
+                  "user VARCHAR(20),"
                   "id_logro INTEGER,"
                   "fecha TIMESTAMP NOT NULL,"
                   "PRIMARY KEY (user, id_logro),"
@@ -90,8 +91,8 @@ void crearBD() {
 
     // Creamos la tabla AMIGOS
     char sql7[] = "CREATE TABLE IF NOT EXISTS AMIGOS ("
-                  "user1 VARCHAR(8),"
-                  "user2 VARCHAR(8),"
+                  "user1 VARCHAR(20),"
+                  "user2 VARCHAR(20),"
                   "estado TEXT CHECK(estado IN ('pendiente', 'aceptado', 'rechazado')) NOT NULL,"
                   "PRIMARY KEY (user1, user2),"
                   "FOREIGN KEY (user1) REFERENCES USUARIOS(user),"
@@ -118,7 +119,7 @@ void insertarUsuarios(char* user, char* contraseña) {
     sqlite3_stmt *stmt;
 
     char sql[] = "INSERT INTO USUARIOS (user, contraseña) VALUES (?, ?);";
-    sqlite3_prepare_v2(db, sql, strlen(sql)+1, &stmt, 0);
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, contraseña, strlen(contraseña), SQLITE_STATIC);  // Esté último paso ahí que repasarlo
@@ -126,7 +127,7 @@ void insertarUsuarios(char* user, char* contraseña) {
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    printf("✅ Usuario '%s' insertado correctamente.\n", user);
+   // printf("✅ Usuario '%s' insertado correctamente.\n", user); lo comento que sino sale en el cmd to lo raro
 
     sqlite3_close(db);
 }
@@ -143,7 +144,7 @@ void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
 
     char sql[] = "INSERT INTO PARTIDA (user, id_juego, tiempo_jugado, puntuacion_maxima) VALUES (?, ?, ?, ?);";
 
-    sqlite3_prepare_v2(db, sql, strlen(sql)+1, &stmt, 0);
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);
     sqlite3_bind_int(stmt, 2, idjuego);  
@@ -171,7 +172,7 @@ void insertarJuego(char* titulo, char* rom, int puntrecord, char* usuariorecord)
 
     char sql[] = "INSERT INTO JUEGO (titulo, rom, puntuacion_record, usuario_record) VALUES (?, ?, ?, ?);";
 
-    sqlite3_prepare_v2(db, sql, strlen(sql)+1, &stmt, 0);
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, titulo, strlen(titulo), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, rom, strlen(rom), SQLITE_STATIC);  
@@ -199,7 +200,7 @@ void insertarTiempoJugado(int tiempojugado, char* user, int idjuego){
 
     char sql[] = "INSERT INTO TIEMPO_JUGADO (tiempo_jugado, user, id_juego) VALUES (?, ?, ?);";
 
-    sqlite3_prepare_v2(db, sql, strlen(sql)+1, &stmt, 0);
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_int(stmt, 1, tiempojugado);
     sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_STATIC);  
@@ -226,7 +227,7 @@ void insertarLogros(char* nombre, char* descripcion, int idjuego){
 
     char sql[] = "INSERT INTO LOGROS (nombre, descripcion, id_juego) VALUES (?, ?, ?);";
 
-    sqlite3_prepare_v2(db, sql, strlen(sql)+1, &stmt, 0);
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
 
     sqlite3_bind_text(stmt, 1, nombre, strlen(nombre), SQLITE_STATIC);  
@@ -253,7 +254,7 @@ void insertarLogrosUsuarios(char* user, int idlogro, char* fecha ){ //en princip
 
     char sql[] = "INSERT INTO LOGROS_USUARIO (user, id_logro, fecha) VALUES (?, ?, ?);";
 
-    sqlite3_prepare_v2(db, sql, strlen(sql)+1, &stmt, 0);
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
 
     sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);  
@@ -280,7 +281,7 @@ void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guar
 
     char sql[] = "INSERT INTO AMIGOS (user1, user2, estado) VALUES (?, ?, ?);";
 
-    sqlite3_prepare_v2(db, sql, strlen(sql)+1, &stmt, 0);
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
 
     sqlite3_bind_text(stmt, 1, user1, strlen(user1), SQLITE_STATIC);  
@@ -311,6 +312,8 @@ void updateTiempoJugado(int tiempoJugado, char* user, int id_juego) {
 
     char sql[] = "UPDATE TIEMPO_JUGADO SET tiempo_jugado = ? WHERE user = ? AND id_juego = ?;";
 
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
     sqlite3_bind_int(stmt, 1, tiempoJugado);
     sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_STATIC);
     sqlite3_bind_int(stmt, 3, id_juego);
@@ -336,6 +339,8 @@ void updateEstado_Amigos(char* user1, char* user2, char* estado) {
     sqlite3_stmt *stmt;
 
     char sql[] = "UPDATE AMIGOS estado = ? WHERE user1 = ? AND user2 = ?";
+
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, estado, strlen(estado), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, user1, strlen(user1), SQLITE_STATIC);
@@ -364,6 +369,8 @@ void updateContrasena(char* newcontrasena, char* user){
 
     char sql[] = "UPDATE USUARIO contraseña = ? WHERE user = ?";
 
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
     sqlite3_bind_text(stmt, 1, newcontrasena, strlen(newcontrasena), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_STATIC);
 
@@ -388,6 +395,8 @@ void updateUsuarioRecord(char* usuario, int idjuego){
     sqlite3_stmt *stmt;
 
     char sql[] = "UPDATE JUEGO usuario_record = ? WHERE user = ?";
+
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, usuario, strlen(usuario), SQLITE_STATIC);
     sqlite3_bind_int(stmt, 2, idjuego);
@@ -414,6 +423,8 @@ void updatePuntuacionRecord(int newPunt, int idjuego){
 
     char sql[] = "UPDATE JUEGO puntuacion_record = ? WHERE user = ?";
 
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
     sqlite3_bind_int(stmt, 1, newPunt);
     sqlite3_bind_int(stmt, 2, idjuego);
 
@@ -424,4 +435,73 @@ void updatePuntuacionRecord(int newPunt, int idjuego){
 
     sqlite3_close(db);
 }
+
+
+//funcion para comprobar si existe un usuario y contraseña
+
+bool existeUsuarioYPas(char* name, char* pass){
+
+    bool existe = false;
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+    }
+
+    sqlite3_stmt *stmt;
+
+    char sql[] = "SELECT * FROM USUARIOS WHERE user = ? AND contraseña = ?";
+
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+
+    sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, pass, strlen(pass), SQLITE_STATIC);
+
+    if(sqlite3_step(stmt)==SQLITE_ROW){
+
+        existe = true;
+        
+    }
+    sqlite3_finalize(stmt);
+
+
+    sqlite3_close(db);
+    
+    return existe;
+
+}
+
+
+//funcion para comprobar si existe un usuario 
+
+bool existeUsuario(char* name){
+
+    bool existe = false;
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+    }
+
+    sqlite3_stmt *stmt;
+
+    char sql[] = "SELECT * FROM USUARIOS WHERE user = ?";
+
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+
+    sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_STATIC);
+    if(sqlite3_step(stmt)==SQLITE_ROW){
+
+        existe = true;
+        
+    }
+    sqlite3_finalize(stmt);
+
+
+    sqlite3_close(db);
+    
+    return existe;
+
+}
+
 
