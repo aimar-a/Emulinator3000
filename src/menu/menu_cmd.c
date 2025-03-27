@@ -13,9 +13,10 @@ void clearScreen()
 
 void menuInicial()
 {
-  int option = -1;
-  while (option != 0)
+  char option = 'w';
+  while (option != '0')
   {
+    option = ' ';
     clearScreen();
     printf("Bienvenido al emulador EMULINATOR 3000\n");
     printf("Seleccione la consola que desea emular:\n");
@@ -25,20 +26,20 @@ void menuInicial()
     printf("0. Salir\n");
     printf("Opción: ");
 
-    scanf("%d", &option);
+    scanf(" %c", &option);
 
     switch (option)
     {
-    case 1:
-      menuChip8();
+    case '1':
+      showInitialWindow();
       break;
-    case 2:
+    case '2':
       printf("Emulando Game Boy...\n");
       break;
-    case 3:
+    case '3':
       nes_launch();
       break;
-    case 0:
+    case '0':
       printf("Saliendo...\n");
       break;
     default:
@@ -50,9 +51,10 @@ void menuInicial()
 
 void menuChip8()
 {
-  int option = -1;
-  while (option != 0)
+  char option = 'w';
+  while (option != '0')
   {
+    option = ' ';
     clearScreen();
     printf("CHIP-8\n");
     printf("Seleccione una opción:\n");
@@ -61,17 +63,17 @@ void menuChip8()
     printf("0. Volver\n");
     printf("Opción: ");
 
-    scanf("%d", &option);
+    scanf(" %c", &option);
 
     switch (option)
     {
-    case 1:
+    case '1':
       menuListaROMs();
       break;
-    case 2:
+    case '2':
       printf("Configurando...\n");
       break;
-    case 0:
+    case '0':
       printf("Volviendo...\n");
       break;
     default:
@@ -136,10 +138,11 @@ void menuListaROMs()
 
   int pagina = 0;
   int totalPaginas = (romCount + 19) / 20;
-  int opcion;
+  char opcion;
 
   do
   {
+    opcion = ' ';
     clearScreen();
     printf("Listado de ROMs (Página %d de %d):\n", pagina + 1, totalPaginas);
 
@@ -153,20 +156,24 @@ void menuListaROMs()
     printf("-2. Página siguiente\n");
     printf("0. Salir\n");
     printf("Seleccione un ROM para ejecutar (1-%d) o navegar (-1, -2): ", romCount);
-    scanf("%d", &opcion);
+    scanf(" %c", &opcion);
 
-    if (opcion == -1 && pagina > 0)
+    if (opcion == '-1' && pagina > 0)
     {
       pagina--;
     }
-    else if (opcion == -2 && pagina < totalPaginas - 1)
+    else if (opcion == '-2' && pagina < totalPaginas - 1)
     {
       pagina++;
     }
-    else if (opcion > 0 && opcion <= romCount)
+    else if (opcion >= '1' && opcion <= '9')
     {
-      chip8cpuLaunch(roms[opcion - 1]);
-      return;
+      int seleccion = opcion - '0';
+      if (seleccion > 0 && seleccion <= romCount)
+      {
+        chip8cpuLaunch(roms[seleccion - 1]);
+        return;
+      }
     }
-  } while (opcion != 0);
+  } while (opcion != '0');
 }

@@ -7,9 +7,9 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
 #include "chip8_cpu.h"
 #include "nes_cpu.h"
+#include "menu_sdl.h"
 
 void menuInicial();
 void menuChip8();
