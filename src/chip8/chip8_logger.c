@@ -15,3 +15,12 @@ void chip8_log(const char *format, ...)
 
   printf(format, args); // Por ahora también lo imprimimos en consola pa no tener que abrir el archivo
 }
+
+void chip8_log_clear()
+{
+  FILE *log_file = fopen("log/chip8_log.log", "w");
+  if (!log_file)
+    return;
+
+  fclose(log_file);
+}

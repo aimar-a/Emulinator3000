@@ -1,11 +1,11 @@
 #include "nes_addressing.h"
 
-uint8_t nes_immediate(NES *nes)
+uint16_t nes_immediate(NES *nes)
 {
-  uint8_t value = nes_read(nes, nes->PC);
-  nes_log("INFO: Immediate value read: 0x%02X at PC: 0x%04X\n", value, nes->PC);
+  uint16_t address = nes->PC;
+  nes_log("INFO: Immediate address read: 0x%04X at PC: 0x%04X\n", address, nes->PC);
   nes->PC += 1;
-  return value;
+  return address;
 }
 
 uint16_t nes_absolute(NES *nes)

@@ -23,26 +23,33 @@ PPUADDR 	$2006 	..AA AAAA AAAA AAAA 	Wx2 	VRAM address (two writes: most signifi
 PPUDATA 	$2007 	DDDD DDDD 	RW 	VRAM data read/write
 OAMDMA 	$4014 	AAAA AAAA 	W 	OAM DMA high address
   */
-  uint8_t ctrl;    // PPUCTRL ($2000)
-  uint8_t mask;    // PPUMASK ($2001)
-  uint8_t status;  // PPUSTATUS ($2002)
-  uint8_t oamaddr; // OAMADDR ($2003)
-  uint8_t oamdata; // OAMDATA ($2004)
-  uint8_t scroll;  // PPUSCROLL ($2005)
-  uint16_t addr;   // PPUADDR ($2006)
-  uint8_t data;    // PPUDATA ($2007)
-  uint8_t dma;     // OAMDMA ($4014)
+  uint8_t ctrl;     // PPUCTRL ($2000)
+  uint8_t mask;     // PPUMASK ($2001)
+  uint8_t status;   // PPUSTATUS ($2002)
+  uint8_t oamaddr;  // OAMADDR ($2003)
+  uint8_t oamdata;  // OAMDATA ($2004)
+  uint16_t scroll;  // PPUSCROLL ($2005)
+  bool scroll_high; // Flag para saber si se escribió el byte alto o bajo
+  uint16_t addr;    // PPUADDR ($2006)
+  bool addr_high;   // Flag para saber si se escribió el byte alto o bajo
+  uint8_t data;     // PPUDATA ($2007)
+  uint8_t dma;      // OAMDMA ($4014)
   // Copilot usa estas también (no se lo q hacen)
   uint16_t t;           // Temporal
   uint16_t v;           // VRAM
   uint8_t x;            // Fine X scroll
   uint8_t write_toggle; // Toggle de escritura
 
+  uint8_t buffer; // Buffer de datos (ni idea para que se usa)
+
   // Scanline
   uint16_t scanline; // Línea actual de la pantalla
 
   // Ciclo
   uint16_t cycle; // Ciclo actual de la PPU
+
+  // Frame
+  uint16_t frame; // Frame actual
 } PPU;
 
 typedef struct

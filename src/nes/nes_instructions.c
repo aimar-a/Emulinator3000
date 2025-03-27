@@ -30,8 +30,9 @@ JSR 	LDA 	LDX 	LDY 	LSR 	NOP 	ORA 	PHA 	PHP 	PLA 	PLP 	ROL 	ROR 	RTI
 RTS 	SBC 	SEC 	SED 	SEI 	STA 	STX 	STY 	TAX 	TAY 	TSX 	TXA 	TXS 	TYA
 */
 
-void nes_adc(NES *nes, uint8_t value)
+void nes_adc(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   uint16_t result = nes->A + value + (nes->P & CARRY);
   nes->P &= ~(CARRY | OVERFLOW | NEGATIVE | ZERO);
 
@@ -58,8 +59,9 @@ void nes_adc(NES *nes, uint8_t value)
   }
 }
 
-void nes_and(NES *nes, uint8_t value)
+void nes_and(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   nes->A &= value;
   nes->P &= ~(NEGATIVE | ZERO);
 
@@ -246,8 +248,9 @@ void nes_clv(NES *nes)
   nes->P &= ~OVERFLOW;
 }
 
-void nes_cmp(NES *nes, uint8_t value)
+void nes_cmp(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   nes->P &= ~(CARRY | NEGATIVE | ZERO);
 
   if (nes->A >= value)
@@ -266,8 +269,9 @@ void nes_cmp(NES *nes, uint8_t value)
   }
 }
 
-void nes_cpx(NES *nes, uint8_t value)
+void nes_cpx(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   nes->P &= ~(CARRY | NEGATIVE | ZERO);
 
   if (nes->X >= value)
@@ -286,8 +290,9 @@ void nes_cpx(NES *nes, uint8_t value)
   }
 }
 
-void nes_cpy(NES *nes, uint8_t value)
+void nes_cpy(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   nes->P &= ~(CARRY | NEGATIVE | ZERO);
 
   if (nes->Y >= value)
@@ -358,8 +363,9 @@ void nes_dey(NES *nes)
   }
 }
 
-void nes_eor(NES *nes, uint8_t value)
+void nes_eor(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   nes->A ^= value;
   nes->P &= ~(NEGATIVE | ZERO);
 
@@ -439,8 +445,9 @@ void nes_jsr(NES *nes)
   nes->PC = nes_read(nes, nes->PC + 1) | (nes_read(nes, nes->PC + 2) << 8);
 }
 
-void nes_lda(NES *nes, uint8_t value)
+void nes_lda(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   nes->A = value;
   nes->P &= ~(NEGATIVE | ZERO);
 
@@ -455,8 +462,9 @@ void nes_lda(NES *nes, uint8_t value)
   }
 }
 
-void nes_ldx(NES *nes, uint8_t value)
+void nes_ldx(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   nes->X = value;
   nes->P &= ~(NEGATIVE | ZERO);
 
@@ -471,8 +479,9 @@ void nes_ldx(NES *nes, uint8_t value)
   }
 }
 
-void nes_ldy(NES *nes, uint8_t value)
+void nes_ldy(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   nes->Y = value;
   nes->P &= ~(NEGATIVE | ZERO);
 
@@ -516,8 +525,9 @@ void nes_nop(NES *nes)
 {
 }
 
-void nes_ora(NES *nes, uint8_t value)
+void nes_ora(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   nes->A |= value;
   nes->P &= ~(NEGATIVE | ZERO);
 
@@ -631,8 +641,9 @@ void nes_rts(NES *nes)
   nes->PC++;
 }
 
-void nes_sbc(NES *nes, uint8_t value)
+void nes_sbc(NES *nes, uint16_t address)
 {
+  uint8_t value = nes_read(nes, address);
   uint16_t result = nes->A - value - (1 - (nes->P & CARRY));
   nes->P &= ~(CARRY | OVERFLOW | NEGATIVE | ZERO);
 

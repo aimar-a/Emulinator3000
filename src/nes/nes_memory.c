@@ -2,116 +2,47 @@
 
 uint8_t nes_read(NES *nes, uint16_t address)
 {
-  nes_log("INFO: Reading address: %04X\n", address);
+  nes_log("INFO: CPU Reading address: 0x%04X\n", address);
   if (address < 0x8000)
   {
-    if (address == 0x2000)
+    if (address >= 0x2000 && address <= 0x2007 || address == 0x4014)
     {
-      nes_log("ERROR: PPUCTRL is not readable\n");
-      exit(1);
-      return nes->ppu->ctrl;
+      return ppu_read_register(nes->ppu, address);
     }
-    else if (address == 0x2001)
-    {
-      nes_log("ERROR: PPUMASK is not readable\n");
-      exit(1);
-      return nes->ppu->mask;
-    }
-    else if (address == 0x2002)
-    {
-      uint8_t status = nes->ppu->status;
-      nes->ppu->status &= ~0x80; // Borrar flag de VBlank
-      return status;
-    }
-    else if (address == 0x2003)
-    {
-      nes_log("ERROR: OAMADDR is not readable\n");
-      exit(1);
-      return nes->ppu->oamaddr;
-    }
-    else if (address == 0x2004)
-    {
-      return nes->ppu->oamdata;
-    }
-    else if (address == 0x2005)
-    {
-      nes_log("ERROR: PPUSCROLL is not readable\n");
-      exit(1);
-      return nes->ppu->scroll;
-    }
-    else if (address == 0x2006)
-    {
-      nes_log("ERROR: PPUADDR is not readable\n");
-      exit(1);
-      return nes->ppu->addr;
-    }
-    else if (address == 0x2007)
-    {
-      return nes->ppu->data;
-    }
-    else if (address == 0x4014)
-    {
-      nes_log("ERROR: OAMDMA is not readable\n");
-      exit(1);
-      return nes->ppu->dma;
-    }
-
     return nes->memory[address];
+  }
+  else if (address < 0x10000)
+  {
+    return nes->rom->prg_rom[address - 0x8000];
   }
   else
   {
-    return nes->rom->prg_rom[address - 0x8000];
+    nes_log("ERROR: Invalid memory address: 0x%04X\n", address);
+    exit(1);
   }
 }
 
 void nes_write(NES *nes, uint16_t address, uint8_t value)
 {
-  nes_log("INFO: Writing address: %04X, value: %02X\n", address, value);
+  nes_log("INFO: CPU Writing address: 0x%04X, value: 0x%02X\n", address, value);
   if (address < 0x8000)
   {
-    if (address == 0x2000)
+    if (address >= 0x2000 && address <= 0x2007 || address == 0x4014)
     {
-      // Write to PPUCTRL: Set NMI_output to bit 7.
-      nes->ppu->ctrl = value;
+      ppu_write_register(nes->ppu, address, value);
     }
-    else if (address == 0x2001)
+    else
     {
-      nes->ppu->mask = value;
+      nes->memory[address] = value;
     }
-    else if (address == 0x2002)
-    {
-      nes_log("ERROR: PPUSTATUS is not writable\n");
-      exit(1);
-      nes->ppu->status = value;
-    }
-    else if (address == 0x2003)
-    {
-      nes->ppu->oamaddr = value;
-    }
-    else if (address == 0x2004)
-    {
-      nes->ppu->oamdata = value;
-    }
-    else if (address == 0x2005)
-    {
-      nes->ppu->scroll = value;
-    }
-    else if (address == 0x2006)
-    {
-      nes->ppu->addr = value;
-    }
-    else if (address == 0x2007)
-    {
-      nes->ppu->data = value;
-    }
-    else if (address == 0x4014)
-    {
-      nes->ppu->dma = value;
-    }
-    nes->memory[address] = value;
+  }
+  else if (address < 0x10000)
+  {
+    nes->rom->prg_rom[address - 0x8000] = value;
   }
   else
   {
-    nes->rom->prg_rom[address - 0x8000] = value;
+    nes_log("ERROR: Invalid memory address: 0x%04X\n", address);
+    exit(1);
   }
 }
