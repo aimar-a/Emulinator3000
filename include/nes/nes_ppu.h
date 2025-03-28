@@ -8,6 +8,7 @@
 #include "nes_logger.h"
 #include <stdlib.h>
 #include "nes_display.h"
+#include "nes_ppu_memory.h"
 
 typedef struct
 {

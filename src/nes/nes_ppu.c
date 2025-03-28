@@ -124,7 +124,7 @@ uint8_t get_background_pixel(NES *nes, int x, int y)
   uint16_t tile_x = x / 8;
   uint16_t tile_y = y / 8;
 
-  uint16_t tile_index = nes->ppu->vram[base_nametable + tile_y * 32 + tile_x];
+  uint16_t tile_index = ppu_read_ram(nes, base_nametable + (tile_y * 32) + tile_x);
   uint16_t pattern_address = (nes->ppu->ctrl & 0x10 ? 0x1000 : 0x0000) + (tile_index * 16);
 
   uint8_t bitplane1 = nes->rom->chr_rom[pattern_address + (y % 8)];

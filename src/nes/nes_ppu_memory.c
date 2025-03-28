@@ -1,20 +1,26 @@
 #include "nes_ppu_memory.h"
 
 // Función para leer de la memoria de la PPU
-uint8_t ppu_read_ram(PPU *ppu, uint16_t addr)
+uint8_t ppu_read_ram(NES *nes, uint16_t addr)
 {
   nes_log("INFO: PPU Reading address 0x%04X\n", addr);
   if (addr < 0x2000)
   {
-    ppu->data = ppu->vram[addr % 0x2000];
+    nes->ppu->data = nes->rom->chr_rom[addr];
   }
   else if (addr < 0x3F00)
   {
-    ppu->data = ppu->palette[addr % 32];
+    nes->ppu->data = nes->ppu->vram[addr];
   }
   else if (addr < 0x4000)
   {
-    ppu->data = ppu->palette[addr % 32];
+    if (addr > 0x3F1F)
+    {
+      nes_log("ERROR: PPU Invalid address 0x%04X\n", addr);
+      exit(1);
+    }
+    else
+      nes->ppu->data = nes->ppu->palette[addr % 0x3F00];
   }
   else
   {
@@ -24,20 +30,26 @@ uint8_t ppu_read_ram(PPU *ppu, uint16_t addr)
 }
 
 // Función para escribir en la memoria de la PPU
-void ppu_write_ram(PPU *ppu, uint16_t addr, uint8_t data)
+void ppu_write_ram(NES *nes, uint16_t addr, uint8_t data)
 {
   nes_log("INFO: PPU Writing address 0x%04X, data: 0x%02X\n", addr, data);
   if (addr < 0x2000)
   {
-    ppu->vram[addr % 0x2000] = data;
+    nes->rom->chr_rom[addr] = data;
   }
   else if (addr < 0x3F00)
   {
-    ppu->palette[addr % 32] = data;
+    nes->ppu->vram[addr] = data;
   }
   else if (addr < 0x4000)
   {
-    ppu->palette[addr % 32] = data;
+    if (addr > 0x3F1F)
+    {
+      nes_log("ERROR: PPU Invalid address 0x%04X\n", addr);
+      exit(1);
+    }
+    else
+      nes->ppu->palette[addr % 0x3F00] = data;
   }
   else
   {
@@ -47,8 +59,8 @@ void ppu_write_ram(PPU *ppu, uint16_t addr, uint8_t data)
 }
 
 // Función para leer de la memoria de OAM
-void ppu_write_oam(PPU *ppu, uint8_t addr, uint8_t data)
+void ppu_write_oam(NES *nes, uint8_t addr, uint8_t data)
 {
   nes_log("INFO: Writing OAM address 0x%02X, data: 0x%02X\n", addr, data);
-  ppu->oam[addr] = data;
+  nes->ppu->oam[addr] = data;
 }

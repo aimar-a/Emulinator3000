@@ -8,7 +8,7 @@ uint8_t nes_read(NES *nes, uint16_t address)
   {
     if ((address >= 0x2000 && address <= 0x2007) || address == 0x4014)
     {
-      value = ppu_read_register(nes->ppu, address);
+      value = ppu_read_register(nes, address);
     }
     else
     {
@@ -41,7 +41,7 @@ void nes_write(NES *nes, uint16_t address, uint8_t value)
   {
     if ((address >= 0x2000 && address <= 0x2007) || address == 0x4014)
     {
-      ppu_write_register(nes->ppu, address, value);
+      ppu_write_register(nes, address, value);
     }
     else
     {
