@@ -516,11 +516,10 @@ char* obtenerContrasena(char* user) {
     sqlite3_stmt *stmt;
 
     char sql[] = "SELECT contraseña FROM USUARIOS WHERE user = ?";
-    char contraseña[22];
+    char* contraseña;
     sqlite3_prepare_v2(db,sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
-    
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
         strcpy(contraseña, (char*)sqlite3_column_text(stmt, 0));
@@ -531,4 +530,5 @@ char* obtenerContrasena(char* user) {
         sqlite3_finalize(stmt);
         return NULL;
     }
+    // La corrección es aquí, el problema es que devuelve null, ahí que revisar la contraseña que devuelve.
 }

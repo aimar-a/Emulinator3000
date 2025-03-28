@@ -133,6 +133,55 @@ void menuUsuario()
   }
 }
 
+void menuCambioContraseña() {
+  clearScreen();
+  printf("Introduce tu contraseña: \n"); // Para afianzar de que es el usuario el que quiere cambiarlo
+      
+  char buffer[22];
+  fgets(buffer, sizeof(buffer), stdin);
+  buffer[strcspn(buffer, "\n")] = '\0'; // Eliminar el salto de línea al final
+  printf("'%s' \n", currentUser);
+
+  if (strcmp(buffer, obtenerContrasena(currentUser)) == 0) {
+    printf("✅ Contraseña correcta \n");
+    printf("Introduzca nueva contraseña: ");
+
+    char buffer6[22];
+    fgets(buffer6, sizeof(buffer6), stdin);
+    buffer6[strcspn(buffer6, "\n")] = '\0'; // Eliminar el salto de línea al final
+
+
+    printf("\nVuelva a introducir la nueva contraseña: ");
+
+    char buffer7[22];
+    fgets(buffer7, sizeof(buffer7), stdin);
+    buffer7[strcspn(buffer7, "\n")] = '\0'; // Eliminar el salto de línea al final
+        
+    while (!strcmp(buffer6, buffer7) == 0)
+    {
+      printf("❌ La contraseña que ha introducido es distinta a la anterior \n");
+      printf("Vuelve a intentarlo o introduce 'salir' para salir: ");
+
+      char buffer8[22];
+      fgets(buffer8, sizeof(buffer8), stdin);
+      buffer8[strcspn(buffer8, "\n")] = '\0'; // Eliminar el salto de línea al final
+
+      if (buffer8 == "salir") {
+        menuInicial();
+        break;
+      }
+
+      buffer7 == buffer8;
+    }
+        
+    if (buffer6 == buffer7)
+    {
+      updateContrasena(buffer6, currentUser);
+      menuInicial();
+    }    
+  }
+}
+
 void menuInicial()
 {
   char option = 'w';
@@ -165,51 +214,7 @@ void menuInicial()
       nes_launch();
       break;
     case '4':
-      printf("Introduce tu contraseña: "); // Para afianzar de que es el usuario el que quiere cambiarlo
-
-      char buffer[22];
-      fgets(buffer, sizeof(buffer), stdin);
-      buffer[strcspn(buffer, "\n")] = '\0'; // Eliminar el salto de línea al final
-
-      if (strcmp(buffer, (char*)obtenerContrasena(currentUser)) == 0) {
-        printf("✅ Contraseña correcta \n");
-        printf("Introduzca nueva contraseña: ");
-
-        char buffer6[22];
-        fgets(buffer6, sizeof(buffer6), stdin);
-        buffer6[strcspn(buffer6, "\n")] = '\0'; // Eliminar el salto de línea al final
-
-
-        printf("\nVuelva a introducir la nueva contraseña: ");
-
-        char buffer7[22];
-        fgets(buffer7, sizeof(buffer7), stdin);
-        buffer7[strcspn(buffer7, "\n")] = '\0'; // Eliminar el salto de línea al final
-        
-        while (!strcmp(buffer6, buffer7) == 0)
-        {
-          printf("❌ La contraseña que ha introducido es distinta a la anterior \n");
-          printf("Vuelve a intentarlo o introduce 'salir' para salir: ");
-
-          char buffer8[22];
-          fgets(buffer8, sizeof(buffer8), stdin);
-          buffer8[strcspn(buffer8, "\n")] = '\0'; // Eliminar el salto de línea al final
-
-          if (buffer8 == "salir") {
-            menuInicial();
-            break;
-          }
-
-          buffer7 == buffer8;
-        }
-        
-        if (buffer6 == buffer7)
-        {
-          updateContrasena(buffer6, currentUser);
-          menuInicial();
-        }
-        
-      }
+      menuCambioContraseña();
       break;
     case '0':
       clearScreen();

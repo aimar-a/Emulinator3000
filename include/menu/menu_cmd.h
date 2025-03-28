@@ -12,6 +12,7 @@
 #include "menu_sdl.h"
 
 void menuUsuario();
+void menuCambioContraseña();
 void menuInicial();
 void menuChip8();
 void menuListaROMs();
