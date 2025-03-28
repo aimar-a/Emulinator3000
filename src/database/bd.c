@@ -338,7 +338,7 @@ void updateEstado_Amigos(char* user1, char* user2, char* estado) {
 
     sqlite3_stmt *stmt;
 
-    char sql[] = "UPDATE AMIGOS estado = ? WHERE user1 = ? AND user2 = ?";
+    char sql[] = "UPDATE AMIGOS SET estado = ? WHERE user1 = ? AND user2 = ?";
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
@@ -357,7 +357,7 @@ void updateEstado_Amigos(char* user1, char* user2, char* estado) {
 
 //updateContrasena (de usuario)
 
-void updateContrasena(char* newcontrasena, char* user){
+void updateContrasena(char* newcontrasena, char* user){ // No funciona el update
 
     // Abrimos la base de datos
     if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
@@ -367,7 +367,7 @@ void updateContrasena(char* newcontrasena, char* user){
 
     sqlite3_stmt *stmt;
 
-    char sql[] = "UPDATE USUARIO contraseña = ? WHERE user = ?";
+    char sql[] = "UPDATE USUARIOS SET contraseña = ? WHERE user = ?";
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
@@ -375,10 +375,10 @@ void updateContrasena(char* newcontrasena, char* user){
     sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_STATIC);
 
     sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
 
     printf("✅ Contraseña del usuario '%s' aactualizada correctamente.", user);
 
+    sqlite3_finalize(stmt);
     sqlite3_close(db);
 }
 
@@ -394,7 +394,7 @@ void updateUsuarioRecord(char* usuario, int idjuego){
 
     sqlite3_stmt *stmt;
 
-    char sql[] = "UPDATE JUEGO usuario_record = ? WHERE user = ?";
+    char sql[] = "UPDATE JUEGO SET usuario_record = ? WHERE user = ?";
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
@@ -421,7 +421,7 @@ void updatePuntuacionRecord(int newPunt, int idjuego){
 
     sqlite3_stmt *stmt;
 
-    char sql[] = "UPDATE JUEGO puntuacion_record = ? WHERE user = ?";
+    char sql[] = "UPDATE JUEGO SET puntuacion_record = ? WHERE user = ?";
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
