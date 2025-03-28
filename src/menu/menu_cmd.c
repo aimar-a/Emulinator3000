@@ -30,7 +30,7 @@ void menuUsuario()
 
   // 4.En MenuInicial meter opcion de cambiar Contraseña
   // 5. el SALIR  de menuInicial tiene que ir a menuUsuario
-
+  
   bool pass = false;
 
   while (pass == false)
@@ -133,16 +133,21 @@ void menuUsuario()
   }
 }
 
+//esto no funciona porque hay que meter el codigo en un bucle 
 void menuCambioContraseña() {
   clearScreen();
+
   printf("Introduce tu contraseña: \n"); // Para afianzar de que es el usuario el que quiere cambiarlo
-      
-  char buffer[22];
+
+  bool pass = false;
+
+  while (pass == false)
+  {
+    char buffer[22];
   fgets(buffer, sizeof(buffer), stdin);
   buffer[strcspn(buffer, "\n")] = '\0'; // Eliminar el salto de línea al final
-  printf("'%s' \n", currentUser);
 
-  if (strcmp(buffer, obtenerContrasena(currentUser)) == 0) {
+  if (comprobarContraseña(currentUser, buffer) == true) {
     printf("✅ Contraseña correcta \n");
     printf("Introduzca nueva contraseña: ");
 
@@ -172,14 +177,16 @@ void menuCambioContraseña() {
       }
 
       buffer7 == buffer8;
-    }
-        
-    if (buffer6 == buffer7)
-    {
-      updateContrasena(buffer6, currentUser);
-      menuInicial();
+    } // Me llega hasta aquí
+
+    printf("aaaa");
+    updateContrasena(buffer6, currentUser);
+    menuInicial();
     }    
   }
+  }
+  
+  
 }
 
 void menuInicial()
