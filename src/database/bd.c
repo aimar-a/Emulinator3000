@@ -300,6 +300,7 @@ void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guar
 
 // updateTiempoJugado(de un usuario a un juego)
 
+
 void updateTiempoJugado(int tiempoJugado, char* user, int id_juego) {
 
     // Abrimos la base de datos
@@ -357,7 +358,8 @@ void updateEstado_Amigos(char* user1, char* user2, char* estado) {
 
 //updateContrasena (de usuario)
 
-void updateContrasena(char* newcontrasena, char* user){ // No funciona el update
+//da error "Database is locked"
+void updateContrasena(char* newcontrasena, char* user) { 
 
     // Abrimos la base de datos
     if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
@@ -366,18 +368,31 @@ void updateContrasena(char* newcontrasena, char* user){ // No funciona el update
     }
 
     sqlite3_stmt *stmt;
-
     char sql[] = "UPDATE USUARIOS SET contraseña = ? WHERE user = ?";
 
-    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    // Preparar la consulta
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error en la preparación de la consulta: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return;
+    }
 
-    sqlite3_bind_text(stmt, 1, newcontrasena, strlen(newcontrasena), SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_STATIC);
+    // Vincular los valores a la consulta
+    sqlite3_bind_text(stmt, 1, newcontrasena, strlen(newcontrasena), SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_TRANSIENT);
 
-    sqlite3_step(stmt);
+    // Ejecutar la consulta
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        printf("Error al ejecutar el UPDATE: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        return;
+    }
 
-    printf("✅ Contraseña del usuario '%s' aactualizada correctamente.", user);
+    // Impresión de éxito
+    printf("✅ Contraseña del usuario '%s' actualizada correctamente.\n", user);
 
+    // Limpiar
     sqlite3_finalize(stmt);
     sqlite3_close(db);
 }
