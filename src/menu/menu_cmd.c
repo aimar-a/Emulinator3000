@@ -133,6 +133,7 @@ void menuUsuario()
   }
 }
 
+//esto no funciona porque hay que meter el codigo en un bucle 
 void menuCambioContraseña() {
   clearScreen();
   printf("Introduce tu contraseña: \n"); // Para afianzar de que es el usuario el que quiere cambiarlo
