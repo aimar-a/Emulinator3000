@@ -68,7 +68,6 @@ void nes_display_draw(uint8_t *pantalla)
   }
 
   SDL_RenderPresent(renderer);
-  nes_log("INFO: Frame rendered\n");
 }
 
 void nes_display_destroy()

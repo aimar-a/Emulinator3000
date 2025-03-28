@@ -7,6 +7,12 @@ uint8_t nes_evaluate_opcode(NES *nes)
 {
   uint8_t opcode = nes_read(nes, nes->PC);
   nes->PC++;
+
+  nes_log("INFO: Registers: A: 0x%02X, X: 0x%02X, Y: 0x%02X, P: 0x%02X, SP: 0x%02X\n",
+          nes->A, nes->X, nes->Y, nes->P, nes->SP);
+  // printf("Registers: A: 0x%02X, X: 0x%02X, Y: 0x%02X, P: 0x%02X, SP: 0x%02X\n",
+  //        nes->A, nes->X, nes->Y, nes->P, nes->SP);
+
   const char *instruction_name = opcode_names[opcode] ? opcode_names[opcode] : "ERROR, UNKNOWN INSTRUCTION";
   nes_log("INFO: PC: 0x%04X, Opcode: 0x%02X (0x%02X 0x%02X), Instruction: %s\n",
           nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1), instruction_name);

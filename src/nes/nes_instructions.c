@@ -472,7 +472,7 @@ void nes_jmp(NES *nes, uint16_t address)
 
 void nes_jsr(NES *nes, uint16_t address)
 {
-  nes_push_address(nes, nes->PC); // TODO: Check if this is correct
+  nes_push_address(nes, nes->PC - 1); // TODO: Check if this is correct
   nes->PC = address;
 }
 

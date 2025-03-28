@@ -77,7 +77,6 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
 void ppu_step_optimized(NES *nes)
 {
   nes->ppu->status &= ~0x80;
-  nes_log("INFO: Exiting VBlank\n");
   nes->ppu->scroll = 0; // TODO: nose que hay que asignar aqui
   nes->ppu->addr = 0;   // TODO: nose que hay que asignar aqui
 
@@ -92,7 +91,6 @@ void ppu_step_optimized(NES *nes)
   nes_log("INFO: Frame: %d\n", nes->ppu->frame);
 
   nes->ppu->status |= 0x80;
-  nes_log("INFO: Entering VBlank\n");
 }
 
 void render_scanline(NES *nes)

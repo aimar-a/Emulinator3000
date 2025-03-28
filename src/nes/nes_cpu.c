@@ -140,9 +140,22 @@ void nes_run(NES *nes)
 
   while (true)
   {
-    int cycles = nes_evaluate_opcode(nes); // Calcula los ciclos de CPU para la instrucción actual
+    // ---------------------
+    // Simulacion optimizada
+    // ---------------------
+
+    for (int i = 0; i < 4; i++)
+    {
+      nes_evaluate_opcode(nes);
+    }
 
     ppu_step_optimized(nes); // Dibuja un frame de la pantalla
+
+    // -------------------
+    // Simulacion original
+    // -------------------
+
+    // int cycles = nes_evaluate_opcode(nes); // Calcula los ciclos de CPU para la instrucción actual
 
     // Tiempo de espera para simular el tiempo real de un ciclo de la CPU
     // SDL_Delay(cpu_cycle_time_ms * cycles); // Espera el tiempo correspondiente a los ciclos de CPU
@@ -154,14 +167,14 @@ void nes_run(NES *nes)
     }
 
     // Ejecuta los ciclos de la PPU correspondientes al número de ciclos de CPU
-    for (int i = 0; i < cycles * 3; i++)
-    {
-      // Sincroniza el ciclo de la PPU
-      // ppu_step(nes);
+    // for (int i = 0; i < cycles * 3; i++)
+    //{
+    // Sincroniza el ciclo de la PPU
+    // ppu_step(nes);
 
-      // Retraso para simular el tiempo real de un ciclo de la PPU
-      // SDL_Delay(ppu_cycle_time_ms); // Espera el tiempo correspondiente a un ciclo de la PPU
-    }
+    // Retraso para simular el tiempo real de un ciclo de la PPU
+    // SDL_Delay(ppu_cycle_time_ms); // Espera el tiempo correspondiente a un ciclo de la PPU
+    //}
   }
 
   nes_log("INFO: NES emulation stopped\n");
