@@ -147,6 +147,7 @@ void menuInicial()
     printf("1. CHIP-8\n");
     printf("2. Game Boy\n");
     printf("3. NES\n");
+    printf("4. Cambiar contraseña\n");
     printf("0. Salir\n");
     printf("Opción: ");
 
@@ -163,6 +164,53 @@ void menuInicial()
     case '3':
       nes_launch();
       break;
+    case '4':
+      printf("Introduce tu contraseña: "); // Para afianzar de que es el usuario el que quiere cambiarlo
+
+      char buffer[22];
+      fgets(buffer, sizeof(buffer), stdin);
+      buffer[strcspn(buffer, "\n")] = '\0'; // Eliminar el salto de línea al final
+
+      if (strcmp(buffer, (char*)obtenerContrasena(currentUser)) == 0) {
+        printf("✅ Contraseña correcta \n");
+        printf("Introduzca nueva contraseña: ");
+
+        char buffer6[22];
+        fgets(buffer6, sizeof(buffer6), stdin);
+        buffer6[strcspn(buffer6, "\n")] = '\0'; // Eliminar el salto de línea al final
+
+
+        printf("\nVuelva a introducir la nueva contraseña: ");
+
+        char buffer7[22];
+        fgets(buffer7, sizeof(buffer7), stdin);
+        buffer7[strcspn(buffer7, "\n")] = '\0'; // Eliminar el salto de línea al final
+        
+        while (!strcmp(buffer6, buffer7) == 0)
+        {
+          printf("❌ La contraseña que ha introducido es distinta a la anterior \n");
+          printf("Vuelve a intentarlo o introduce 'salir' para salir: ");
+
+          char buffer8[22];
+          fgets(buffer8, sizeof(buffer8), stdin);
+          buffer8[strcspn(buffer8, "\n")] = '\0'; // Eliminar el salto de línea al final
+
+          if (buffer8 == "salir") {
+            menuInicial();
+            break;
+          }
+
+          buffer7 == buffer8;
+        }
+        
+        if (buffer6 == buffer7)
+        {
+          updateContrasena(buffer6, currentUser);
+          menuInicial();
+        }
+        
+      }
+      break;
     case '0':
       clearScreen();
       printf("\nVolviendo al menu de Inicio de sesion o Registro....");
@@ -171,6 +219,9 @@ void menuInicial()
       break;
     default:
       printf("Opción inválida\n");
+
+      printf("Pruebe otra vez: "); // Queda como prueba de momento para que no pete cuando la opción es inválida.
+
       break;
     }
   }

@@ -504,4 +504,31 @@ bool existeUsuario(char* name){
 
 }
 
+// Función para obtener la contraseña de un usuario
 
+char* obtenerContrasena(char* user) {
+    
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos\n");
+    }
+
+    sqlite3_stmt *stmt;
+
+    char sql[] = "SELECT contraseña FROM USUARIOS WHERE user = ?";
+    char contraseña[22];
+    sqlite3_prepare_v2(db,sql, -1, &stmt, NULL);
+
+    sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
+    
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        strcpy(contraseña, (char*)sqlite3_column_text(stmt, 0));
+        sqlite3_finalize(stmt);
+        return contraseña;
+    } else {
+        printf("❌ Usuario '%s' no encontrado.\n", user);
+        sqlite3_finalize(stmt);
+        return NULL;
+    }
+}

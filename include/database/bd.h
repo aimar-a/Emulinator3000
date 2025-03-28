@@ -23,6 +23,6 @@ void updatePuntuacionRecord(int newPunt, int idjuego);
 //mas funciones
 bool existeUsuarioYPas(char* name, char* pass);
 bool existeUsuario(char* name);
-
+char* obtenerContrasena(char* user);
 
 #endif 
