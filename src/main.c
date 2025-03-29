@@ -8,7 +8,7 @@
 #include "chip8_config.h"
 extern sqlite3 *db;
 #include "nes_cpu.h"
-extern char db_path[256];
+
 
 /*
 
@@ -28,7 +28,24 @@ int main(int argc, char *argv[])
 {
   // creamos la BD con sus estructuras en el caso en el que no existan
  
-  crearBD();
+  cargarConfiguracion("resources/config/config");
+    
+    // Ejecutar acciones según la configuración
+    if(load) {
+        abrirBaseDeDatos(&db);
+    }
+    if(deletebbdd) {
+        eliminarBaseDeDatos();
+    }
+    
+    if(createbbdd) {
+        crearBD();
+    }
+    
+    if(cleanbbdd) {
+        limpiarBaseDeDatos();
+    }
+    
   
   
 

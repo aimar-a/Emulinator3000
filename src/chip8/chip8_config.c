@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 int SCREEN_WIDTH = 64; // valor predeterminado
 int SCREEN_HEIGHT = 32; // valor predeterminado
@@ -15,8 +16,13 @@ int SCREEN_WIDTH_NES = 256;
 int SCREEN_HEIGHT_NES = 240;
 int SCREEN_SCALE_NES = 4;
 
+bool load = false;
+bool cleanbbdd = false;
+bool createbbdd = false;
+bool deletebbdd = false;
+
 // Variable para almacenar la ruta de la base de datos
-char db_path[256]; // Máximo tamaño de la ruta del archivo SQLite
+
 
 // Función para cargar la configuración desde el archivo .txt
 void cargarConfiguracion(const char *archivoConfig) {
@@ -64,9 +70,31 @@ void cargarConfiguracion(const char *archivoConfig) {
             sscanf(linea, "SCREEN_SCALE_NES=%d", &SCREEN_SCALE_NES);
         }
 
-        // Leer la ruta de la base de datos SQLite
-        else if (strstr(linea, "DB_PATH") != NULL) {
-            sscanf(linea, "DB_PATH=%s", db_path);
+          // Leer las configuraciones booleanas
+        else if (strstr(linea, "load") != NULL) {
+            if (strstr(linea, "true") != NULL) {
+                load = true;
+            } else {
+                load = false;
+            }
+        } else if (strstr(linea, "cleanbbdd") != NULL) {
+            if (strstr(linea, "true") != NULL) {
+                cleanbbdd = true;
+            } else {
+                cleanbbdd = false;
+            }
+        } else if (strstr(linea, "createbbdd") != NULL) {
+            if (strstr(linea, "true") != NULL) {
+                createbbdd = true;
+            } else {
+                createbbdd = false;
+            }
+        } else if (strstr(linea, "deletebbdd") != NULL) {
+            if (strstr(linea, "true") != NULL) {
+                deletebbdd = true;
+            } else {
+                deletebbdd = false;
+            }
         }
     }
 

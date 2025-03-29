@@ -13,7 +13,10 @@ SCREEN_WIDTH_NES=256
 SCREEN_HEIGHT_NES=240
 SCREEN_SCALE_NES=4
 
-[DB]
-FILE=C:/Users/malbi/OneDrive/Documents/Universidad/Deusto/2024-25/2º Semestre/ProgIV/Emulinator3000/Emulinator3000/resources/database/emulatorBD.sqlite
+[Settings]
+load=true
+cleanbbdd=false
+createbbdd=false
+deletebbdd=false
 
 
