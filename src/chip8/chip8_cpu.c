@@ -32,6 +32,7 @@ void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
   }
 }
 
+
 void chip8cpuLaunch(char *rom_path)
 {
   chip8_log_clear();

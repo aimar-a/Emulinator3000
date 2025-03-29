@@ -142,8 +142,8 @@ void nes_run(NES *nes)
   int cont = 0;
 
   // El tiempo por ciclo de la CPU en milisegundos
-  const float cpu_cycle_time_ms = 1000.0f / 1790000.0f; // 1.79 MHz
-  const float ppu_cycle_time_ms = 1000.0f / 5370000.0f; // 5.37 MHz
+  //const float cpu_cycle_time_ms = 1000.0f / 1790000.0f; // 1.79 MHz
+  //const float ppu_cycle_time_ms = 1000.0f / 5370000.0f; // 5.37 MHz
 
   nes_log("INFO: Starting NES emulation\n");
 
