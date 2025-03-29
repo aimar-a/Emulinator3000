@@ -42,7 +42,10 @@ void nes_launch()
   nes_display_init(nes->screen);
   nes_log("INFO: Display initialized\n");
 
-  if (nes_load_rom(nes, "resources/nes-roms/Super_mario_brothers.nes"))
+  // if (nes_load_rom(nes, "resources/nes-roms/Super_mario_brothers.nes"))
+  if (nes_load_rom(nes, "resources/nes-roms/Donkey Kong (World) (Rev A).nes"))
+  // if (nes_load_rom(nes, "resources/nes-roms/Duck Hunt (World).nes"))
+  // if (nes_load_rom(nes, "resources/nes-roms/Tennis (USA) (GameCube Edition).nes"))
   {
     nes_log("ERROR: Failed to load ROM\n");
     free(nes->ppu);
@@ -52,12 +55,12 @@ void nes_launch()
   }
   nes_log("INFO: ROM loaded successfully\n");
 
-  nes->PC = nes_read(nes, nes->rom->prg_size - 0x6) | (nes_read(nes, nes->rom->prg_size - 0x5) << 8);
+  nes->PC = nes_read(nes, 0xFFFC) | (nes_read(nes, 0xFFFD) << 8);
   nes_log("INFO: Program Counter set to 0x%04X\n", nes->PC);
 
   nes->ppu->scanline = 0;
 
-  for (int i = 0x7F00; i < 0x8000; i++) // TODO: quitar esto cuando se acabe
+  for (int i = 0x0000; i < 0x4000; i++) // TODO: quitar esto cuando se acabe
   {
     if (i % 16 == 0)
     {
@@ -92,11 +95,17 @@ void nes_reset(NES *nes)
     nes->controller_state[i] = 0;
   }
 
-  nes->mapper_bank = 0;
-  nes->chr_bank = 0;
-  nes->interrupt_enable = false;
-  nes->mapper_state = 0;
-  nes->current_mapper = 0;
+  nes->rom->prg_size = 0;
+  nes->rom->chr_size = 0;
+  nes->rom->prg_ram_size = 0;
+  nes->rom->chr_ram_size = 0;
+  nes->rom->mirroring = 0;
+  nes->rom->has_battery = 0;
+  nes->rom->has_trainer = 0;
+  nes->rom->four_screen = 0;
+  nes->rom->mapper = 0;
+  nes->rom->prg_rom = NULL;
+  nes->rom->chr_rom = NULL;
 
   // PPU
   for (int i = 0; i < 0x4000; i++)
@@ -107,7 +116,7 @@ void nes_reset(NES *nes)
   {
     nes->ppu->oam[i] = 0;
   }
-  for (int i = 0; i < 32; i++)
+  for (int i = 0; i < 64; i++)
   {
     nes->ppu->palette[i] = 0;
   }
@@ -149,6 +158,7 @@ void nes_run(NES *nes)
       nes_evaluate_opcode(nes);
     }
 
+    // log_check_ppu_ram(nes);
     ppu_step_optimized(nes); // Dibuja un frame de la pantalla
 
     // -------------------
@@ -178,8 +188,34 @@ void nes_run(NES *nes)
   }
 
   nes_log("INFO: NES emulation stopped\n");
+  log_check_ppu_ram(nes);
+
   nes_display_destroy(nes->screen);
   free(nes->ppu);
   free(nes->rom);
   free(nes);
+}
+
+void log_check_ppu_ram(NES *nes)
+{
+  nes_log("INFO: PPU RAM:");
+  for (int i = 0x2000; i < 0x3F20; i++)
+  {
+    if (i % 16 == 0)
+    {
+      nes_log("\n%04X: ", i);
+    }
+    nes_log("%02X ", nes->ppu->vram[i]);
+  }
+  nes_log("\n\n");
+  nes_log("INFO: PPU OAM:");
+  for (int i = 0; i < 256; i++)
+  {
+    if (i % 16 == 0)
+    {
+      nes_log("\n%02X: ", i);
+    }
+    nes_log("%02X ", nes->ppu->oam[i]);
+  }
+  nes_log("\n\n");
 }

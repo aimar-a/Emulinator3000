@@ -22,6 +22,8 @@ uint8_t nes_evaluate_opcode(NES *nes)
   switch (opcode)
   {
   case 0x00:
+    nes_log("ERROR: BRK instruction not implemented\n");
+    exit(1);
     nes_brk(nes);
     return 7;
   case 0x01:

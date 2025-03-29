@@ -20,10 +20,8 @@ int nes_load_rom(NES *nes, const char *filename)
     return 1;
   }
 
-  // Obtener tamaño de PRG-ROM y CHR-ROM
-  nes->rom->prg_size = nes->rom->header[4]; // Cantidad de bancos de 16 KB
-  nes->rom->chr_size = nes->rom->header[5]; // Cantidad de bancos de 8 KB
-  nes->current_mapper = ((nes->rom->header[7] & 0xF0) | (nes->rom->header[6] >> 4));
+  // Obtener datos de la cabecera
+  nes_get_rom_info(nes);
 
   // Reservar memoria para PRG-ROM (16 KB por banco)
   nes->rom->prg_rom = malloc(nes->rom->prg_size * 16384);
@@ -54,6 +52,60 @@ int nes_load_rom(NES *nes, const char *filename)
   }
 
   fclose(file);
-  nes_log("INFO: ROM cargada correctamente: %d KB PRG, %d KB CHR\n", nes->rom->prg_size * 16, nes->rom->chr_size * 8);
+  nes_log("INFO: ROM cargada correctamente\n");
   return 0;
+}
+
+void nes_get_rom_info(NES *nes)
+{
+  nes_log("INFO: Getting ROM info\n");
+
+  // Cantidad de bancos de PRG-ROM (16KB cada uno)
+  nes->rom->prg_size = nes->rom->header[4];
+
+  // Cantidad de bancos de CHR-ROM (8KB cada uno)
+  nes->rom->chr_size = nes->rom->header[5];
+
+  // Mirroring (bit 0 de header[6])
+  nes->rom->mirroring = (nes->rom->header[6] & 0x01) ? MIRROR_VERTICAL : MIRROR_HORIZONTAL;
+
+  // Si la ROM usa batería para PRG-RAM (bit 1 de header[6])
+  nes->rom->has_battery = (nes->rom->header[6] & 0x02) ? true : false;
+
+  // Si la ROM incluye un trainer de 512 bytes (bit 2 de header[6])
+  nes->rom->has_trainer = (nes->rom->header[6] & 0x04) ? true : false;
+
+  // Si usa VRAM de 4 pantallas (bit 3 de header[6])
+  nes->rom->four_screen = (nes->rom->header[6] & 0x08) ? true : false;
+
+  // ID del Mapper (bits 4-7 de header[6] y bits 4-7 de header[7])
+  nes->rom->mapper = ((nes->rom->header[7] & 0xF0) | (nes->rom->header[6] >> 4));
+
+  // Tamaño de PRG-RAM (Byte 8, en bloques de 8KB, 0 significa 8KB por defecto)
+  nes->rom->prg_ram_size = nes->rom->header[8] ? (nes->rom->header[8]) : 1;
+
+  // Tamaño de CHR-RAM (Si CHR-ROM es 0, significa que usa CHR-RAM)
+  if (nes->rom->chr_size == 0)
+  {
+    nes->rom->chr_ram_size = 1; // 8KB por defecto si no hay CHR-ROM
+  }
+  else
+  {
+    nes->rom->chr_ram_size = 0; // No usa CHR-RAM
+  }
+
+  // Determinar si es un archivo iNES 2.0
+  bool is_ines2 = ((nes->rom->header[7] & 0x0C) == 0x08);
+
+  // Mensaje de salida con la información de la ROM
+  nes_log("PRG-ROM: %d KB\n", nes->rom->prg_size * 16);
+  nes_log("CHR-ROM: %d KB\n", nes->rom->chr_size * 8);
+  nes_log("Mapper: %d\n", nes->rom->mapper);
+  nes_log("Mirroring: %s\n", nes->rom->mirroring == MIRROR_VERTICAL ? "Vertical" : "Horizontal");
+  nes_log("Battery: %s\n", nes->rom->has_battery ? "Yes" : "No");
+  nes_log("Trainer: %s\n", nes->rom->has_trainer ? "Yes" : "No");
+  nes_log("Four-Screen VRAM: %s\n", nes->rom->four_screen ? "Yes" : "No");
+  nes_log("PRG-RAM: %d KB\n", nes->rom->prg_ram_size * 8);
+  nes_log("CHR-RAM: %d KB\n", nes->rom->chr_ram_size ? 8 : 0);
+  nes_log("Format: %s\n", is_ines2 ? "iNES 2.0" : "iNES 1.0");
 }

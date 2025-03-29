@@ -18,5 +18,6 @@
 void nes_launch();
 void nes_reset(NES *nes);
 void nes_run(NES *nes);
+void log_check_ppu_ram(NES *nes);
 
 #endif
