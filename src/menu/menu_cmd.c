@@ -136,7 +136,8 @@ void menuUsuario()
 // esto no funciona porque hay que meter el codigo en un bucle
 void menuCambioContraseña() 
 {
-  // Ahí que limpiar el buffer, y para ello necesito guardar la información en otra variable
+  updateContrasena(currentUser, "123");
+
   clearScreen();
 
   printf("Introduce tu contraseña: "); // Para afianzar de que es el usuario el que quiere cambiarlo
@@ -163,7 +164,7 @@ void menuCambioContraseña()
       char buffer7[22];
       fgets(buffer7, sizeof(buffer7), stdin);
       buffer7[strcspn(buffer7, "\n")] = '\0'; // Eliminar el salto de línea al final
-      // Me llega hasta aquí
+      
       while (!strcmp(buffer6, buffer7) == 0)
       {
         printf("La contraseña que ha introducido es distinta a la anterior \n");
@@ -173,22 +174,23 @@ void menuCambioContraseña()
         fgets(buffer8, sizeof(buffer8), stdin);
         buffer8[strcspn(buffer8, "\n")] = '\0'; // Eliminar el salto de línea al final
 
-        printf("%s", buffer7);
-        printf("%s", buffer8);
+        printf("'%s' \n", buffer7);
+        printf("aaaaaaaa");
+        printf("'%s' \n", buffer8);
+
         if (buffer8 == "salir")
         {
           menuInicial();
           break;
         }
 
-        buffer7 == buffer8;
-        printf("%s", buffer7);
-        printf("%s", buffer8);
+        strcpy(buffer7, buffer8);
       } 
 
-      printf("aaaa");
       updateContrasena(buffer6, currentUser);
       menuInicial();
+    } else {
+      printf("\nContraseña incorrecta, vuelva a intentarlo: ");
     }
   }
 }
