@@ -29,7 +29,7 @@ void crearBD() {
                   "id_juego INTEGER PRIMARY KEY AUTOINCREMENT,"
                   "titulo VARCHAR(100) NOT NULL,"
                   "rom VARCHAR(100) NOT NULL,"
-                  "puntuacion_record INT NOT NULL,"
+                  "puntuacion_record INT DEFAULT 0,"
                   "usuario_record VARCHAR(20),"
                   "FOREIGN KEY (usuario_record) REFERENCES USUARIOS(user));";
 
@@ -390,7 +390,7 @@ void updateContrasena(char* newcontrasena, char* user) {
     }
 
     // Impresión de éxito
-    printf("✅ Contraseña del usuario '%s' actualizada correctamente.\n", user);
+   // printf("✅ Contraseña del usuario '%s' actualizada correctamente.\n", user);
 
     // Limpiar
     sqlite3_finalize(stmt);

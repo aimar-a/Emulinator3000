@@ -11,6 +11,7 @@
 #include "nes_cpu.h"
 #include "menu_sdl.h"
 
+extern char * currentUser;  // Declaración de la variable global
 void menuUsuario();
 void menuCambioContraseña();
 void menuInicial();
