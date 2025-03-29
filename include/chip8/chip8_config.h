@@ -10,6 +10,9 @@ extern int SCREEN_WIDTH_SUPERCHIP;
 extern int SCREEN_HEIGHT_SUPERCHIP;
 extern int SCREEN_SCALE_SUPERCHIP;
 
+extern int SCREEN_WIDTH_NES;
+extern int SCREEN_HEIGHT_NES;
+extern int SCREEN_SCALE_NES;
 void cargarConfiguracion(const char *archivoConfig);
 
 #endif // CONFIG_H

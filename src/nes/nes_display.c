@@ -8,7 +8,7 @@ static SDL_Texture *texture;
 
 void nes_display_init()
 {
-  leer_configuracion("resources/config/config", "SCREEN_WIDTH_NES");  // Ruta relativa al archivo de configuración
+    cargarConfiguracion("resources/config/config");
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
@@ -17,7 +17,7 @@ void nes_display_init()
     }
     nes_log("INFO: SDL_Init successful\n");
 
-    window = SDL_CreateWindow("NES", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH * SCREEN_SCALE, SCREEN_HEIGHT * SCREEN_SCALE, 0);
+    window = SDL_CreateWindow("NES", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH_NES * SCREEN_SCALE_NES, SCREEN_HEIGHT_NES * SCREEN_SCALE_NES, 0);
     if (!window)
     {
         nes_log("ERROR: SDL_CreateWindow failed: %s\n", SDL_GetError());
