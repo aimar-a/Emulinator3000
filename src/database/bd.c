@@ -539,8 +539,12 @@ bool comprobarContraseña(char* user, char* password) {
     sqlite3_bind_text(stmt, 2, password, -1, SQLITE_STATIC);
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
         return true;
     }
     
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
     return false;
 }
