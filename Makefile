@@ -1,7 +1,15 @@
 # Nombre del ejecutable y carpetas
 TARGET = bin/emulinator3000
 CC = gcc
-CFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -Wall -Wextra -pedantic -Iinclude -Iinclude/chip8 -Iinclude/menu -Iinclude/nes -Iinclude/database 
+
+# Si estamos en Windows, añadimos las librerías de MinGW y SDL2
+ifdef WIN32
+	CFLAGS += -lmingw32 -lSDL2main -lSDL2_ttf
+# Si estamos en Linux, añadimos las librerías de SDL2
+else
+	CFLAGS += -lSDL2 -lSDL2_ttf
+endif
+CFLAGS += -Wall -Wextra -pedantic -Iinclude -Iinclude/chip8 -Iinclude/menu -Iinclude/nes -Iinclude/database 
 
 # Carpetas
 SRC_DIR = src
