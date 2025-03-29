@@ -194,12 +194,13 @@ void nes_run(NES *nes)
   free(nes->ppu);
   free(nes->rom);
   free(nes);
+  nes_log("INFO: NES structures freed\n");
 }
 
 void log_check_ppu_ram(NES *nes)
 {
-  nes_log("INFO: PPU RAM:");
-  for (int i = 0x2000; i < 0x3F20; i++)
+  nes_log("INFO: PPU VRAM:");
+  for (int i = 0x2000; i < 0x3000; i++)
   {
     if (i % 16 == 0)
     {
@@ -208,6 +209,18 @@ void log_check_ppu_ram(NES *nes)
     nes_log("%02X ", nes->ppu->vram[i]);
   }
   nes_log("\n\n");
+
+  nes_log("INFO: PPU Palette:");
+  for (int i = 0; i < 64; i++)
+  {
+    if (i % 16 == 0)
+    {
+      nes_log("\n%02X: ", i);
+    }
+    nes_log("%02X ", nes->ppu->palette[i]);
+  }
+  nes_log("\n\n");
+
   nes_log("INFO: PPU OAM:");
   for (int i = 0; i < 256; i++)
   {
