@@ -5,22 +5,20 @@ Screen screenSDL;
 
 // valores por defecto (display chip8: 64x32)
 
-
 // Inicializa SDL y crea la ventana y el renderer
 int chip8displayInitPantalla(uint8_t *pantalla_)
 {
   chip8_log("INFO: Inicializando pantalla...\n");
 
-  cargarConfiguracion("resources/config/config");// Especificar la ruta de tu archivo de configuración
-
+  cargarConfiguracion("resources/config/config"); // Especificar la ruta de tu archivo de configuración
 
   // si estamos en modosuperchip8 cambiamos los valores del display
   if (modosuperchip8 == true)
   {
-      SCREEN_WIDTH = SCREEN_WIDTH_SUPERCHIP;
-      SCREEN_HEIGHT = SCREEN_HEIGHT_SUPERCHIP;
-      SCREEN_SCALE = SCREEN_SCALE_SUPERCHIP;
-      chip8_log("INFO: Modo SuperChip8 activado. Resolución: %dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+    SCREEN_WIDTH_CHIP8 = SCREEN_WIDTH_SUPERCHIP;
+    SCREEN_HEIGHT_CHIP8 = SCREEN_HEIGHT_SUPERCHIP;
+    SCREEN_SCALE_CHIP8 = SCREEN_SCALE_SUPERCHIP;
+    chip8_log("INFO: Modo SuperChip8 activado. Resolución: %dx%d\n", SCREEN_WIDTH_CHIP8, SCREEN_HEIGHT_CHIP8);
   }
 
   pantalla = pantalla_;
@@ -31,8 +29,8 @@ int chip8displayInitPantalla(uint8_t *pantalla_)
     return 0;
   }
   screenSDL.window = SDL_CreateWindow("Pantalla", SDL_WINDOWPOS_CENTERED,
-    SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH * SCREEN_SCALE,
-    SCREEN_HEIGHT * SCREEN_SCALE, SDL_WINDOW_SHOWN);
+                                      SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH_CHIP8 * SCREEN_SCALE_CHIP8,
+                                      SCREEN_HEIGHT_CHIP8 * SCREEN_SCALE_CHIP8, SDL_WINDOW_SHOWN);
   if (!screenSDL.window)
   {
     chip8_log("ERROR: Error al crear la ventana: %s\n", SDL_GetError());
@@ -58,7 +56,7 @@ int chip8displayInitPantalla(uint8_t *pantalla_)
 void chip8displayLimpiarPantalla()
 {
   chip8_log("INFO: Limpiando pantalla...\n");
-  for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++)
+  for (int i = 0; i < SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8; i++)
   {
     pantalla[i] = 0;
   }
@@ -92,7 +90,7 @@ uint8_t chip8displayDrawSprite(int x, int y, uint8_t *sprite, int height)
     {
       if ((sprite[i] & (0x80 >> j)) != 0)
       {
-        int pos = (x + j) % SCREEN_WIDTH + ((y + i) % SCREEN_HEIGHT) * SCREEN_WIDTH;
+        int pos = (x + j) % SCREEN_WIDTH_CHIP8 + ((y + i) % SCREEN_HEIGHT_CHIP8) * SCREEN_WIDTH_CHIP8;
         if (pantalla[pos] == 1)
         {
           colision = 1;
@@ -112,13 +110,13 @@ void chip8displayPrintPantalla()
   SDL_RenderClear(screenSDL.renderer);
 
   SDL_SetRenderDrawColor(screenSDL.renderer, 255, 255, 255, 255);
-  for (int i = 0; i < SCREEN_WIDTH; i++)
+  for (int i = 0; i < SCREEN_WIDTH_CHIP8; i++)
   {
-    for (int j = 0; j < SCREEN_HEIGHT; j++)
+    for (int j = 0; j < SCREEN_HEIGHT_CHIP8; j++)
     {
-      if (pantalla[i + j * SCREEN_WIDTH] == 1)
+      if (pantalla[i + j * SCREEN_WIDTH_CHIP8] == 1)
       {
-        SDL_Rect pixel = {i * SCREEN_SCALE, j * SCREEN_SCALE, SCREEN_SCALE, SCREEN_SCALE};
+        SDL_Rect pixel = {i * SCREEN_SCALE_CHIP8, j * SCREEN_SCALE_CHIP8, SCREEN_SCALE_CHIP8, SCREEN_SCALE_CHIP8};
         SDL_RenderFillRect(screenSDL.renderer, &pixel);
       }
     }

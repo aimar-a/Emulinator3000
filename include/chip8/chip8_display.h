@@ -11,12 +11,6 @@
 #include <string.h>
 #include "chip8_config.h"
 
-
-extern int SCREEN_WIDTH;
-extern int SCREEN_HEIGHT;
-
-extern int SCREEN_SCALE;
-
 typedef struct
 {
   SDL_Window *window;
