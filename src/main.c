@@ -1,13 +1,18 @@
 #define SDL_MAIN_HANDLED // Evita que SDL2 defina su propia función main
 #include <SDL2/SDL.h>
+#include "sqlite3.h"
 #include <SDL2/SDL_ttf.h> // Si usas texto en la UI
 #include "menu_sdl.h"
 #include "menu_cmd.h"
 #include "bd.h"
-
+#include "chip8_config.h"
+extern sqlite3 *db;
 #include "nes_cpu.h"
 
+
 /*
+
+
 
 PARA EJECUTAR EL CODIGO: (dentro de la consola MinGW32)
 
@@ -22,13 +27,35 @@ bin/chip8_emulator.exe
 int main(int argc, char *argv[])
 {
   // creamos la BD con sus estructuras en el caso en el que no existan
-  crearBD();
+ 
+  cargarConfiguracion("resources/config/config");
+    
+    // Ejecutar acciones según la configuración
+    if(load) {
+        abrirBaseDeDatos(&db);
+    }
+    if(deletebbdd) {
+        eliminarBaseDeDatos();
+    }
+    
+    if(createbbdd) {
+        crearBD();
+    }
+    
+    if(cleanbbdd) {
+        limpiarBaseDeDatos();
+    }
+    
+  
+  
+
+
 
   // Iniciar el menu de usuario
-  // menuUsuario();
+  menuUsuario();
 
   // Iniciar la NES directamente
-  nes_launch();
+  //nes_launch();
 
   return 0;
 }

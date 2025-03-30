@@ -4,25 +4,23 @@ uint8_t *pantalla;
 Screen screenSDL;
 
 // valores por defecto (display chip8: 64x32)
-int SCREEN_WIDTH = 64;
-int SCREEN_HEIGHT = 32;
 
-int SCREEN_SCALE = 26;
 
 // Inicializa SDL y crea la ventana y el renderer
 int chip8displayInitPantalla(uint8_t *pantalla_)
 {
   chip8_log("INFO: Inicializando pantalla...\n");
 
+  cargarConfiguracion("resources/config/config");// Especificar la ruta de tu archivo de configuración
+
+
   // si estamos en modosuperchip8 cambiamos los valores del display
   if (modosuperchip8 == true)
   {
-    // 128x64 pixeles en modo superchip8
-    SCREEN_WIDTH = 128;
-    SCREEN_HEIGHT = 64;
-
-    SCREEN_SCALE = 13; // equivalente a escala del chip8
-    chip8_log("INFO: Modo SuperChip8 activado. Resolución: 128x64\n");
+      SCREEN_WIDTH = SCREEN_WIDTH_SUPERCHIP;
+      SCREEN_HEIGHT = SCREEN_HEIGHT_SUPERCHIP;
+      SCREEN_SCALE = SCREEN_SCALE_SUPERCHIP;
+      chip8_log("INFO: Modo SuperChip8 activado. Resolución: %dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
   }
 
   pantalla = pantalla_;
@@ -32,11 +30,9 @@ int chip8displayInitPantalla(uint8_t *pantalla_)
     chip8_log("ERROR: No se pudo inicializar SDL: %s\n", SDL_GetError());
     return 0;
   }
-
-  screenSDL.window =
-      SDL_CreateWindow("Pantalla 64x32", SDL_WINDOWPOS_CENTERED,
-                       SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH * SCREEN_SCALE,
-                       SCREEN_HEIGHT * SCREEN_SCALE, SDL_WINDOW_SHOWN);
+  screenSDL.window = SDL_CreateWindow("Pantalla", SDL_WINDOWPOS_CENTERED,
+    SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH * SCREEN_SCALE,
+    SCREEN_HEIGHT * SCREEN_SCALE, SDL_WINDOW_SHOWN);
   if (!screenSDL.window)
   {
     chip8_log("ERROR: Error al crear la ventana: %s\n", SDL_GetError());

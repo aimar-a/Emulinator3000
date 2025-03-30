@@ -4,7 +4,16 @@
 #include "bd.h"
 
 sqlite3 *db;
+const char *db_filename = "emulatorBD.sqlite";
 
+int abrirBaseDeDatos(sqlite3 **db) {
+    int rc = sqlite3_open(db_filename, db);
+    if (rc) {
+        fprintf(stderr, "No se pudo abrir la base de datos: %s\n", sqlite3_errmsg(*db));
+        return rc;
+    }
+    return SQLITE_OK;
+}
 // Función para crear la BD y su estructura
 void crearBD() {
     sqlite3_stmt *stmt;
@@ -29,7 +38,7 @@ void crearBD() {
                   "id_juego INTEGER PRIMARY KEY AUTOINCREMENT,"
                   "titulo VARCHAR(100) NOT NULL,"
                   "rom VARCHAR(100) NOT NULL,"
-                  "puntuacion_record INT NOT NULL,"
+                  "puntuacion_record INT DEFAULT 0,"
                   "usuario_record VARCHAR(20),"
                   "FOREIGN KEY (usuario_record) REFERENCES USUARIOS(user));";
 
@@ -106,7 +115,58 @@ void crearBD() {
     sqlite3_close(db);
 }
 
+void limpiarBaseDeDatos() {
+    int rc = abrirBaseDeDatos(&db);
+    if (rc != SQLITE_OK) return;
 
+    // Lista de todas tus tablas
+    const char *tablas[] = {
+        "AMIGOS",
+        "LOGROS_USUARIO",
+        "LOGROS",
+        "TIEMPO_JUGADO",
+        "PARTIDA",
+        "JUEGO",
+        "USUARIOS",
+        NULL  // Marca el final del array
+    };
+
+    char *errMsg = NULL;
+    const char **tabla = tablas;
+    
+    while (*tabla) {
+        char sql[256];
+        snprintf(sql, sizeof(sql), "DELETE FROM %s;", *tabla);
+        
+        rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Error al limpiar la tabla %s: %s\n", *tabla, errMsg);
+            sqlite3_free(errMsg);
+        } else {
+            printf("Tabla %s limpiada exitosamente.\n", *tabla);
+        }
+        tabla++;
+    }
+
+    // Reiniciamos los autoincrementales
+    const char *resetAI = "DELETE FROM sqlite_sequence;";
+    rc = sqlite3_exec(db, resetAI, 0, 0, &errMsg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Error al resetear autoincrementales: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    }
+
+    sqlite3_close(db);
+    printf("Base de datos limpiada completamente.\n");
+}
+
+void eliminarBaseDeDatos() {
+    if (remove(db_filename) == 0) {
+        printf("Base de datos eliminada exitosamente.\n");
+    } else {
+        perror("Error al eliminar la base de datos");
+    }
+}
 //creamos las funciones para insertar datos en las tablas
 void insertarUsuarios(char* user, char* contraseña) {
 
@@ -390,7 +450,7 @@ void updateContrasena(char* newcontrasena, char* user) {
     }
 
     // Impresión de éxito
-    printf("✅ Contraseña del usuario '%s' actualizada correctamente.\n", user);
+   // printf("✅ Contraseña del usuario '%s' actualizada correctamente.\n", user);
 
     // Limpiar
     sqlite3_finalize(stmt);

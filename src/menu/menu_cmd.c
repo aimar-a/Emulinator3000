@@ -19,7 +19,7 @@ void clearScreen()
 #endif
 }
 
-char *currentUser;
+char * currentUser = "";
 
 void menuUsuario()
 {
@@ -64,8 +64,9 @@ void menuUsuario()
       if (existeUsuarioYPas(buffer2, buffer3) == true)
       {
         pass = true;
-        printf("\nhas accedido correctamente");
+        printf("\nAccediendo.....");
         currentUser = buffer2;
+        Sleep(1000);
         clearScreen();
         menuInicial();
         break;
@@ -74,7 +75,10 @@ void menuUsuario()
       {
 
         printf("\nUsuario o contraseña incorrectos");
+        Sleep(400);
+        printf("\nVolviendo al menu....");
         Sleep(1000);
+
       }
     }
     else if (buffer1[0] == '2')
@@ -136,24 +140,37 @@ void menuUsuario()
 // esto no funciona porque hay que meter el codigo en un bucle
 void menuCambioContraseña() 
 {
-  updateContrasena(currentUser, "123");
-
   clearScreen();
 
-  printf("Introduce tu contraseña: "); // Para afianzar de que es el usuario el que quiere cambiarlo
+  printf("Estas con el usuario: %s\n", currentUser);
+
 
   bool pass = false;
+  int c;
+  int it=0;
 
   while (pass == false)
   {
-    char buffer[22];
-    fgets(buffer, sizeof(buffer), stdin);
-    buffer[strcspn(buffer, "\n")] = '\0'; // Eliminar el salto de línea al final
 
-    if (comprobarContraseña(currentUser, buffer) == true)
+
+    printf("\nIntroduce tu contraseña: "); // Para afianzar de que es el usuario el que quiere cambiarlo
+
+    //para limpiar el buffer cuando no esta vacio (SIN ESTO NO FUNCIONA)
+
+    if (fgetc(stdin) != EOF && it!=0) {
+      while ((c = getchar()) != '\n' && c != EOF);
+    }
+
+
+    char buffer0[22];
+    fgets(buffer0, sizeof(buffer0), stdin);
+    buffer0[strcspn(buffer0, "\n")] = '\0'; // Eliminar el salto de línea al final
+
+    if (comprobarContraseña(currentUser, buffer0) == true)
     {
-      printf("✅ Contraseña correcta \n");
-      printf("Introduzca nueva contraseña: ");
+      
+      printf("Contraseña correcta \n");
+      printf("\nIntroduzca nueva contraseña: ");
 
       char buffer6[22];
       fgets(buffer6, sizeof(buffer6), stdin);
@@ -167,30 +184,23 @@ void menuCambioContraseña()
       
       while (!strcmp(buffer6, buffer7) == 0)
       {
-        printf("La contraseña que ha introducido es distinta a la anterior \n");
-        printf("Vuelve a intentarlo o introduce 'salir' para salir: ");
+        printf("\nLa contraseña que ha introducido es distinta a la anterior, prueba a introducir la misma: ");
 
         char buffer8[22];
         fgets(buffer8, sizeof(buffer8), stdin);
         buffer8[strcspn(buffer8, "\n")] = '\0'; // Eliminar el salto de línea al final
 
-        printf("'%s' \n", buffer7);
-        printf("aaaaaaaa");
-        printf("'%s' \n", buffer8);
-
-        if (buffer8 == "salir")
-        {
-          menuInicial();
-          break;
-        }
-
         strcpy(buffer7, buffer8);
       } 
 
       updateContrasena(buffer6, currentUser);
+      printf("\nCambio de Contraseña Exitoso....");
+      Sleep(1000);
       menuInicial();
+      pass=true;
     } else {
-      printf("\nContraseña incorrecta, vuelva a intentarlo: ");
+      printf("\nContraseña incorrecta, vuelva a intentarlo.");
+
     }
   }
 }
@@ -198,13 +208,13 @@ void menuCambioContraseña()
 void menuInicial()
 {
   char option = 'w';
+
   while (option != '0')
   {
     option = ' ';
     clearScreen();
-    printf("Estas jugando con el usuario: %s\n", currentUser);
-    printf("4. Cambiar contraseña del usuario\n");
     printf("Bienvenido al emulador EMULINATOR 3000\n");
+    printf("\nEstas jugando con el usuario: %s\n", currentUser);
     printf("Seleccione la consola que desea emular:\n");
     printf("1. CHIP-8\n");
     printf("2. Game Boy\n");
@@ -219,7 +229,7 @@ void menuInicial()
     {
     case '1':
       showInitialWindow();
-      break;
+      break; 
     case '2':
       printf("Emulando Game Boy...\n");
       break;
@@ -230,8 +240,9 @@ void menuInicial()
       menuCambioContraseña();
       break;
     case '0':
+      
       clearScreen();
-      printf("\nVolviendo al menu de Inicio de sesion o Registro....");
+      printf("\nVolviendo al menu anterior....");
       Sleep(1000);
       menuUsuario();
       break;

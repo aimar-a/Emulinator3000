@@ -6,7 +6,7 @@ FASE 1:
   implementar las funciones en el emulador 
   si lo vemos necesario hacer mas funciones
 
--Menu sencillo por consola: (como albisu no va a acabar el menu SDL pa la Fase 1 lo hacemos en consola)
+-Menu sencillo por consola: (como albisu no va a acabar el menu SDL pa la Fase 1 lo hacemos en consola)()
   Anadir login/registro usuario
   Menu de usuario, amigos... (juntar con la parte de bd)
   Menu para configurar cosas del fichero configuracion

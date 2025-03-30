@@ -6,6 +6,11 @@
 #include "chip8_structure.h"
 #include <stdbool.h>
 #include "chip8_logger.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "chip8_config.h"
+
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
@@ -18,7 +23,7 @@ typedef struct
   SDL_Renderer *renderer;
   int running;
 } Screen;
-
+void cargarConfiguracion(const char *archivo);
 int chip8displayInitPantalla(uint8_t *pantalla_);
 void chip8displayLimpiarPantalla();
 void chip8displayDestroyPantalla();

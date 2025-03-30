@@ -1,4 +1,8 @@
 #include "chip8_cpu.h"
+#include <time.h>
+#include "bd.h"
+#include <stdio.h>
+#include "menu_cmd.h"
 
 void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
 {
@@ -28,6 +32,7 @@ void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
   }
 }
 
+
 void chip8cpuLaunch(char *rom_path)
 {
   chip8_log_clear();
@@ -39,7 +44,11 @@ void chip8cpuLaunch(char *rom_path)
   chip8.pc = 0x200;
   chip8.I = 0;
   chip8.sp = 0;
+  time_t tiempoInicio, tiempoFin;
 
+
+  time(&tiempoInicio); //guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
+  
   chip8_log("INFO: Inicializando memoria y configuración de la pantalla\n");
   inicializarMemoria(&chip8, modosuperchip8);
 
@@ -63,6 +72,8 @@ void chip8cpuLaunch(char *rom_path)
   fclose(rom);
 
   chip8_log("INFO: Iniciando ciclo de ejecución\n");
+
+
   do
   {
     SDL_Delay(selectedDelay);
@@ -74,7 +85,19 @@ void chip8cpuLaunch(char *rom_path)
     chip8timersDecrement();
     chip8inputCapturarTeclado();
     chip8opcodesEvaluate(opcode);
+    
   } while (!chip8.esc);
+
+  //BD INSERTAR PARTIDA 
+  //PROBLEMA: ESTO NO FUNCIONA (TODO LO QUE PASA DESPUES DEL WHILE DE ARRIBA NO SE EJECUTA)
+  time(&tiempoFin); //guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
+  int tiempoJugado =(int) difftime(tiempoFin,tiempoInicio); 
+
+  //Para el id juego habria que comparar el titulo con el titulo de todos los juegos en la bd juego y luego añadir eso
+  insertarPartida(currentUser, 1, tiempoJugado, tiempoJugado*0.5); // la puntuacion maxima vamos a dejarla asi
+  
+
+
 
   chip8_log("INFO: Finalizando ejecución y liberando recursos\n");
   chip8displayDestroyPantalla();
