@@ -1,5 +1,13 @@
 #include "nes_ppu.h"
 
+// CONSTANTS
+// const int ScanlineCycleLength = 341;
+
+const int ScanlineEndCycle = 340;
+const int VisibleScanlines = 240;
+const int ScanlineVisibleDots = 256;
+const int FrameEndScanline = 261;
+
 // Avanza un ciclo de la PPU de forma clasica
 void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que hacer primero los ciclos y dentro los scanlines?)
 {                       // TODO: Implementar el resto de la PPU (registros y lo que hace cada uno, y creo q gestion de memoria y algo mas habra q hacer)
@@ -12,7 +20,7 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
   {
     if (nes->ppu->cycle == 1)
     {
-      nes->ppu->status &= ~0x80;
+      nes->ppu->status &= ~VBLANK_FLAG;
       nes_log("INFO: Exiting VBlank\n");
       nes->ppu->scroll = 0; // TODO: nose que hay que asignar aqui
       nes->ppu->addr = 0;   // TODO: nose que hay que asignar aqui
@@ -45,12 +53,12 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
     {
       if (nes->ppu->cycle == 1)
       {
-        nes->ppu->status |= 0x80;
+        nes->ppu->status |= VBLANK_FLAG;
         nes_log("INFO: Entering VBlank\n");
-        if (nes->ppu->ctrl & 0x80)
+        if (nes->ppu->ctrl & VBLANK_FLAG)
         {
           nes_log("INFO: NMI interrupt triggered\n");
-          // TODO: Implementar interrupción NMI (ni idea de lo q es) (creo que deberia de hacerlo solo la cpu con sus instrucciones)
+          // TODO: Implementar interrupción NMI (ni idea de lo q es)
           // trigger_nmi(); // Generar interrupción si está habilitada
         }
       }
@@ -73,10 +81,316 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
   }
 }
 
+void ppu_step_copy(NES *nes)
+{
+  // PreRender
+  if (nes->ppu->scanline == 261)
+  {
+    if (nes->ppu->cycle == 1)
+    {
+      nes->ppu->status &= ~VBLANK_FLAG;
+      nes->ppu->status &= ~SPRITE_0_HIT_FLAG;
+    }
+    else if (nes->ppu->cycle == ScanlineVisibleDots + 2 && (nes->ppu->mask & BACKGROUND_ENABLE) && (nes->ppu->mask & SPRITE_ENABLE))
+    {
+      // Set bits related to horizontal position
+      nes->ppu->addr &= ~0x41f;              // Unset horizontal bits
+      nes->ppu->addr |= nes->ppu->t & 0x41f; // Copy
+    }
+    else if (nes->ppu->cycle > 280 && nes->ppu->cycle <= 304 && (nes->ppu->mask & BACKGROUND_ENABLE) && (nes->ppu->mask & SPRITE_ENABLE))
+    {
+      // Set vertical bits
+      nes->ppu->addr &= ~0x7be0;              // Unset bits related to horizontal
+      nes->ppu->addr |= nes->ppu->t & 0x7be0; // Copy
+    }
+    //                 if (nes->ppu->cycle > 257 && nes->ppu->cycle < 320)
+    //                     m_spriteDataAddress = 0;
+    // if rendering is on, every other frame is one cycle shorter
+    if (nes->ppu->cycle >= ScanlineEndCycle - (!(nes->ppu->frame % 2 == 0) && (nes->ppu->mask & BACKGROUND_ENABLE) && (nes->ppu->mask & SPRITE_ENABLE)))
+    {
+      // m_pipelineState = Render; // TODO: remplazar (creo que sobra)
+      nes->ppu->cycle = nes->ppu->scanline = 0;
+    }
+
+    // add IRQ support for MMC3
+    if (nes->ppu->cycle == 260 && (nes->ppu->mask & BACKGROUND_ENABLE) && (nes->ppu->mask & SPRITE_ENABLE))
+    {
+      nes_log("ERROR: Scanline IRQ not implemented\n");
+      // exit(1);
+      //  TODO: implementar esto si hay tiempo (mappers)
+      //  m_bus.scanlineIRQ();
+    }
+  }
+  // Render
+  else if (nes->ppu->scanline < 240)
+  {
+    if (nes->ppu->cycle > 0 && nes->ppu->cycle <= ScanlineVisibleDots)
+    {
+      uint8_t bgColor = 0, sprColor = 0;
+      bool bgOpaque = false, sprOpaque = true;
+      bool spriteForeground = false;
+
+      int x = nes->ppu->cycle - 1;
+      int y = nes->ppu->scanline;
+
+      if ((nes->ppu->mask & BACKGROUND_ENABLE))
+      {
+        int x_fine = (nes->ppu->fineXScroll + x) % 8;
+        if (nes->ppu->mask & BACKGROUND_LEFT_COLUMN_ENABLE || x >= 8)
+        {
+          // fetch tile
+          uint16_t addr = 0x2000 | (nes->ppu->addr & 0x0FFF); // mask off fine y
+          // auto addr = 0x2000 + x / 8 + (y / 8) * (ScanlineVisibleDots / 8);
+          uint8_t tile = ppu_read_ram(nes, addr);
+
+          // fetch pattern
+          // Each pattern occupies 16 bytes, so multiply by 16
+          addr = (tile * 16) + ((nes->ppu->addr >> 12 /*y % 8*/) & 0x7);     // Add fine y
+          (nes->ppu->ctrl & BACKGROUND_TILE_SELECT) ? addr += 0x1000 : addr; // set whether the pattern is in the high or low page
+          // Get the corresponding bit determined by (8 - x_fine) from the right
+          bgColor = (ppu_read_ram(nes, addr) >> (7 ^ x_fine)) & 1;             // bit 0 of palette entry
+          bgColor |= ((ppu_read_ram(nes, addr + 8) >> (7 ^ x_fine)) & 1) << 1; // bit 1
+
+          bgOpaque = bgColor; // flag used to calculate final pixel with the sprite pixel
+
+          // fetch attribute and calculate higher two bits of palette
+          addr = 0x23C0 | (nes->ppu->addr & 0x0C00) | ((nes->ppu->addr >> 4) & 0x38) | ((nes->ppu->addr >> 2) & 0x07);
+          uint8_t attribute = ppu_read_ram(nes, addr);
+          int shift = ((nes->ppu->addr >> 4) & 4) | (nes->ppu->addr & 2);
+          // Extract and set the upper two bits for the color
+          bgColor |= ((attribute >> shift) & 0x3) << 2;
+        }
+        // Increment/wrap coarse X
+        if (x_fine == 7)
+        {
+          if ((nes->ppu->addr & 0x001F) == 31) // if coarse X == 31
+          {
+            nes->ppu->addr &= ~0x001F; // coarse X = 0
+            nes->ppu->addr ^= 0x0400;  // switch horizontal nametable
+          }
+          else
+          {
+            nes->ppu->addr += 1; // increment coarse X
+          }
+        }
+      }
+
+      if ((nes->ppu->mask & SPRITE_ENABLE) && ((nes->ppu->mask & SPRITE_LEFT_COLUMN_ENABLE) || x >= 8))
+      {
+        // for (auto i : m_scanlineSprites) // TODO: reemplazar por un for normal
+        for (int index = 0; index < nes->ppu->scanlineSpriteCount; index++)
+        {
+          int i = nes->ppu->scanlineSprites[index];
+          uint8_t spr_x = nes->ppu->oam[i * 4 + 3];
+
+          if (0 > x - spr_x || x - spr_x >= 8)
+            continue;
+
+          uint8_t spr_y = nes->ppu->oam[i * 4 + 0] + 1,
+                  tile = nes->ppu->oam[i * 4 + 1],
+                  attribute = nes->ppu->oam[i * 4 + 2];
+
+          int length = (nes->ppu->ctrl & SPRITE_HEIGHT) ? 16 : 8;
+
+          int x_shift = (x - spr_x) % 8, y_offset = (y - spr_y) % length;
+
+          if ((attribute & 0x40) == 0) // If NOT flipping horizontally
+            x_shift ^= 7;
+          if ((attribute & 0x80) != 0) // IF flipping vertically
+            y_offset ^= (length - 1);
+
+          uint16_t addr = 0;
+
+          if (!(nes->ppu->ctrl & SPRITE_HEIGHT))
+          {
+            addr = tile * 16 + y_offset;
+            if (nes->ppu->ctrl & SPRITE_TILE_SELECT)
+              addr += 0x1000;
+          }
+          else // 8x16 sprites
+          {
+            // bit-3 is one if it is the bottom tile of the sprite, multiply by two to get the next pattern
+            y_offset = (y_offset & 7) | ((y_offset & 8) << 1);
+            addr = (tile >> 1) * 32 + y_offset;
+            addr |= (tile & 1) << 12; // Bank 0x1000 if bit-0 is high
+          }
+
+          sprColor |= (ppu_read_ram(nes, addr) >> (x_shift)) & 1;            // bit 0 of palette entry
+          sprColor |= ((ppu_read_ram(nes, addr + 8) >> (x_shift)) & 1) << 1; // bit 1
+
+          if (!(sprOpaque = sprColor))
+          {
+            sprColor = 0;
+            continue;
+          }
+
+          sprColor |= 0x10;                   // Select sprite palette
+          sprColor |= (attribute & 0x3) << 2; // bits 2-3
+
+          spriteForeground = !(attribute & 0x20);
+
+          // Sprite-0 hit detection
+          if (!(nes->ppu->status & SPRITE_0_HIT_FLAG) && (nes->ppu->mask & BACKGROUND_ENABLE) && i == 0 && sprOpaque && bgOpaque)
+          {
+            nes->ppu->status |= SPRITE_0_HIT_FLAG;
+          }
+
+          break; // Exit the loop now since we've found the highest priority sprite
+        }
+      }
+
+      uint8_t paletteAddr = bgColor;
+
+      if ((!bgOpaque && sprOpaque) ||
+          (bgOpaque && sprOpaque && spriteForeground))
+        paletteAddr = sprColor;
+      else if (!bgOpaque && !sprOpaque)
+        paletteAddr = 0;
+      // else bgColor
+
+      nes->screen[x * 240 + y] = readPalette(nes, paletteAddr); // TODO
+    }
+    else if (nes->ppu->cycle == ScanlineVisibleDots + 1 && (nes->ppu->mask & BACKGROUND_ENABLE))
+    {
+      // Shamelessly copied from nesdev wiki
+      if ((nes->ppu->addr & 0x7000) != 0x7000) // if fine Y < 7
+        nes->ppu->addr += 0x1000;              // increment fine Y
+      else
+      {
+        nes->ppu->addr &= ~0x7000;              // fine Y = 0
+        int y = (nes->ppu->addr & 0x03E0) >> 5; // let y = coarse Y
+        if (y == 29)
+        {
+          y = 0;                    // coarse Y = 0
+          nes->ppu->addr ^= 0x0800; // switch vertical nametable
+        }
+        else if (y == 31)
+          y = 0; // coarse Y = 0, nametable not switched
+        else
+          y += 1; // increment coarse Y
+        nes->ppu->addr = (nes->ppu->addr & ~0x03E0) | (y << 5);
+        // put coarse Y back into m_dataAddress
+      }
+    }
+    else if (nes->ppu->cycle == ScanlineVisibleDots + 2 && (nes->ppu->mask & BACKGROUND_ENABLE) && (nes->ppu->mask & SPRITE_ENABLE))
+    {
+      // Copy bits related to horizontal position
+      nes->ppu->addr &= ~0x41f;
+      nes->ppu->addr |= nes->ppu->t & 0x41f;
+    }
+
+    //                 if (nes->ppu->cycle > 257 && nes->ppu->cycle < 320)
+    //                     m_spriteDataAddress = 0;
+
+    // add IRQ support for MMC3
+    if (nes->ppu->cycle == 260 && (nes->ppu->mask & BACKGROUND_ENABLE) && (nes->ppu->mask & SPRITE_ENABLE))
+    {
+      nes_log("ERROR: Scanline IRQ not implemented\n");
+      // exit(1);
+      //  TODO: implementar esto si hay tiempo (mappers)
+      //  m_bus.scanlineIRQ();
+    }
+
+    if (nes->ppu->cycle >= ScanlineEndCycle)
+    {
+      // Find and index sprites that are on the next Scanline
+      // This isn't where/when this indexing, actually copying in 2C02 is done
+      // but (I think) it shouldn't hurt any games if this is done here
+
+      nes->ppu->scanlineSpriteCount = 0;
+
+      int range = 8;
+      if ((nes->ppu->ctrl & SPRITE_HEIGHT))
+      {
+        range = 16;
+      }
+
+      size_t j = 0;
+      for (size_t i = (nes->ppu->oamaddr) / 4; i < 64; ++i)
+      {
+        int diff = (nes->ppu->scanline - nes->ppu->oam[i * 4]);
+        if (0 <= diff && diff < range)
+        {
+          if (j >= 8)
+          {
+            nes->ppu->status |= SPRITE_OVERFLOW_FLAG;
+            break;
+          }
+          if (nes->ppu->scanlineSpriteCount >= 8)
+          {
+            nes_log("ERROR: Too many sprites on scanline %d\n", nes->ppu->scanline);
+            exit(1);
+          }
+          nes->ppu->scanlineSprites[j] = i;
+          nes->ppu->scanlineSpriteCount++;
+          ++j;
+        }
+      }
+
+      ++nes->ppu->scanline;
+      nes->ppu->cycle = 0;
+    }
+
+    if (nes->ppu->scanline >= VisibleScanlines)
+    {
+      // m_pipelineState = PostRender; // TODO: remplazar (creo que sobra)
+    }
+  }
+  // PostRender
+  if (nes->ppu->scanline == VisibleScanlines)
+  {
+    if (nes->ppu->cycle >= ScanlineEndCycle)
+    {
+      ++nes->ppu->scanline;
+      nes->ppu->cycle = 0;
+      // m_pipelineState = VerticalBlank; // TODO: remplazar (creo que sobra)
+
+      // for (size_t x = 0; x < 256; ++x)
+      //{
+      //   for (size_t y = 0; y < 240; ++y)
+      //   {
+      //     m_screen.setPixel(x, y, nes->ppu->picture_buffer[x][y]);
+      //   }
+      // }
+      nes_display_draw(nes->screen);
+    }
+  }
+  // VerticalBlank
+  else if (nes->ppu->scanline < FrameEndScanline)
+  {
+    if (nes->ppu->cycle == 1 && nes->ppu->scanline == VisibleScanlines + 1)
+    {
+      nes->ppu->status |= VBLANK_FLAG;
+      if (nes->ppu->ctrl & NMI_ENABLE)
+        nes->pending_nmi = true; // TODO: Implementar interrupción NMI
+    }
+
+    if (nes->ppu->cycle >= ScanlineEndCycle)
+    {
+      ++nes->ppu->scanline;
+      nes->ppu->cycle = 0;
+    }
+
+    if (nes->ppu->scanline >= FrameEndScanline)
+    {
+      // m_pipelineState = PreRender; // TODO: remplazar (creo que sobra)
+      nes->ppu->scanline = 0;
+      nes->ppu->frame++;
+      nes_log("INFO: Frame: %d\n", nes->ppu->frame);
+    }
+  }
+  else
+  {
+    nes_log("ERROR: Scanline out of bounds: %d\n", nes->ppu->scanline);
+    exit(1);
+  }
+  ++nes->ppu->cycle;
+}
+
 // Genera un frame de la pantalla de forma optimizada
 void ppu_step_optimized(NES *nes)
 {
-  nes->ppu->status &= ~0x80;
+  nes->ppu->status &= ~VBLANK_FLAG;
   nes->ppu->scroll = 0; // TODO: nose que hay que asignar aqui
   nes->ppu->addr = 0;   // TODO: nose que hay que asignar aqui
 
@@ -90,7 +404,7 @@ void ppu_step_optimized(NES *nes)
   nes->ppu->frame++;
   nes_log("INFO: Frame: %d\n", nes->ppu->frame);
 
-  nes->ppu->status |= 0x80;
+  nes->ppu->status |= VBLANK_FLAG;
 }
 
 void render_scanline(NES *nes)
@@ -161,4 +475,19 @@ uint8_t get_sprite_pixel(NES *nes, int x, int y)
     }
   }
   return 0;
+}
+
+// Devuelve el color de un pixel de la paleta
+uint8_t readPalette(NES *nes, uint8_t addr)
+{
+  if (addr >= 0x3F00 && addr < 0x3F20)
+  {
+    nes_log("ERROR: implementar el otro tipo de acceso a memoria readPalette\n");
+    exit(1);
+  }
+  if (addr >= 0x10 && addr % 4 == 0)
+  {
+    addr = addr & 0xf;
+  }
+  return nes->ppu->palette[addr];
 }

@@ -53,7 +53,7 @@ void ppu_write_register(NES *nes, uint16_t address, uint8_t value)
     if (nes->ppu->write_toggle == 0)
     {
       nes->ppu->t = (nes->ppu->t & 0xFFE0) | (value >> 3);
-      nes->ppu->x = value & 0x07;
+      nes->ppu->fineXScroll = value & 0x07;
       nes->ppu->write_toggle = 1;
     }
     else

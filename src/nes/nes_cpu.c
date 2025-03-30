@@ -39,13 +39,13 @@ void nes_launch()
   }
   nes_log("INFO: PPU palette initialized\n");
 
-  nes_display_init(nes->screen);
+  nes_display_init();
   nes_log("INFO: Display initialized\n");
 
-  // if (nes_load_rom(nes, "resources/nes-roms/Super_mario_brothers.nes"))
-  if (nes_load_rom(nes, "resources/nes-roms/Donkey Kong (World) (Rev A).nes"))
-  // if (nes_load_rom(nes, "resources/nes-roms/Duck Hunt (World).nes"))
-  // if (nes_load_rom(nes, "resources/nes-roms/Tennis (USA) (GameCube Edition).nes"))
+  if (nes_load_rom(nes, "resources/nes-roms/Super_mario_brothers.nes"))
+  // if (nes_load_rom(nes, "resources/nes-roms/Donkey Kong (World) (Rev A).nes"))
+  //   if (nes_load_rom(nes, "resources/nes-roms/Duck Hunt (World).nes"))
+  //   if (nes_load_rom(nes, "resources/nes-roms/Tennis (USA) (GameCube Edition).nes"))
   {
     nes_log("ERROR: Failed to load ROM\n");
     free(nes->ppu);
@@ -55,7 +55,7 @@ void nes_launch()
   }
   nes_log("INFO: ROM loaded successfully\n");
 
-  nes->PC = nes_read(nes, 0xFFFC) | (nes_read(nes, 0xFFFD) << 8);
+  nes->PC = nes_read_address(nes, RESET_VECTOR);
   nes_log("INFO: Program Counter set to 0x%04X\n", nes->PC);
 
   nes->ppu->scanline = 0;
@@ -69,6 +69,8 @@ void nes_launch()
     printf("%02X ", nes->rom->prg_rom[i]);
   }
   printf("\n\n");
+
+  nes_display_draw(nes->screen);
 
   nes_run(nes);
 }
@@ -149,42 +151,59 @@ void nes_run(NES *nes)
 
   while (true)
   {
-    // ---------------------
-    // Simulacion optimizada
-    // ---------------------
-
-    for (int i = 0; i < 4; i++)
-    {
-      nes_evaluate_opcode(nes);
-    }
-
-    // log_check_ppu_ram(nes);
-    ppu_step_optimized(nes); // Dibuja un frame de la pantalla
-
     // -------------------
     // Simulacion original
     // -------------------
+    if (EXECUTION_TYPE == 0)
+    {
+      int cycles = cpu_step(nes); // Calcula los ciclos de CPU para la instrucción actual
 
-    // int cycles = nes_evaluate_opcode(nes); // Calcula los ciclos de CPU para la instrucción actual
+      // Tiempo de espera para simular el tiempo real de un ciclo de la CPU
+      // SDL_Delay(cpu_cycle_time_ms * cycles); // Espera el tiempo correspondiente a los ciclos de CPU
 
-    // Tiempo de espera para simular el tiempo real de un ciclo de la CPU
-    // SDL_Delay(cpu_cycle_time_ms * cycles); // Espera el tiempo correspondiente a los ciclos de CPU
+      // Ejecuta los ciclos de la PPU correspondientes al número de ciclos de CPU
+      for (int i = 0; i < cycles * 3; i++)
+      {
+        // Sincroniza el ciclo de la PPU
+        ppu_step(nes);
+
+        // Retraso para simular el tiempo real de un ciclo de la PPU
+        // SDL_Delay(ppu_cycle_time_ms); // Espera el tiempo correspondiente a un ciclo de la PPU
+      }
+    }
+    // ---------------------
+    // Simulacion optimizada
+    // ---------------------
+    else if (EXECUTION_TYPE == 1)
+    {
+      for (int i = 0; i < 4; i++)
+      {
+        cpu_step(nes); // Ejecuta un ciclo de la CPU
+      }
+
+      // log_check_ppu_ram(nes);
+      ppu_step_optimized(nes); // Dibuja un frame de la pantalla
+    }
+    // ---------------------------
+    // Simulacion original copiada
+    // ---------------------------
+    else if (EXECUTION_TYPE == 2)
+    {
+      int cycles = cpu_step(nes); // Calcula los ciclos de CPU para la instrucción actual
+
+      // Ejecuta los ciclos de la PPU correspondientes al número de ciclos de CPU
+      for (int i = 0; i < cycles * 3; i++)
+      {
+        // Sincroniza el ciclo de la PPU
+        ppu_step_copy(nes);
+      }
+    }
 
     // Actualiza los controladores
     if (nes_controller_update(nes))
     {
       break;
     }
-
-    // Ejecuta los ciclos de la PPU correspondientes al número de ciclos de CPU
-    // for (int i = 0; i < cycles * 3; i++)
-    //{
-    // Sincroniza el ciclo de la PPU
-    // ppu_step(nes);
-
-    // Retraso para simular el tiempo real de un ciclo de la PPU
-    // SDL_Delay(ppu_cycle_time_ms); // Espera el tiempo correspondiente a un ciclo de la PPU
-    //}
   }
 
   nes_log("INFO: NES emulation stopped\n");
@@ -199,7 +218,7 @@ void nes_run(NES *nes)
 
 void log_check_ppu_ram(NES *nes)
 {
-  nes_log("INFO: PPU VRAM:");
+  nes_log("\nINFO: PPU VRAM:");
   for (int i = 0x2000; i < 0x3000; i++)
   {
     if (i % 16 == 0)
@@ -231,4 +250,16 @@ void log_check_ppu_ram(NES *nes)
     nes_log("%02X ", nes->ppu->oam[i]);
   }
   nes_log("\n\n");
+}
+
+uint8_t cpu_step(NES *nes)
+{
+  if (nes->pending_nmi)
+  {
+    nes->pending_nmi = false;
+    nes_push_address(nes, nes->PC);
+    nes_push(nes, nes->P);
+    nes->PC = nes_read_address(nes, NMI_VECTOR);
+  }
+  return nes_evaluate_opcode(nes);
 }

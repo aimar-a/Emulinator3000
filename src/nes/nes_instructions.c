@@ -232,7 +232,7 @@ void nes_brk(NES *nes)
   nes_push_address(nes, nes->PC);
   nes_push(nes, nes->P | BREAK);
   nes->P |= INTERRUPT;
-  nes->PC = nes_read_address(nes, 0xFFFE);
+  nes->PC = nes_read_address(nes, BRK_VECTOR);
 }
 
 void nes_bvc(NES *nes)

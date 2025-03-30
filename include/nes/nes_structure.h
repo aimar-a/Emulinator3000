@@ -5,6 +5,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define NMI_VECTOR 0xFFFA
+#define RESET_VECTOR 0xFFFC
+#define IRQ_VECTOR 0xFFFE
+#define BRK_VECTOR 0xFFFE
+
+#define EXECUTION_TYPE 2
+
 typedef struct
 {
   uint8_t vram[0x4000]; // 16 KB de VRAM (aunque solo se usan 4 KB directamente)
@@ -37,7 +44,7 @@ OAMDMA 	$4014 	AAAA AAAA 	W 	OAM DMA high address
   // Copilot usa estas también (no se lo q hacen)
   uint16_t t;           // Temporal
   uint16_t v;           // VRAM
-  uint8_t x;            // Fine X scroll
+  uint8_t fineXScroll;  // Fine X scroll
   uint8_t write_toggle; // Toggle de escritura
 
   uint8_t buffer; // Buffer de datos (ni idea para que se usa)
@@ -50,6 +57,10 @@ OAMDMA 	$4014 	AAAA AAAA 	W 	OAM DMA high address
 
   // Frame
   uint16_t frame; // Frame actual
+
+  // Scanline Sprites
+  uint8_t scanlineSprites[8];  // Sprites visibles en la línea actual
+  uint8_t scanlineSpriteCount; // Contador de sprites visibles
 } PPU;
 
 typedef struct
@@ -90,6 +101,9 @@ typedef struct
   bool controller_strobe;      // Strobe
   uint8_t controller_shift[2]; // Shift
   uint8_t controller_state[2]; // Estado de los botones
+
+  // NMI
+  bool pending_nmi; // NMI pendiente
 } NES;
 
 #endif
