@@ -6,7 +6,6 @@
 #include "menu_sdl.h"
 
 int selectedDelay = 5;
-char selectedRom[128] = "resources/chip8-roms/games/Space Invaders [David Winter].ch8";
 int romListVisible = 0;
 int scrollOffset = 0;
 const int maxVisibleRoms = 3;
@@ -121,8 +120,10 @@ void showWarningWindow()
     TTF_CloseFont(font);
 }
 
-int showSettingsWindow(char selectedRom[128])
+int showSettingsWindow()
 {
+    char selectedRom[128] = ""; // Inicializar la variable de la ROM seleccionada
+
     SDL_Window *settingsWindow = SDL_CreateWindow("Settings", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_SHOWN);
     SDL_Renderer *settingsRenderer = SDL_CreateRenderer(settingsWindow, -1, SDL_RENDERER_ACCELERATED);
 
@@ -250,7 +251,7 @@ int showSettingsWindow(char selectedRom[128])
             if (openParen != NULL)
                 *openParen = '\0';
 
-                        SDL_Color white = {255, 255, 255, 255};
+            SDL_Color white = {255, 255, 255, 255};
             SDL_Surface *romSurface = TTF_RenderText_Solid(font, displayName, white);
             SDL_Texture *romTexture = SDL_CreateTextureFromSurface(settingsRenderer, romSurface);
             SDL_Rect romRect = {romX, romY, romSurface->w, romSurface->h};
@@ -332,8 +333,6 @@ void showInitialWindow()
     SDL_Texture *playButtonTexture = SDL_CreateTextureFromSurface(renderer, playButtonSurface);
     SDL_FreeSurface(playButtonSurface);
 
-    char selectedRom[128] = "";
-
     // Ajustar el tamaño y la posición del botón "Play"
     int buttonWidth = 400;                  // Ancho del botón
     int buttonHeight = 100;                 // Alto del botón
@@ -359,7 +358,7 @@ void showInitialWindow()
                     SDL_DestroyRenderer(renderer);
                     SDL_DestroyWindow(window);
 
-                    if (showSettingsWindow(selectedRom))
+                    if (showSettingsWindow())
                     {
                         showInitialWindow();
                     }

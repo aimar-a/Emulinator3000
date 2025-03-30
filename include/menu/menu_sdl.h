@@ -10,7 +10,7 @@
 #include "chip8_timers.h"
 #include "chip8_opcodes.h"
 
-int showSettingsWindow(char selectedRom[128]);
+int showSettingsWindow();
 bool isRomSelected(char romOptions[][128], char selectedRom[128], int romCount);
 void showInitialWindow();
 void loadRomsFromDirectory(const char *path, char roms[][128], int *romCount);

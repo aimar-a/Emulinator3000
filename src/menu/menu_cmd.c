@@ -256,11 +256,12 @@ void menuConfiguracion()
   {
     option = ' ';
     clearScreen();
-    printf("Configuración\n");
+    printf("--- Configuración ---\n");
     printf("Seleccione una opción:\n");
     printf("1. Cambiar Contraseña\n");
     printf("2. Cambiar Escala de Pantalla Chip8\n");
-    printf("3. Cambiar Escala de Pantalla NES\n");
+    printf("3. Cambiar Escala de Pantalla SuperChip8\n");
+    printf("4. Cambiar Escala de Pantalla NES\n");
     printf("0. Volver\n");
     printf("Opción: ");
 
@@ -272,10 +273,13 @@ void menuConfiguracion()
       menuCambioContraseña();
       break;
     case '2':
-      printf("Configurando escala de pantalla CHIP-8...\n");
+      menuEscalaChip8();
       break;
     case '3':
-      printf("Configurando escala de pantalla NES...\n");
+      menuEscalaSuperChip8();
+      break;
+    case '4':
+      menuEscalaNes();
       break;
     case '0':
       printf("Volviendo...\n");
@@ -283,6 +287,132 @@ void menuConfiguracion()
     default:
       printf("Opción inválida\n");
       break;
+    }
+  }
+}
+
+void menuEscalaChip8()
+{
+  while (true)
+  {
+    clearScreen();
+    printf("--- Cambiar Escala de Pantalla Chip8 ---\n");
+    printf("Escala actual: x%d\n", SCREEN_SCALE_CHIP8);
+    printf("0. Volver\n");
+    printf("Nueva escala: ");
+
+    char input[MAX_STRING_LENGTH];
+    getString(input, MAX_STRING_LENGTH);
+    if (strcmp(input, "0") == 0)
+    {
+      printf("Volviendo...\n");
+      break;
+    }
+    if (input[0] == 'x')
+    {
+      input[0] = ' ';
+    }
+    int nuevaEscala = atoi(input);
+    if (nuevaEscala > 0)
+    {
+      if (cambiarEscalaChip8(nuevaEscala) == 1)
+      {
+        printf("ERROR: No se pudo cambiar la escala de pantalla Chip8\n");
+        Sleep(1000);
+        return;
+      }
+      printf("Escala de pantalla Chip8 cambiada a x%d\n", nuevaEscala);
+      Sleep(1000);
+      return;
+    }
+    else
+    {
+      printf("Escala inválida. Inténtalo de nuevo.\n");
+      Sleep(1000);
+    }
+  }
+}
+
+void menuEscalaSuperChip8()
+{
+  while (true)
+  {
+    clearScreen();
+    printf("--- Cambiar Escala de Pantalla SuperChip8 ---\n");
+    printf("Escala actual: x%d\n", SCREEN_SCALE_SUPERCHIP);
+    printf("0. Volver\n");
+    printf("Nueva escala: ");
+
+    char input[MAX_STRING_LENGTH];
+    getString(input, MAX_STRING_LENGTH);
+    if (strcmp(input, "0") == 0)
+    {
+      printf("Volviendo...\n");
+      break;
+    }
+    if (input[0] == 'x')
+    {
+      input[0] = ' ';
+    }
+    int nuevaEscala = atoi(input);
+    if (nuevaEscala > 0)
+    {
+      if (cambiarEscalaSuperChip(nuevaEscala) == 1)
+      {
+        printf("ERROR: No se pudo cambiar la escala de pantalla SuperChip8\n");
+        Sleep(1000);
+        return;
+      }
+      printf("Escala de pantalla SuperChip8 cambiada a x%d\n", nuevaEscala);
+      Sleep(1000);
+      return;
+    }
+    else
+    {
+      printf("Escala inválida. Inténtalo de nuevo.\n");
+      Sleep(1000);
+    }
+  }
+}
+
+void menuEscalaNes()
+{
+  while (true)
+  {
+    clearScreen();
+    printf("--- Cambiar Escala de Pantalla NES ---\n");
+    printf("Escala actual: x%d\n", SCREEN_SCALE_NES);
+    printf("0. Volver\n");
+    printf("Nueva escala: ");
+
+    char input[MAX_STRING_LENGTH];
+    getString(input, MAX_STRING_LENGTH);
+    if (strcmp(input, "0") == 0)
+    {
+      printf("Volviendo...\n");
+      break;
+    }
+    if (input[0] == 'x')
+    {
+      input[0] = ' ';
+    }
+    int nuevaEscala = atoi(input);
+    if (nuevaEscala > 0)
+    {
+      if (cambiarEscalaNes(nuevaEscala) == 1)
+      {
+        printf("ERROR: No se pudo cambiar la escala de pantalla NES\n");
+        Sleep(1000);
+        return;
+      }
+      printf("Escala de pantalla NES cambiada a x%d\n", nuevaEscala);
+      Sleep(1000);
+      return;
+    }
+    else
+    {
+      printf("Escala inválida. Inténtalo de nuevo.\n");
+      Sleep(1000);
     }
   }
 }

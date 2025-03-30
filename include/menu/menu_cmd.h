@@ -12,6 +12,8 @@
 #include "menu_sdl.h"
 #include "bd.h"
 #include <stdbool.h>
+#include "chip8_config.h"
+
 #ifdef _WIN32
 #include <windows.h> // Para usar "Sleep" en Windows
 #else
@@ -30,5 +32,8 @@ void menuChip8();
 void menuListaROMs();
 void menuAdvertenciaNES();
 void menuConfiguracion();
+void menuEscalaChip8();
+void menuEscalaSuperChip8();
+void menuEscalaNes();
 
 #endif // !MENU_H

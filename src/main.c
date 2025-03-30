@@ -9,7 +9,6 @@
 extern sqlite3 *db;
 #include "nes_cpu.h"
 
-
 /*
 
 
@@ -27,35 +26,37 @@ bin/chip8_emulator.exe
 int main(int argc, char *argv[])
 {
   // creamos la BD con sus estructuras en el caso en el que no existan
- 
+
   cargarConfiguracion("resources/config/config");
-    
-    // Ejecutar acciones según la configuración
-    if(load) {
-        abrirBaseDeDatos(&db);
-    }
-    if(deletebbdd) {
-        eliminarBaseDeDatos();
-    }
-    
-    if(createbbdd) {
-        crearBD();
-    }
-    
-    if(cleanbbdd) {
-        limpiarBaseDeDatos();
-    }
-    
-  
-  
 
+  // Ejecutar acciones según la configuración
+  if (load)
+  {
+    abrirBaseDeDatos(&db);
+  }
+  if (deletebbdd)
+  {
+    eliminarBaseDeDatos();
+  }
 
+  if (createbbdd)
+  {
+    crearBD();
+  }
+
+  if (cleanbbdd)
+  {
+    limpiarBaseDeDatos();
+  }
 
   // Iniciar el menu de usuario
   menuUsuario();
 
   // Iniciar la NES directamente
-  //nes_launch();
+  // nes_launch();
+
+  // Iniciar el Chip8 directamente
+  // showInitialWindow();
 
   return 0;
 }
