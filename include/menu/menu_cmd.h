@@ -10,12 +10,25 @@
 #include "chip8_cpu.h"
 #include "nes_cpu.h"
 #include "menu_sdl.h"
+#include "bd.h"
+#include <stdbool.h>
+#ifdef _WIN32
+#include <windows.h> // Para usar "Sleep" en Windows
+#else
+#include <unistd.h>                   // Para usar "sleep" en Linux/Mac
+#define Sleep(ms) usleep((ms) * 1000) // Convertir milisegundos a microsegundos
+#endif
 
-extern char * currentUser;  // Declaración de la variable global
+#define MAX_STRING_LENGTH 128
+#define ROMS_PATH "resources/chip8-roms"
+
+extern char *currentUser; // Declaración de la variable global
 void menuUsuario();
 void menuCambioContraseña();
 void menuInicial();
 void menuChip8();
 void menuListaROMs();
+void menuAdvertenciaNES();
+void menuConfiguracion();
 
 #endif // !MENU_H
