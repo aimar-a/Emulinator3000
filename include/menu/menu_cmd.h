@@ -12,7 +12,7 @@
 #include "menu_sdl.h"
 #include "bd.h"
 #include <stdbool.h>
-#include "chip8_config.h"
+#include "config_file.h"
 
 #ifdef _WIN32
 #include <windows.h> // Para usar "Sleep" en Windows

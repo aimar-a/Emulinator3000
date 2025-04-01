@@ -1,8 +1,4 @@
-#include "chip8_config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
+#include "config_file.h"
 
 int SCREEN_WIDTH_CHIP8 = 64;
 int SCREEN_HEIGHT_CHIP8 = 32;
@@ -21,12 +17,15 @@ bool cleanbbdd = false;
 bool createbbdd = false;
 bool deletebbdd = false;
 
+bool log_chip8_enabled = false; // Variable para habilitar/deshabilitar el log de Chip8
+bool log_nes_enabled = false;   // Variable para habilitar/deshabilitar el log de NES
+
 // Variable para almacenar la ruta de la base de datos
 
 // Función para cargar la configuración desde el archivo .txt
 void cargarConfiguracion(const char *archivoConfig)
 {
-    //printf("Intentando abrir el archivo: %s\n", archivoConfig);
+    // printf("Intentando abrir el archivo: %s\n", archivoConfig);
 
     FILE *archivo = fopen(archivoConfig, "r");
     if (archivo == NULL)
@@ -130,6 +129,28 @@ void cargarConfiguracion(const char *archivoConfig)
             else
             {
                 deletebbdd = false;
+            }
+        }
+        else if (strstr(linea, "log_chip8") != NULL)
+        {
+            if (strstr(linea, "true") != NULL)
+            {
+                log_chip8_enabled = true;
+            }
+            else
+            {
+                log_chip8_enabled = false;
+            }
+        }
+        else if (strstr(linea, "log_nes") != NULL)
+        {
+            if (strstr(linea, "true") != NULL)
+            {
+                log_nes_enabled = true;
+            }
+            else
+            {
+                log_nes_enabled = false;
             }
         }
     }

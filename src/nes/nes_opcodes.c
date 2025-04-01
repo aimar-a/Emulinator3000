@@ -16,8 +16,8 @@ uint8_t nes_evaluate_opcode(NES *nes)
   const char *instruction_name = opcode_names[opcode] ? opcode_names[opcode] : "ERROR, UNKNOWN INSTRUCTION";
   nes_log("INFO: PC: 0x%04X, Opcode: 0x%02X (0x%02X 0x%02X), Instruction: %s\n",
           nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1), instruction_name);
-  printf("INFO: PC: 0x%04X, Opcode: 0x%02X (0x%02X 0x%02X), Instruction: %s\n",
-         nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1), instruction_name);
+  // printf("INFO: PC: 0x%04X, Opcode: 0x%02X (0x%02X 0x%02X), Instruction: %s\n",
+  //        nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1), instruction_name);
 
   switch (opcode)
   {

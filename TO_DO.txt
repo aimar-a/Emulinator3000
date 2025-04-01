@@ -3,19 +3,10 @@ FASE 1:
 -Base de datos:
   implementar las funciones en el emulador 
   si lo vemos necesario hacer mas funciones
+  poner para que en las partidas se anada la fecha (de inicio?)
 
--Menu sencillo por consola: (como albisu no va a acabar el menu SDL pa la Fase 1 lo hacemos en consola)()
+-Menu sencillo por consola:
   Menu de usuario, amigos... (juntar con la parte de bd)
-
--No entiendo una verga pero pinta q es para cargar iniciales realistas a la bd:
-De manera opcional se contempla la posibilidad de que todos o parte de los
-datos que el servidor vaya a manejar sean importados (habrá que construir
-el código que lo haga) de alguna de las fuentes disponibles en los distintos
-portales de datos abiertos existentes. A modo de ejemplo:
-• https://data.europa.eu
-• https://datos.gob.es/
-• https://opendata.euskadi.eus
-• https://www.bilbao.eus/opendata
 
 -Logger: (no es obligatorio hacerlo para la Fase 1 creo)
   bd
@@ -27,7 +18,7 @@ portales de datos abiertos existentes. A modo de ejemplo:
 PARA LA ENTREGA FINAL
 
 -Acabar la NES
-  ppu
-  (mappers)
-  sonido
+  ppu: saca imagen pero no la que deberia
+  (mappers): si nos sobra tiempo se implementa sino nada
+  apu: audio, nada hecho todavia
   ...

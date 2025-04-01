@@ -60,6 +60,7 @@ void nes_launch()
 
   nes->ppu->scanline = 0;
 
+  /*
   for (int i = 0x0000; i < 0x4000; i++) // TODO: quitar esto cuando se acabe
   {
     if (i % 16 == 0)
@@ -69,6 +70,7 @@ void nes_launch()
     printf("%02X ", nes->rom->prg_rom[i]);
   }
   printf("\n\n");
+  */
 
   nes_display_draw(nes->screen);
 

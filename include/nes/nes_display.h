@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <SDL2/SDL.h>
 #include "nes_logger.h"
-#include "chip8_config.h"
+#include "config_file.h"
 
 void nes_display_init();
 void nes_display_draw(uint8_t *pantalla);

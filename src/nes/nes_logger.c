@@ -2,6 +2,9 @@
 
 void nes_log(const char *format, ...)
 {
+  if (!log_nes_enabled)
+    return;
+
   FILE *log_file = fopen("log/nes_log.log", "a");
   if (!log_file)
     return;

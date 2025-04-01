@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "chip8_config.h"
+#include "config_file.h"
 
 typedef struct
 {

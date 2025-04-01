@@ -11,7 +11,7 @@ SCREEN_SCALE_SUPERCHIP=13
 [NES]
 SCREEN_WIDTH_NES=256
 SCREEN_HEIGHT_NES=240
-SCREEN_SCALE_NES=3
+SCREEN_SCALE_NES=4
 
 [Settings]
 load=true
@@ -19,4 +19,7 @@ cleanbbdd=false
 createbbdd=false
 deletebbdd=false
 
+[Logger]
+log_chip8=false
+log_nes=false
 

@@ -2,6 +2,9 @@
 
 void chip8_log(const char *format, ...)
 {
+  if (!log_chip8_enabled)
+    return;
+
   FILE *log_file = fopen("log/chip8_log.log", "a");
   if (!log_file)
     return;
@@ -12,8 +15,6 @@ void chip8_log(const char *format, ...)
   va_end(args);
 
   fclose(log_file);
-
-  printf(format, args); // Por ahora también lo imprimimos en consola pa no tener que abrir el archivo
 }
 
 void chip8_log_clear()
