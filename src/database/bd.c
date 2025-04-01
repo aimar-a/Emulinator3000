@@ -6,20 +6,24 @@
 sqlite3 *db;
 const char *db_filename = "emulatorBD.sqlite";
 
-int abrirBaseDeDatos(sqlite3 **db) {
+int abrirBaseDeDatos(sqlite3 **db)
+{
     int rc = sqlite3_open(db_filename, db);
-    if (rc) {
+    if (rc)
+    {
         fprintf(stderr, "No se pudo abrir la base de datos: %s\n", sqlite3_errmsg(*db));
         return rc;
     }
     return SQLITE_OK;
 }
 // Función para crear la BD y su estructura
-void crearBD() {
+void crearBD()
+{
     sqlite3_stmt *stmt;
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -28,7 +32,7 @@ void crearBD() {
     char sql1[] = "CREATE TABLE IF NOT EXISTS USUARIOS ("
                   "user VARCHAR(20) PRIMARY KEY,"
                   "contraseña VARCHAR(20) NOT NULL);";
-    
+
     sqlite3_prepare_v2(db, sql1, -1, &stmt, NULL);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -115,9 +119,11 @@ void crearBD() {
     sqlite3_close(db);
 }
 
-void limpiarBaseDeDatos() {
+void limpiarBaseDeDatos()
+{
     int rc = abrirBaseDeDatos(&db);
-    if (rc != SQLITE_OK) return;
+    if (rc != SQLITE_OK)
+        return;
 
     // Lista de todas tus tablas
     const char *tablas[] = {
@@ -128,21 +134,25 @@ void limpiarBaseDeDatos() {
         "PARTIDA",
         "JUEGO",
         "USUARIOS",
-        NULL  // Marca el final del array
+        NULL // Marca el final del array
     };
 
     char *errMsg = NULL;
     const char **tabla = tablas;
-    
-    while (*tabla) {
+
+    while (*tabla)
+    {
         char sql[256];
         snprintf(sql, sizeof(sql), "DELETE FROM %s;", *tabla);
-        
+
         rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
-        if (rc != SQLITE_OK) {
+        if (rc != SQLITE_OK)
+        {
             fprintf(stderr, "Error al limpiar la tabla %s: %s\n", *tabla, errMsg);
             sqlite3_free(errMsg);
-        } else {
+        }
+        else
+        {
             printf("Tabla %s limpiada exitosamente.\n", *tabla);
         }
         tabla++;
@@ -151,7 +161,8 @@ void limpiarBaseDeDatos() {
     // Reiniciamos los autoincrementales
     const char *resetAI = "DELETE FROM sqlite_sequence;";
     rc = sqlite3_exec(db, resetAI, 0, 0, &errMsg);
-    if (rc != SQLITE_OK) {
+    if (rc != SQLITE_OK)
+    {
         fprintf(stderr, "Error al resetear autoincrementales: %s\n", errMsg);
         sqlite3_free(errMsg);
     }
@@ -160,18 +171,24 @@ void limpiarBaseDeDatos() {
     printf("Base de datos limpiada completamente.\n");
 }
 
-void eliminarBaseDeDatos() {
-    if (remove(db_filename) == 0) {
+void eliminarBaseDeDatos()
+{
+    if (remove(db_filename) == 0)
+    {
         printf("Base de datos eliminada exitosamente.\n");
-    } else {
+    }
+    else
+    {
         perror("Error al eliminar la base de datos");
     }
 }
-//creamos las funciones para insertar datos en las tablas
-void insertarUsuarios(char* user, char* contraseña) {
+// creamos las funciones para insertar datos en las tablas
+void insertarUsuarios(char *user, char *contraseña)
+{
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -182,20 +199,22 @@ void insertarUsuarios(char* user, char* contraseña) {
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, contraseña, strlen(contraseña), SQLITE_STATIC);  // Esté último paso ahí que repasarlo
+    sqlite3_bind_text(stmt, 2, contraseña, strlen(contraseña), SQLITE_STATIC); // Esté último paso ahí que repasarlo
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-   // printf("✅ Usuario '%s' insertado correctamente.\n", user); lo comento que sino sale en el cmd to lo raro
+    // printf("✅ Usuario '%s' insertado correctamente.\n", user); lo comento que sino sale en el cmd to lo raro
 
     sqlite3_close(db);
 }
 
-void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
+void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax)
+{
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -207,10 +226,9 @@ void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);
-    sqlite3_bind_int(stmt, 2, idjuego);  
+    sqlite3_bind_int(stmt, 2, idjuego);
     sqlite3_bind_int(stmt, 3, tiempojugado);
     sqlite3_bind_int(stmt, 4, puntmax);
-
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -220,11 +238,13 @@ void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
     sqlite3_close(db);
 }
 
-void insertarJuego(char* titulo, char* rom){ //no insertamos puntuacion y usuario record
-                                             //ya que estos los meteremos con update
+void insertarJuego(char *titulo, char *rom)
+{ // no insertamos puntuacion y usuario record
+  // ya que estos los meteremos con update
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -236,22 +256,22 @@ void insertarJuego(char* titulo, char* rom){ //no insertamos puntuacion y usuari
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, titulo, strlen(titulo), SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, rom, strlen(rom), SQLITE_STATIC);  
-
-
+    sqlite3_bind_text(stmt, 2, rom, strlen(rom), SQLITE_STATIC);
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-  
-    printf("✅ Juego '%s' insertado correctamente.\n",titulo);
+
+    printf("✅ Juego '%s' insertado correctamente.\n", titulo);
 
     sqlite3_close(db);
 }
 
-void insertarTiempoJugado(int tiempojugado, char* user, int idjuego){
+void insertarTiempoJugado(int tiempojugado, char *user, int idjuego)
+{
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -263,9 +283,8 @@ void insertarTiempoJugado(int tiempojugado, char* user, int idjuego){
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_int(stmt, 1, tiempojugado);
-    sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_STATIC);  
+    sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_STATIC);
     sqlite3_bind_int(stmt, 3, idjuego);
-
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -275,10 +294,12 @@ void insertarTiempoJugado(int tiempojugado, char* user, int idjuego){
     sqlite3_close(db);
 }
 
-void insertarLogros(char* nombre, char* descripcion, int idjuego){
+void insertarLogros(char *nombre, char *descripcion, int idjuego)
+{
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -289,9 +310,8 @@ void insertarLogros(char* nombre, char* descripcion, int idjuego){
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
-
-    sqlite3_bind_text(stmt, 1, nombre, strlen(nombre), SQLITE_STATIC);  
-    sqlite3_bind_text(stmt, 2, descripcion, strlen(descripcion), SQLITE_STATIC);  
+    sqlite3_bind_text(stmt, 1, nombre, strlen(nombre), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, descripcion, strlen(descripcion), SQLITE_STATIC);
     sqlite3_bind_int(stmt, 3, idjuego);
 
     sqlite3_step(stmt);
@@ -302,10 +322,12 @@ void insertarLogros(char* nombre, char* descripcion, int idjuego){
     sqlite3_close(db);
 }
 
-void insertarLogrosUsuarios(char* user, int idlogro, char* fecha ){ //en principio guardamos la FECHA como texto ya veremos mas adelante si hay que cambiarlo o no
+void insertarLogrosUsuarios(char *user, int idlogro, char *fecha)
+{ // en principio guardamos la FECHA como texto ya veremos mas adelante si hay que cambiarlo o no
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -316,10 +338,9 @@ void insertarLogrosUsuarios(char* user, int idlogro, char* fecha ){ //en princip
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
-
-    sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);  
+    sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);
     sqlite3_bind_int(stmt, 2, idlogro);
-    sqlite3_bind_text(stmt, 3, fecha, strlen(fecha), SQLITE_STATIC);  
+    sqlite3_bind_text(stmt, 3, fecha, strlen(fecha), SQLITE_STATIC);
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -329,10 +350,12 @@ void insertarLogrosUsuarios(char* user, int idlogro, char* fecha ){ //en princip
     sqlite3_close(db);
 }
 
-void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guardamos ESTADO como texto ya veremos mas adelante si hay que cambiarlo o no
+void insertarAmigos(char *user1, char *user2, char *estado)
+{ // en principio guardamos ESTADO como texto ya veremos mas adelante si hay que cambiarlo o no
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -343,10 +366,9 @@ void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guar
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
-
-    sqlite3_bind_text(stmt, 1, user1, strlen(user1), SQLITE_STATIC);  
-    sqlite3_bind_text(stmt, 2, user2, strlen(user2), SQLITE_STATIC);  
-    sqlite3_bind_text(stmt, 3, estado, strlen(estado), SQLITE_STATIC);  
+    sqlite3_bind_text(stmt, 1, user1, strlen(user1), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, user2, strlen(user2), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, estado, strlen(estado), SQLITE_STATIC);
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -360,11 +382,12 @@ void insertarAmigos(char* user1, char* user2, char* estado){ //en principio guar
 
 // updateTiempoJugado(de un usuario a un juego)
 
-
-void updateTiempoJugado(int tiempoJugado, char* user, int id_juego) {
+void updateTiempoJugado(int tiempoJugado, char *user, int id_juego)
+{
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -389,10 +412,12 @@ void updateTiempoJugado(int tiempoJugado, char* user, int id_juego) {
 
 // updateEstado_Amigos(entre dos usuarios)
 
-void updateEstado_Amigos(char* user1, char* user2, char* estado) {
+void updateEstado_Amigos(char *user1, char *user2, char *estado)
+{
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -415,14 +440,15 @@ void updateEstado_Amigos(char* user1, char* user2, char* estado) {
     sqlite3_close(db);
 }
 
+// updateContrasena (de usuario)
 
-//updateContrasena (de usuario)
-
-//da error "Database is locked"
-void updateContrasena(char* newcontrasena, char* user) { 
+// da error "Database is locked"
+void updateContrasena(char *newcontrasena, char *user)
+{
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -431,7 +457,8 @@ void updateContrasena(char* newcontrasena, char* user) {
     char sql[] = "UPDATE USUARIOS SET contraseña = ? WHERE user = ?";
 
     // Preparar la consulta
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
         printf("Error en la preparación de la consulta: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
         return;
@@ -442,7 +469,8 @@ void updateContrasena(char* newcontrasena, char* user) {
     sqlite3_bind_text(stmt, 2, user, strlen(user), SQLITE_TRANSIENT);
 
     // Ejecutar la consulta
-    if (sqlite3_step(stmt) != SQLITE_DONE) {
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+    {
         printf("Error al ejecutar el UPDATE: %s\n", sqlite3_errmsg(db));
         sqlite3_finalize(stmt);
         sqlite3_close(db);
@@ -450,19 +478,21 @@ void updateContrasena(char* newcontrasena, char* user) {
     }
 
     // Impresión de éxito
-   // printf("✅ Contraseña del usuario '%s' actualizada correctamente.\n", user);
+    // printf("✅ Contraseña del usuario '%s' actualizada correctamente.\n", user);
 
     // Limpiar
     sqlite3_finalize(stmt);
     sqlite3_close(db);
 }
 
-//updateUsuarioRecord (Juego)
+// updateUsuarioRecord (Juego)
 
-void updateUsuarioPuntuacionRecord(char* usuario, int newPunt, int idjuego){
+void updateUsuarioPuntuacionRecord(char *usuario, int newPunt, int idjuego)
+{
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
         return;
     }
@@ -471,13 +501,11 @@ void updateUsuarioPuntuacionRecord(char* usuario, int newPunt, int idjuego){
 
     char sql[] = "UPDATE JUEGO SET usuario_record = ?, puntuacion_record = ? WHERE id_juego = ?";
 
-
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, usuario, strlen(usuario), SQLITE_STATIC);
     sqlite3_bind_int(stmt, 2, newPunt);
     sqlite3_bind_int(stmt, 3, idjuego);
-
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -487,10 +515,12 @@ void updateUsuarioPuntuacionRecord(char* usuario, int newPunt, int idjuego){
     sqlite3_close(db);
 }
 
-int getPuntuacionRecord(int idJuego){
+int getPuntuacionRecord(int idJuego)
+{
     int puntuacionRecord = 0;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
     }
 
@@ -498,32 +528,30 @@ int getPuntuacionRecord(int idJuego){
 
     char sql[] = "SELECT puntuacion_record FROM JUEGO WHERE id_juego = ?";
 
-
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_int(stmt, 1, idJuego);
 
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
 
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        puntuacionRecord = sqlite3_column_int(stmt, 0);
+    }
 
-        puntuacionRecord = sqlite3_column_int(stmt, 0);  
-
-    }  
-    
     sqlite3_finalize(stmt);
     sqlite3_close(db);
     return puntuacionRecord;
-
 }
 
+// funcion para comprobar si existe un usuario y contraseña
 
-//funcion para comprobar si existe un usuario y contraseña
-
-bool existeUsuarioYPas(char* name, char* pass){
+bool existeUsuarioYPas(char *name, char *pass)
+{
 
     bool existe = false;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
     }
 
@@ -533,32 +561,30 @@ bool existeUsuarioYPas(char* name, char* pass){
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
-
     sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, pass, strlen(pass), SQLITE_STATIC);
 
-    if(sqlite3_step(stmt)==SQLITE_ROW){
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
 
         existe = true;
-        
     }
     sqlite3_finalize(stmt);
 
-
     sqlite3_close(db);
-    
-    return existe;
 
+    return existe;
 }
 
+// funcion para comprobar si existe un usuario
 
-//funcion para comprobar si existe un usuario 
-
-bool existeUsuario(char* name){
+bool existeUsuario(char *name)
+{
 
     bool existe = false;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
     }
 
@@ -568,35 +594,33 @@ bool existeUsuario(char* name){
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
-
     sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_STATIC);
-    if(sqlite3_step(stmt)==SQLITE_ROW){
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
 
         existe = true;
-        
     }
     sqlite3_finalize(stmt);
 
-
     sqlite3_close(db);
-    
-    return existe;
 
+    return existe;
 }
 
 // Función para obtener la contraseña de un usuario
 
-bool comprobarContraseña(char* user, char* password) {
-    
+bool comprobarContraseña(char *user, char *password)
+{
+
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
     }
 
     sqlite3_stmt *stmt;
 
     char sql[] = "SELECT * FROM USUARIOS WHERE user = ? AND contraseña = ?";
-
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
@@ -608,20 +632,19 @@ bool comprobarContraseña(char* user, char* password) {
         sqlite3_close(db);
         return true;
     }
-    
+
     sqlite3_finalize(stmt);
     sqlite3_close(db);
     return false;
 }
 
-
-
-
-int getIdJuego(char* romjuego){
+int getIdJuego(char *romjuego)
+{
 
     int idJuego = 0;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
     }
 
@@ -629,31 +652,28 @@ int getIdJuego(char* romjuego){
 
     char sql[] = "SELECT id_juego FROM JUEGO WHERE rom = ?";
 
-
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, romjuego, -1, SQLITE_STATIC);
 
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
 
-        idJuego = sqlite3_column_int(stmt, 0);  
+        idJuego = sqlite3_column_int(stmt, 0);
+    }
 
-    }  
-    
     sqlite3_finalize(stmt);
     sqlite3_close(db);
     return idJuego;
-
 }
 
+bool hajugado(char *user, int id_juego)
+{
 
-
-
-bool hajugado(char* user, int id_juego){
-
-    bool hajugado=false;
+    bool hajugado = false;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
     }
 
@@ -661,27 +681,23 @@ bool hajugado(char* user, int id_juego){
 
     const char sql[] = "SELECT id_juego FROM TIEMPO_JUGADO WHERE user = ? AND id_juego = ?";
 
-
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
     sqlite3_bind_int(stmt, 2, id_juego);
 
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
 
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        hajugado = true;
+    }
 
-        hajugado=true;
-    }  
-    
     sqlite3_finalize(stmt);
     sqlite3_close(db);
     return hajugado;
-
-
 }
 
-
-/* 
+/*
     // Creamos la tabla TIEMPO_JUGADO
     char sql4[] = "CREATE TABLE IF NOT EXISTS TIEMPO_JUGADO ("
     "tiempo_jugado INT DEFAULT 0,"
@@ -691,11 +707,13 @@ bool hajugado(char* user, int id_juego){
     "FOREIGN KEY (user) REFERENCES USUARIOS(user),"
     "FOREIGN KEY (id_juego) REFERENCES JUEGO(id_juego));"; */
 
-int getTiempoJugado(char* user, int idJuego){
+int getTiempoJugado(char *user, int idJuego)
+{
 
     int tiempoJugado = 0;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK) {
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
         printf("Error al abrir la base de datos\n");
     }
 
@@ -703,21 +721,249 @@ int getTiempoJugado(char* user, int idJuego){
 
     char sql[] = "SELECT tiempo_jugado FROM TIEMPO_JUGADO WHERE user = ? AND id_juego = ?";
 
-
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
     sqlite3_bind_int(stmt, 2, idJuego);
 
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
 
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        tiempoJugado = sqlite3_column_int(stmt, 0);
+    }
 
-        tiempoJugado = sqlite3_column_int(stmt, 0);  
-
-    }  
-    
     sqlite3_finalize(stmt);
     sqlite3_close(db);
     return tiempoJugado;
+}
 
+/**
+ * @brief Obtiene el tiempo jugado de todos los juegos de un usuario.
+ *
+ * Esta función devuelve la cantidad de juegos jugados por un usuario y asigna
+ * los nombres de los juegos y los tiempos jugados a los punteros proporcionados.
+ * Es responsabilidad del usuario liberar la memoria asignada a los punteros
+ * después de utilizarlos.
+ *
+ * @param user El nombre del usuario del cual se desea obtener la información.
+ * @param nombreJuegos Puntero doble donde se almacenarán los nombres de los juegos.
+ *                      La memoria será asignada dinámicamente dentro de la función.
+ * @param tiempos Puntero donde se almacenarán los tiempos jugados de cada juego.
+ *                La memoria será asignada dinámicamente dentro de la función.
+ * @return int La cantidad de juegos jugados por el usuario o -1 si ocurrió un error.
+ */
+int getTiempoJugadoTodosLosJuegos(char *user, char ***nombreJuegos, int **tiempos)
+{
+    int cantidadJuegos = 0;
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
+        printf("Error al abrir la base de datos\n");
+        return -1;
+    }
+
+    sqlite3_stmt *stmt;
+
+    // Contamos la cantidad de juegos jugados por el usuario
+    char countSql[] = "SELECT COUNT(*) FROM TIEMPO_JUGADO WHERE user = ?";
+    if (sqlite3_prepare_v2(db, countSql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return -1;
+    }
+
+    sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        cantidadJuegos = sqlite3_column_int(stmt, 0);
+    }
+    else
+    {
+        printf("Error al ejecutar la consulta: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        return -1;
+    }
+    sqlite3_finalize(stmt);
+
+    // Reservamos memoria para los nombres de los juegos y los tiempos
+    *nombreJuegos = (char **)malloc(cantidadJuegos * sizeof(char *));
+    if (*nombreJuegos == NULL)
+    {
+        printf("Error al asignar memoria para los nombres de los juegos\n");
+        sqlite3_close(db);
+        return -1;
+    }
+
+    *tiempos = (int *)malloc(cantidadJuegos * sizeof(int));
+    if (*tiempos == NULL)
+    {
+        printf("Error al asignar memoria para los tiempos jugados\n");
+        free(*nombreJuegos);
+        sqlite3_close(db);
+        return -1;
+    }
+
+    // Obtenemos los nombres de los juegos y los tiempos jugados
+    char sql[] = "SELECT JUEGO.titulo, TIEMPO_JUGADO.tiempo_jugado FROM TIEMPO_JUGADO "
+                 "INNER JOIN JUEGO ON TIEMPO_JUGADO.id_juego = JUEGO.id_juego WHERE TIEMPO_JUGADO.user = ?";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
+        free(*nombreJuegos);
+        free(*tiempos);
+        sqlite3_close(db);
+        return -1;
+    }
+
+    sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
+
+    int i = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const char *titulo = (const char *)sqlite3_column_text(stmt, 0);
+        int tiempoJugado = sqlite3_column_int(stmt, 1);
+
+        (*nombreJuegos)[i] = strdup(titulo); // Copiamos el nombre del juego
+        if ((*nombreJuegos)[i] == NULL)
+        {
+            printf("Error al asignar memoria para el nombre del juego\n");
+            for (int j = 0; j < i; j++)
+            {
+                free((*nombreJuegos)[j]);
+            }
+            free(*nombreJuegos);
+            free(*tiempos);
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return -1;
+        }
+
+        (*tiempos)[i] = tiempoJugado;
+        i++;
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+
+    return cantidadJuegos;
+}
+
+int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **tiemposJugados, int **puntuacionesMaximas)
+{
+    int cantidadPartidas = 0;
+
+    // Abrimos la base de datos
+    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    {
+        printf("Error al abrir la base de datos\n");
+        return -1;
+    }
+
+    sqlite3_stmt *stmt;
+
+    // Contamos la cantidad de partidas jugadas por el usuario
+    char countSql[] = "SELECT COUNT(*) FROM PARTIDA WHERE user = ? AND id_juego = (SELECT id_juego FROM JUEGO WHERE titulo = ?)";
+    if (sqlite3_prepare_v2(db, countSql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return -1;
+    }
+
+    sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, nombreJuego, -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        cantidadPartidas = sqlite3_column_int(stmt, 0);
+    }
+    else
+    {
+        printf("Error al ejecutar la consulta: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        return -1;
+    }
+    sqlite3_finalize(stmt);
+
+    // Reservamos memoria para las partidas y los tiempos
+    *partidas = (char **)malloc(cantidadPartidas * sizeof(char *));
+    if (*partidas == NULL)
+    {
+        printf("Error al asignar memoria para las partidas\n");
+        sqlite3_close(db);
+        return -1;
+    }
+
+    *tiemposJugados = (int *)malloc(cantidadPartidas * sizeof(int));
+    if (*tiemposJugados == NULL)
+    {
+        printf("Error al asignar memoria para los tiempos jugados\n");
+        free(*partidas);
+        sqlite3_close(db);
+        return -1;
+    }
+    *puntuacionesMaximas = (int *)malloc(cantidadPartidas * sizeof(int));
+    if (*puntuacionesMaximas == NULL)
+    {
+        printf("Error al asignar memoria para las puntuaciones maximas\n");
+        free(*partidas);
+        free(*tiemposJugados);
+        sqlite3_close(db);
+        return -1;
+    }
+
+    // Obtenemos las partidas jugadas
+    char sql[] = "SELECT id_partida, tiempo_jugado, puntuacion_maxima FROM PARTIDA WHERE user = ? AND id_juego = (SELECT id_juego FROM JUEGO WHERE titulo = ?)";
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
+        free(*partidas);
+        free(*tiemposJugados);
+        free(*puntuacionesMaximas);
+        sqlite3_close(db);
+        return -1;
+    }
+
+    sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, nombreJuego, -1, SQLITE_STATIC);
+
+    int i = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        int idPartida = sqlite3_column_int(stmt, 0);
+        int tiempoJugado = sqlite3_column_int(stmt, 1);
+        int puntuacionMaxima = sqlite3_column_int(stmt, 2);
+
+        (*partidas)[i] = (char *)malloc(20 * sizeof(char)); // Reservamos memoria para el id de la partida
+        if ((*partidas)[i] == NULL)
+        {
+            printf("Error al asignar memoria para el id de la partida\n");
+            for (int j = 0; j < i; j++)
+            {
+                free((*partidas)[j]);
+            }
+            free(*partidas);
+            free(*tiemposJugados);
+            free(*puntuacionesMaximas);
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return -1;
+        }
+        sprintf((*partidas)[i], "%d", idPartida); // Convertimos el id de la partida a string
+
+        (*tiemposJugados)[i] = tiempoJugado;
+        (*puntuacionesMaximas)[i] = puntuacionMaxima;
+        i++;
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+
+    return cantidadPartidas;
 }

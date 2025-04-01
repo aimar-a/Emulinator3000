@@ -54,7 +54,6 @@ void menuUsuario()
   // 4.En MenuInicial meter opcion de cambiar Contrasenya
   // 5. el SALIR  de menuInicial tiene que ir a menuUsuario
 
-
   bool pass = false;
 
   while (pass == false)
@@ -215,7 +214,8 @@ void menuInicial()
     printf("\n-- Emular Consola --\n");
     printf("1. CHIP-8\n");
     printf("2. NES\n");
-    printf("\nc. Configuracion\n");
+    printf("\np. Perfil de usuario\n");
+    printf("c. Configuracion\n");
     printf("\n0. Salir\n");
     printf("Opcion: ");
 
@@ -229,6 +229,10 @@ void menuInicial()
       break;
     case '2':
       menuAdvertenciaNES();
+      break;
+    case 'p':
+    case 'P':
+      menuPerfil();
       break;
     case 'c':
     case 'C':
@@ -611,15 +615,16 @@ void menuListaROMs()
   }
 }
 
-void extraerNombreROM(const char *entrada, char *nombre) {
+void extraerNombreROM(const char *entrada, char *nombre)
+{
   // Encontrar el primer espacio después del número
   const char *ruta = entrada;
 
-  
   // Buscar la última aparición de '/'
   const char *ultimoSlash = strrchr(ruta, '/');
-  if (ultimoSlash) {
-      ruta = ultimoSlash + 1;  // Tomar solo el nombre del archivo
+  if (ultimoSlash)
+  {
+    ruta = ultimoSlash + 1; // Tomar solo el nombre del archivo
   }
 
   // Copiar el nombre con extensión
@@ -627,12 +632,13 @@ void extraerNombreROM(const char *entrada, char *nombre) {
 
   // Buscar la última aparición de '.' para quitar la extensión
   char *punto = strrchr(nombre, '.');
-  if (punto) {
-      *punto = '\0';  // Eliminar la extensión
+  if (punto)
+  {
+    *punto = '\0'; // Eliminar la extensión
   }
 }
 
-//ns si ya existia una funcion para listas los de la nes, porsiacaso la he creado aqui:
+// ns si ya existia una funcion para listas los de la nes, porsiacaso la he creado aqui:
 
 void listarROMsRecursivoNES(const char *directory, char roms[][256], int *count)
 {
@@ -671,4 +677,172 @@ void listarROMsRecursivoNES(const char *directory, char roms[][256], int *count)
     }
   }
   closedir(dp);
+}
+
+void menuPerfil()
+{
+  char option = ' ';
+  while (option != '0')
+  {
+    option = ' ';
+    clearScreen();
+    printf("PERFIL DE USUARIO\n");
+    printf("Seleccione una opcion:\n");
+    printf("1. Ver Logros\n");
+    printf("2. Ver Amigos\n");
+    printf("3. Ver Tiempo Jugado\n");
+    printf("0. Volver\n");
+    printf("Opcion: ");
+
+    option = getOption();
+
+    switch (option)
+    {
+    case '1':
+      printf("Ver Logros no implementado\n");
+      Sleep(1000);
+      printf("Volviendo al menu....\n");
+      Sleep(1000);
+      break;
+    case '2':
+      printf("Ver Amigos no implementado\n");
+      Sleep(1000);
+      printf("Volviendo al menu....\n");
+      Sleep(1000);
+      break;
+    case '3':
+      menuVerTiempoJugado();
+      break;
+    case '0':
+      printf("Volviendo...\n");
+      break;
+    default:
+      printf("Opcion invalida\n");
+      break;
+    }
+  }
+}
+
+void menuVerTiempoJugado()
+{
+  while (1)
+  {
+    clearScreen();
+    printf("--- Tiempo Jugado ---\n");
+    char *user = currentUser;
+    char **nombreJuegos = NULL;
+    int *tiemposSegundos = NULL;
+    int cantidadJuegos = getTiempoJugadoTodosLosJuegos(user, &nombreJuegos, &tiemposSegundos);
+    if (cantidadJuegos == -1)
+    {
+      printf("Error al obtener los tiempos jugados\n");
+      return;
+    }
+    if (cantidadJuegos == 0)
+    {
+      printf("No se han jugado juegos\n");
+      return;
+    }
+    printf("Juegos jugados por %s:\n", user);
+    for (int i = 0; i < cantidadJuegos; i++)
+    {
+      int horas = tiemposSegundos[i] / 3600;
+      int minutos = (tiemposSegundos[i] % 3600) / 60;
+      int segundos = tiemposSegundos[i] % 60;
+      printf("%d. - %s", i + 1, nombreJuegos[i]);
+      int espacios = 50 - strlen(nombreJuegos[i]);
+      if (espacios < 0)
+        espacios = 0;
+      for (int j = 0; j < espacios; j++)
+      {
+        printf(" ");
+      }
+      printf("%d horas      %d minutos      %d segundos\n", horas, minutos, segundos);
+    }
+
+    printf("\nNumero del juego para ver partidas jugadas\n");
+    printf("0. Volver\n");
+    printf("Seleccione una opcion: ");
+    char opcion[MAX_STRING_LENGTH];
+    getString(opcion, MAX_STRING_LENGTH);
+    if (strcmp(opcion, "0") == 0)
+    {
+      printf("Volviendo...\n");
+      Sleep(1000);
+      return;
+    }
+
+    // Si se ingreso un numero valido, mostrar las partidas jugadas
+    int seleccion = atoi(opcion);
+    if (seleccion >= 1 && seleccion <= cantidadJuegos)
+    {
+      char *nombreJuego = nombreJuegos[seleccion - 1];
+      mostrarPartidasJugadas(nombreJuego);
+    }
+    else
+    {
+      printf("Opcion invalida\n");
+      Sleep(1000);
+    }
+    printf("Volviendo al menu....\n");
+    Sleep(1000);
+
+    // Liberar memoria
+    free(nombreJuegos);
+    free(tiemposSegundos);
+  }
+}
+
+void mostrarPartidasJugadas(char *nombreJuego)
+{
+  while (1)
+  {
+    clearScreen();
+    printf("--- Partidas Jugadas ---\n");
+    char *user = currentUser;
+    char **partidas = NULL;
+    int *tiemposJugados = NULL;
+    int *puntuacionesMaximas = NULL;
+    int cantidadPartidas = getPartidasDeJuego(user, nombreJuego, &partidas, &tiemposJugados, &puntuacionesMaximas);
+    if (cantidadPartidas == -1)
+    {
+      printf("Error al obtener las partidas jugadas\n");
+      return;
+    }
+    if (cantidadPartidas == 0)
+    {
+      printf("No se han jugado partidas de \"%s\"\n", nombreJuego);
+      return;
+    }
+    printf("Partidas jugadas de \"%s\":\n", nombreJuego);
+    for (int i = 0; i < cantidadPartidas; i++)
+    {
+      printf("%d. - Partida: %s", i + 1, partidas[i]);
+      int horas = tiemposJugados[i] / 3600;
+      int minutos = (tiemposJugados[i] % 3600) / 60;
+      int segundos = tiemposJugados[i] % 60;
+      printf("     Tiempo Jugado: %d horas %d minutos %d segundos\n", horas, minutos, segundos);
+      printf("     Puntuacion Maxima: %d\n", puntuacionesMaximas[i]);
+    }
+    // Liberar memoria
+    free(partidas);
+    free(tiemposJugados);
+    free(puntuacionesMaximas);
+
+    printf("\n0. Volver\n");
+    printf("Seleccione una opcion: ");
+    char opcion[MAX_STRING_LENGTH];
+    getString(opcion, MAX_STRING_LENGTH);
+    if (strcmp(opcion, "0") == 0)
+    {
+      return;
+    }
+    else
+    {
+      printf("Opcion invalida\n");
+      Sleep(1000);
+    }
+    printf("Volviendo al menu....\n");
+    Sleep(1000);
+  }
 }
