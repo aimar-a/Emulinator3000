@@ -4,7 +4,7 @@
 #include "bd.h"
 
 sqlite3 *db;
-const char *db_filename = "emulatorBD.sqlite";
+const char *db_filename = "resources/database/emulatorBD.sqlite";
 
 int abrirBaseDeDatos(sqlite3 **db)
 {
@@ -22,7 +22,7 @@ void crearBD()
     sqlite3_stmt *stmt;
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -187,7 +187,7 @@ void insertarUsuarios(char *user, char *contraseña)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -213,7 +213,7 @@ void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -243,7 +243,7 @@ void insertarJuego(char *titulo, char *rom)
   // ya que estos los meteremos con update
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -270,7 +270,7 @@ void insertarTiempoJugado(int tiempojugado, char *user, int idjuego)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -298,7 +298,7 @@ void insertarLogros(char *nombre, char *descripcion, int idjuego)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -326,7 +326,7 @@ void insertarLogrosUsuarios(char *user, int idlogro, char *fecha)
 { // en principio guardamos la FECHA como texto ya veremos mas adelante si hay que cambiarlo o no
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -354,7 +354,7 @@ void insertarAmigos(char *user1, char *user2, char *estado)
 { // en principio guardamos ESTADO como texto ya veremos mas adelante si hay que cambiarlo o no
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -386,7 +386,7 @@ void updateTiempoJugado(int tiempoJugado, char *user, int id_juego)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -416,7 +416,7 @@ void updateEstado_Amigos(char *user1, char *user2, char *estado)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -447,7 +447,7 @@ void updateContrasena(char *newcontrasena, char *user)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -491,7 +491,7 @@ void updateUsuarioPuntuacionRecord(char *usuario, int newPunt, int idjuego)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return;
@@ -519,7 +519,7 @@ int getPuntuacionRecord(int idJuego)
 {
     int puntuacionRecord = 0;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
     }
@@ -550,7 +550,7 @@ bool existeUsuarioYPas(char *name, char *pass)
 
     bool existe = false;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
     }
@@ -583,7 +583,7 @@ bool existeUsuario(char *name)
 
     bool existe = false;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
     }
@@ -613,7 +613,7 @@ bool comprobarContraseña(char *user, char *password)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
     }
@@ -643,7 +643,7 @@ int getIdJuego(char *romjuego)
 
     int idJuego = 0;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
     }
@@ -672,7 +672,7 @@ bool hajugado(char *user, int id_juego)
 
     bool hajugado = false;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
     }
@@ -712,7 +712,7 @@ int getTiempoJugado(char *user, int idJuego)
 
     int tiempoJugado = 0;
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
     }
@@ -757,7 +757,7 @@ int getTiempoJugadoTodosLosJuegos(char *user, char ***nombreJuegos, int **tiempo
     int cantidadJuegos = 0;
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return -1;
@@ -858,7 +858,7 @@ int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **ti
     int cantidadPartidas = 0;
 
     // Abrimos la base de datos
-    if (sqlite3_open("emulatorBD.sqlite", &db) != SQLITE_OK)
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
         return -1;
