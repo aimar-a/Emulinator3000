@@ -17,14 +17,14 @@ char getOption()
   // Leer la entrada del usuario
   if (fgets(buffer, sizeof(buffer), stdin) != NULL)
   {
-    // Verificar si es un solo caracter válido (sin contar '\n')
+    // Verificar si es un solo caracter valido (sin contar '\n')
     if (buffer[0] != '\n' && buffer[1] == '\n')
     {
       return buffer[0];
     }
   }
 
-  return ' '; // Devolver espacio si la entrada es inválida
+  return ' '; // Devolver espacio si la entrada es invalida
 }
 
 void getString(char *str, int maxLen)
@@ -34,12 +34,12 @@ void getString(char *str, int maxLen)
     size_t len = strlen(str);
     if (len > 0 && str[len - 1] == '\n')
     {
-      str[len - 1] = '\0'; // Reemplaza el salto de línea con terminador nulo
+      str[len - 1] = '\0'; // Reemplaza el salto de linea con terminador nulo
     }
   }
   else
   {
-    str[0] = '\0'; // Si no se lee nada, establece la cadena como vacía
+    str[0] = '\0'; // Si no se lee nada, establece la cadena como vacia
   }
 }
 
@@ -48,10 +48,10 @@ char *currentUser = NULL;
 void menuUsuario()
 {
   // opciones:
-  //   1.Iniciar sesion --> Lleva a otro menu donde poner Usuario y contraseña
+  //   1.Iniciar sesion --> Lleva a otro menu donde poner Usuario y contrasenya
   //   2.Regsitrar --> Lleva a otro menu donde poner NUEVOUSUARIO y NUEVACONTRASEÑA
 
-  // 4.En MenuInicial meter opcion de cambiar Contraseña
+  // 4.En MenuInicial meter opcion de cambiar Contrasenya
   // 5. el SALIR  de menuInicial tiene que ir a menuUsuario
 
   bool pass = false;
@@ -60,26 +60,26 @@ void menuUsuario()
   {
     clearScreen();
     printf("Seleccione una de las siguientes opciones\n");
-    printf("1. INICIAR SESIÓN: \n");
+    printf("1. INICIAR SESION: \n");
     printf("2. REGISTRARSE: \n");
     printf("0. Salir\n");
-    printf("Opción: ");
+    printf("Opcion: ");
 
     char option = getOption();
 
     if (option == '1')
     {
       clearScreen();
-      printf("--- Iniciar Sesión ---\n");
+      printf("--- Iniciar Sesion ---\n");
       printf("Introduce tu Usuario: ");
       char usuario[MAX_STRING_LENGTH];
       getString(usuario, MAX_STRING_LENGTH);
 
-      printf("\nIntroduce tu Contraseña: ");
+      printf("\nIntroduce tu Contrasenya: ");
       char contra[MAX_STRING_LENGTH];
       getString(contra, MAX_STRING_LENGTH);
 
-      // implementacion BD (comprobar si existe un usuario con esa contraseña)
+      // implementacion BD (comprobar si existe un usuario con esa contrasenya)
       if (existeUsuarioYPas(usuario, contra) == true)
       {
         pass = true;
@@ -91,7 +91,7 @@ void menuUsuario()
       }
       else
       {
-        printf("Usuario o contraseña incorrectos\n");
+        printf("Usuario o contrasenya incorrectos\n");
         Sleep(400);
         printf("Volviendo al menu....\n");
         Sleep(1000);
@@ -105,7 +105,7 @@ void menuUsuario()
       char usuario[MAX_STRING_LENGTH];
       getString(usuario, MAX_STRING_LENGTH);
 
-      printf("\nContraseña: ");
+      printf("\nContrasenya: ");
       char contra[MAX_STRING_LENGTH];
       getString(contra, MAX_STRING_LENGTH);
 
@@ -131,7 +131,7 @@ void menuUsuario()
       }
       else
       {
-        printf("No se pueden guardar como usuario o contraseña valores vacios\n");
+        printf("No se pueden guardar como usuario o contrasenya valores vacios\n");
         Sleep(500);
         printf("Volviendo al menu....\n");
         Sleep(1000);
@@ -146,7 +146,7 @@ void menuUsuario()
     }
     else
     {
-      printf("Opción inválida\n");
+      printf("Opcion invalida\n");
       Sleep(1000);
       printf("Volviendo al menu....\n");
       Sleep(1000);
@@ -161,41 +161,41 @@ void menuCambioContraseña()
   printf("--- Cambio de Contraseña ---\n");
   printf("Estas con el usuario: %s\n\n", currentUser);
 
-  printf("Introduce tu contraseña actual: "); // Para afianzar de que es el usuario el que quiere cambiarlo
+  printf("Introduce tu contrasenya actual: "); // Para afianzar de que es el usuario el que quiere cambiarlo
 
   char contraActual[MAX_STRING_LENGTH];
   getString(contraActual, MAX_STRING_LENGTH);
 
   if (comprobarContraseña(currentUser, contraActual) == true)
   {
-    printf("Contraseña correcta\n\n");
+    printf("Contrasenya correcta\n\n");
     while (1)
     {
-      printf("Introduzca nueva contraseña: ");
+      printf("Introduzca nueva contrasenya: ");
 
       char contraNueva1[MAX_STRING_LENGTH];
       getString(contraNueva1, MAX_STRING_LENGTH);
 
-      printf("Vuelva a introducir la nueva contraseña: ");
+      printf("Vuelva a introducir la nueva contrasenya: ");
 
       char contraNueva2[MAX_STRING_LENGTH];
       getString(contraNueva2, MAX_STRING_LENGTH);
 
-      // Comprobar que las contraseñas coinciden
+      // Comprobar que las contrasenyas coinciden
       if (strcmp(contraNueva1, contraNueva2) != 0)
       {
-        printf("Las contraseñas no coinciden. Inténtalo de nuevo.\n\n");
+        printf("Las contrasenyas no coinciden. Intentalo de nuevo.\n\n");
         Sleep(1000);
         continue;
       }
 
       updateContrasena(contraNueva1, currentUser);
-      printf("Cambio de Contraseña Exitoso....\n");
+      printf("Cambio de Contrasenya Exitoso....\n");
       Sleep(1000);
       return;
     }
   }
-  printf("Contraseña incorrecta, fuera de aqui impostor!!\n");
+  printf("Contrasenya incorrecta, fuera de aqui impostor!!\n");
   Sleep(1000);
   return;
 }
@@ -210,13 +210,13 @@ void menuInicial()
     clearScreen();
     printf("--------- EMULINATOR 3000 ---------\n");
     printf("Bienvenido %s!\n", currentUser);
-    printf("Seleccione la opción deseada:\n");
+    printf("Seleccione la opcion deseada:\n");
     printf("\n-- Emular Consola --\n");
     printf("1. CHIP-8\n");
     printf("2. NES\n");
-    printf("\nc. Configuración\n");
+    printf("\nc. Configuracion\n");
     printf("\n0. Salir\n");
-    printf("Opción: ");
+    printf("Opcion: ");
 
     option = getOption();
 
@@ -239,7 +239,7 @@ void menuInicial()
       menuUsuario();
       break;
     default:
-      printf("Opción inválida\n");
+      printf("Opcion invalida\n");
       Sleep(1000);
       printf("Volviendo al menu....\n");
       Sleep(1000);
@@ -256,14 +256,14 @@ void menuConfiguracion()
   {
     option = ' ';
     clearScreen();
-    printf("--- Configuración ---\n");
-    printf("Seleccione una opción:\n");
-    printf("1. Cambiar Contraseña\n");
+    printf("--- Configuracion ---\n");
+    printf("Seleccione una opcion:\n");
+    printf("1. Cambiar Contrasenya\n");
     printf("2. Cambiar Escala de Pantalla Chip8\n");
     printf("3. Cambiar Escala de Pantalla SuperChip8\n");
     printf("4. Cambiar Escala de Pantalla NES\n");
     printf("0. Volver\n");
-    printf("Opción: ");
+    printf("Opcion: ");
 
     option = getOption();
 
@@ -285,7 +285,7 @@ void menuConfiguracion()
       printf("Volviendo...\n");
       break;
     default:
-      printf("Opción inválida\n");
+      printf("Opcion invalida\n");
       break;
     }
   }
@@ -327,7 +327,7 @@ void menuEscalaChip8()
     }
     else
     {
-      printf("Escala inválida. Inténtalo de nuevo.\n");
+      printf("Escala invalida. Intentalo de nuevo.\n");
       Sleep(1000);
     }
   }
@@ -369,7 +369,7 @@ void menuEscalaSuperChip8()
     }
     else
     {
-      printf("Escala inválida. Inténtalo de nuevo.\n");
+      printf("Escala invalida. Intentalo de nuevo.\n");
       Sleep(1000);
     }
   }
@@ -411,7 +411,7 @@ void menuEscalaNes()
     }
     else
     {
-      printf("Escala inválida. Inténtalo de nuevo.\n");
+      printf("Escala invalida. Intentalo de nuevo.\n");
       Sleep(1000);
     }
   }
@@ -430,7 +430,7 @@ void menuAdvertenciaNES()
     printf("Quieres continuar de todas formas?\n");
     printf("s. Si\n");
     printf("n. No\n");
-    printf("Opción: ");
+    printf("Opcion: ");
 
     option = getOption();
 
@@ -448,7 +448,7 @@ void menuAdvertenciaNES()
       option = 'n';
       break;
     default:
-      printf("Opción inválida\n");
+      printf("Opcion invalida\n");
       Sleep(1000);
       break;
     }
@@ -464,11 +464,11 @@ void menuChip8()
     option = ' ';
     clearScreen();
     printf("CHIP-8\n");
-    printf("Seleccione una opción:\n");
+    printf("Seleccione una opcion:\n");
     printf("1. Cargar ROM\n");
-    printf("2. Configuración\n");
+    printf("2. Configuracion\n");
     printf("0. Volver\n");
-    printf("Opción: ");
+    printf("Opcion: ");
 
     option = getOption();
 
@@ -484,7 +484,7 @@ void menuChip8()
       printf("Volviendo...\n");
       break;
     default:
-      printf("Opción inválida\n");
+      printf("Opcion invalida\n");
       break;
     }
   }
@@ -549,7 +549,7 @@ void menuListaROMs()
   while (1)
   {
     clearScreen();
-    printf("Listado de ROMs (Página %d de %d):\n", pagina + 1, totalPaginas);
+    printf("Listado de ROMs (Pagina %d de %d):\n", pagina + 1, totalPaginas);
 
     for (int i = pagina * 20; i < (pagina + 1) * 20 && i < romCount; i++)
     {
@@ -557,8 +557,8 @@ void menuListaROMs()
     }
 
     printf("\nOpciones:\n");
-    printf("<. Página anterior\n");
-    printf(">. Página siguiente\n");
+    printf("<. Pagina anterior\n");
+    printf(">. Pagina siguiente\n");
     printf("0. Salir\n");
     printf("Seleccione un ROM para ejecutar (1-%d) o navegar (<, >): ", romCount);
 
@@ -567,7 +567,7 @@ void menuListaROMs()
 
     if (opcion[1] == '\0')
     {
-      // Si solo se ingresó un carácter
+      // Si solo se ingreso un caracter
       if (opcion[0] == '<' && pagina > 0)
       {
         pagina--;
@@ -602,8 +602,8 @@ void menuListaROMs()
         return;
       }
     }
-    // Si no se ingresó una opción válida
-    printf("Opción inválida\n");
+    // Si no se ingreso una opcion valida
+    printf("Opcion invalida\n");
     Sleep(1000);
     printf("Volviendo al menu....\n");
     Sleep(1000);
