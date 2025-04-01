@@ -144,17 +144,18 @@ void nes_run(NES *nes)
   int cont = 0;
 
   // El tiempo por ciclo de la CPU en milisegundos
-  //const float cpu_cycle_time_ms = 1000.0f / 1790000.0f; // 1.79 MHz
-  //const float ppu_cycle_time_ms = 1000.0f / 5370000.0f; // 5.37 MHz
+  // const float cpu_cycle_time_ms = 1000.0f / 1790000.0f; // 1.79 MHz
+  // const float ppu_cycle_time_ms = 1000.0f / 5370000.0f; // 5.37 MHz
 
   nes_log("INFO: Starting NES emulation\n");
 
-  while (true)
+  // -------------------
+  // Simulacion original
+  // -------------------
+  if (EXECUTION_TYPE == 0)
   {
-    // -------------------
-    // Simulacion original
-    // -------------------
-    if (EXECUTION_TYPE == 0)
+    nes_log("INFO: Starting original simulation\n");
+    while (true)
     {
       int cycles = cpu_step(nes); // Calcula los ciclos de CPU para la instrucción actual
 
@@ -170,11 +171,21 @@ void nes_run(NES *nes)
         // Retraso para simular el tiempo real de un ciclo de la PPU
         // SDL_Delay(ppu_cycle_time_ms); // Espera el tiempo correspondiente a un ciclo de la PPU
       }
+
+      // Actualiza los controladores
+      if (nes_controller_update(nes))
+      {
+        break;
+      }
     }
-    // ---------------------
-    // Simulacion optimizada
-    // ---------------------
-    else if (EXECUTION_TYPE == 1)
+  }
+  // ---------------------
+  // Simulacion optimizada
+  // ---------------------
+  else if (EXECUTION_TYPE == 1)
+  {
+    nes_log("INFO: Starting optimized simulation\n");
+    while (1)
     {
       for (int i = 0; i < 4; i++)
       {
@@ -183,11 +194,21 @@ void nes_run(NES *nes)
 
       // log_check_ppu_ram(nes);
       ppu_step_optimized(nes); // Dibuja un frame de la pantalla
+
+      // Actualiza los controladores
+      if (nes_controller_update(nes))
+      {
+        break;
+      }
     }
-    // ---------------------------
-    // Simulacion original copiada
-    // ---------------------------
-    else if (EXECUTION_TYPE == 2)
+  }
+  // ---------------------------
+  // Simulacion original copiada
+  // ---------------------------
+  else if (EXECUTION_TYPE == 2)
+  {
+    nes_log("INFO: Starting copied simulation\n");
+    while (1)
     {
       int cycles = cpu_step(nes); // Calcula los ciclos de CPU para la instrucción actual
 
@@ -197,12 +218,12 @@ void nes_run(NES *nes)
         // Sincroniza el ciclo de la PPU
         ppu_step_copy(nes);
       }
-    }
 
-    // Actualiza los controladores
-    if (nes_controller_update(nes))
-    {
-      break;
+      // Actualiza los controladores
+      if (nes_controller_update(nes))
+      {
+        break;
+      }
     }
   }
 
