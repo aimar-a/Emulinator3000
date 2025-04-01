@@ -26,7 +26,7 @@ bool deletebbdd = false;
 // Función para cargar la configuración desde el archivo .txt
 void cargarConfiguracion(const char *archivoConfig)
 {
-    printf("Intentando abrir el archivo: %s\n", archivoConfig);
+    //printf("Intentando abrir el archivo: %s\n", archivoConfig);
 
     FILE *archivo = fopen(archivoConfig, "r");
     if (archivo == NULL)

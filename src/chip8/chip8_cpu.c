@@ -3,7 +3,7 @@
 #include "bd.h"
 #include <stdio.h>
 #include "menu_cmd.h"
-
+#include <stdbool.h>
 void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
 {
   if (modosuperchip8)
@@ -89,12 +89,46 @@ void chip8cpuLaunch(char *rom_path)
   } while (!chip8.esc);
 
   //BD INSERTAR PARTIDA 
-  //PROBLEMA: ESTO NO FUNCIONA (TODO LO QUE PASA DESPUES DEL WHILE DE ARRIBA NO SE EJECUTA)
   time(&tiempoFin); //guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
   int tiempoJugado =(int) difftime(tiempoFin,tiempoInicio); 
 
-  //Para el id juego habria que comparar el titulo con el titulo de todos los juegos en la bd juego y luego añadir eso
-  insertarPartida(currentUser, 1, tiempoJugado, tiempoJugado*0.5); // la puntuacion maxima vamos a dejarla asi
+
+
+  //llamamos a la funcion getIdJuego para conseguir la id del juego que estamos jugando apartir de su ROM
+   int id = getIdJuego(rom_path);
+
+
+  if(hajugado(currentUser, id)==true){
+
+    //hacemos el update sumando el tiempo que ya habia jugado + el que acaba de jugar
+    int tiempojugadoanterior = getTiempoJugado(currentUser, id);
+    int tiempoTotal= tiempojugadoanterior + tiempoJugado;
+    updateTiempoJugado(tiempoTotal, currentUser, id);   //SI ha jugado a este juego hacemos update
+
+
+
+  }else{
+
+    insertarTiempoJugado(tiempoJugado, currentUser,id);   //si el usuario NO ha jugado a este juego hacemos insert. 
+
+
+  }
+
+
+  //insertamos los datos de la partida
+  //void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
+
+  insertarPartida(currentUser, id, tiempoJugado, tiempoJugado*0.5); // la puntuacion maxima vamos a dejarla asi
+
+  //updatear Juego puntuacion y usuario record si se ha hecho un nuevo record   
+  int puntuacionPartida = tiempoJugado*0.5;
+  if(puntuacionPartida>getPuntuacionRecord(id)){
+
+    updateUsuarioPuntuacionRecord(currentUser, puntuacionPartida, id);
+
+
+  }
+  
   
 
 
