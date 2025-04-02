@@ -4,7 +4,7 @@
 uint8_t ppu_read_register(NES *nes, uint16_t address)
 {
   uint8_t value = 0;
-  nes_log("\nINFO: PPU Reading register: 0x%04X", address);
+  nes_log_traceback("\nINFO: PPU Reading register: 0x%04X", address);
   switch (address)
   {
   case 0x2002: // PPUSTATUS
@@ -23,7 +23,7 @@ uint8_t ppu_read_register(NES *nes, uint16_t address)
     value = data;
     break;
   default:
-    nes_log("\nERROR: PPU Register 0x%04X not readable\n", address);
+    nes_log_error("ERROR: PPU Register 0x%04X not readable\n", address);
     exit(1);
   }
   return value;
@@ -32,7 +32,7 @@ uint8_t ppu_read_register(NES *nes, uint16_t address)
 // Funcion para escribir registros de la PPU
 void ppu_write_register(NES *nes, uint16_t address, uint8_t value)
 {
-  nes_log("INFO: PPU Writing register: 0x%04X, value: 0x%02X\n", address, value);
+  nes_log_traceback("INFO: PPU Writing register: 0x%04X, value: 0x%02X\n", address, value);
   switch (address)
   {
   case 0x2000: // PPUCTRL
@@ -81,7 +81,7 @@ void ppu_write_register(NES *nes, uint16_t address, uint8_t value)
     nes->ppu->v += (nes->ppu->ctrl & 0x04) ? 32 : 1;
     break;
   default:
-    nes_log("ERROR: PPU Register 0x%04X not writable\n", address);
+    nes_log_error("ERROR: PPU Register 0x%04X not writable\n", address);
     exit(1);
   }
 }

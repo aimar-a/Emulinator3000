@@ -5,7 +5,7 @@ int nes_load_rom(NES *nes, const char *filename)
   FILE *file = fopen(filename, "rb");
   if (!file)
   {
-    nes_log("ERROR: No se pudo abrir la rom: %s\n", filename);
+    nes_log_error("ERROR: No se pudo abrir la rom: %s\n", filename);
     return 1;
   }
 
@@ -15,7 +15,7 @@ int nes_load_rom(NES *nes, const char *filename)
   // Verificar que sea un archivo iNES válido
   if (nes->rom->header[0] != 'N' || nes->rom->header[1] != 'E' || nes->rom->header[2] != 'S' || nes->rom->header[3] != 0x1A)
   {
-    nes_log("ERROR: No es un archivo .nes válido.\n");
+    nes_log_error("ERROR: No es un archivo .nes válido.\n");
     fclose(file);
     return 1;
   }
@@ -27,7 +27,7 @@ int nes_load_rom(NES *nes, const char *filename)
   nes->rom->prg_rom = malloc(nes->rom->prg_size * 16384);
   if (!nes->rom->prg_rom)
   {
-    nes_log("ERROR: No se pudo asignar memoria para PRG-rom.\n");
+    nes_log_error("ERROR: No se pudo asignar memoria para PRG-rom.\n");
     fclose(file);
     return 1;
   }
@@ -39,7 +39,7 @@ int nes_load_rom(NES *nes, const char *filename)
     nes->rom->chr_rom = malloc(nes->rom->chr_size * 8192);
     if (!nes->rom->chr_rom)
     {
-      nes_log("ERROR: No se pudo asignar memoria para CHR-rom.\n");
+      nes_log_error("ERROR: No se pudo asignar memoria para CHR-rom.\n");
       free(nes->rom->prg_rom);
       fclose(file);
       return 1;
@@ -52,13 +52,13 @@ int nes_load_rom(NES *nes, const char *filename)
   }
 
   fclose(file);
-  nes_log("INFO: ROM cargada correctamente\n");
+  nes_log_traceback("INFO: ROM cargada correctamente\n");
   return 0;
 }
 
 void nes_get_rom_info(NES *nes)
 {
-  nes_log("INFO: Getting ROM info\n");
+  nes_log_traceback("INFO: Getting ROM info\n");
 
   // Cantidad de bancos de PRG-ROM (16KB cada uno)
   nes->rom->prg_size = nes->rom->header[4];
@@ -98,14 +98,14 @@ void nes_get_rom_info(NES *nes)
   bool is_ines2 = ((nes->rom->header[7] & 0x0C) == 0x08);
 
   // Mensaje de salida con la información de la ROM
-  nes_log("PRG-ROM: %d KB\n", nes->rom->prg_size * 16);
-  nes_log("CHR-ROM: %d KB\n", nes->rom->chr_size * 8);
-  nes_log("Mapper: %d\n", nes->rom->mapper);
-  nes_log("Mirroring: %s\n", nes->rom->mirroring == MIRROR_VERTICAL ? "Vertical" : "Horizontal");
-  nes_log("Battery: %s\n", nes->rom->has_battery ? "Yes" : "No");
-  nes_log("Trainer: %s\n", nes->rom->has_trainer ? "Yes" : "No");
-  nes_log("Four-Screen VRAM: %s\n", nes->rom->four_screen ? "Yes" : "No");
-  nes_log("PRG-RAM: %d KB\n", nes->rom->prg_ram_size * 8);
-  nes_log("CHR-RAM: %d KB\n", nes->rom->chr_ram_size ? 8 : 0);
-  nes_log("Format: %s\n", is_ines2 ? "iNES 2.0" : "iNES 1.0");
+  nes_log_instant("INFO: PRG-ROM: %d KB\n", nes->rom->prg_size * 16);
+  nes_log_instant("INFO: CHR-ROM: %d KB\n", nes->rom->chr_size * 8);
+  nes_log_instant("INFO: Mapper: %d\n", nes->rom->mapper);
+  nes_log_instant("INFO: Mirroring: %s\n", nes->rom->mirroring == MIRROR_VERTICAL ? "Vertical" : "Horizontal");
+  nes_log_instant("INFO: Battery: %s\n", nes->rom->has_battery ? "Yes" : "No");
+  nes_log_instant("INFO: Trainer: %s\n", nes->rom->has_trainer ? "Yes" : "No");
+  nes_log_instant("INFO: Four-Screen VRAM: %s\n", nes->rom->four_screen ? "Yes" : "No");
+  nes_log_instant("INFO: PRG-RAM: %d KB\n", nes->rom->prg_ram_size * 8);
+  nes_log_instant("INFO: CHR-RAM: %d KB\n", nes->rom->chr_ram_size ? 8 : 0);
+  nes_log_instant("INFO: Format: %s\n", is_ines2 ? "iNES 2.0" : "iNES 1.0");
 }

@@ -4,12 +4,12 @@ void nes_rom_to_memory(NES *nes)
 {
   if (!nes->memory)
   {
-    nes_log("ERROR: nes->memory no está inicializado\n");
+    nes_log_error("ERROR: nes->memory no está inicializado\n");
     exit(1);
   }
   if (!nes->rom->prg_rom)
   {
-    nes_log("ERROR: nes->rom->prg_rom no está inicializado\n");
+    nes_log_error("ERROR: nes->rom->prg_rom no está inicializado\n");
     exit(1);
   }
 
@@ -51,7 +51,7 @@ void nes_rom_to_memory(NES *nes)
     // init_mmc3(nes);
     break;
   default:
-    nes_log("ERROR: Unsupported mapper: %d\n", nes->rom->mapper);
+    nes_log_error("ERROR: Unsupported mapper: %d\n", nes->rom->mapper);
     exit(1);
   }
 }

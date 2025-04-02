@@ -8,21 +8,21 @@ uint8_t nes_evaluate_opcode(NES *nes)
   uint8_t opcode = nes_read(nes, nes->PC);
   nes->PC++;
 
-  nes_log("INFO: Registers: A: 0x%02X, X: 0x%02X, Y: 0x%02X, P: 0x%02X, SP: 0x%02X\n",
-          nes->A, nes->X, nes->Y, nes->P, nes->SP);
+  nes_log_traceback("INFO: Registers: A: 0x%02X, X: 0x%02X, Y: 0x%02X, P: 0x%02X, SP: 0x%02X\n",
+                    nes->A, nes->X, nes->Y, nes->P, nes->SP);
   // printf("Registers: A: 0x%02X, X: 0x%02X, Y: 0x%02X, P: 0x%02X, SP: 0x%02X\n",
   //        nes->A, nes->X, nes->Y, nes->P, nes->SP);
 
   const char *instruction_name = opcode_names[opcode] ? opcode_names[opcode] : "ERROR, UNKNOWN INSTRUCTION";
-  nes_log("INFO: PC: 0x%04X, Opcode: 0x%02X (0x%02X 0x%02X), Instruction: %s\n",
-          nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1), instruction_name);
+  nes_log_traceback("INFO: PC: 0x%04X, Opcode: 0x%02X (0x%02X 0x%02X), Instruction: %s\n",
+                    nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1), instruction_name);
   // printf("INFO: PC: 0x%04X, Opcode: 0x%02X (0x%02X 0x%02X), Instruction: %s\n",
   //        nes->PC - 1, opcode, nes_read(nes, nes->PC), nes_read(nes, nes->PC + 1), instruction_name);
 
   switch (opcode)
   {
   case 0x00:
-    nes_log("ERROR: BRK instruction not implemented\n");
+    nes_log_error("ERROR: BRK instruction not implemented\n");
     exit(1);
     nes_brk(nes);
     return 7;
@@ -477,7 +477,7 @@ uint8_t nes_evaluate_opcode(NES *nes)
     nes_inc(nes, nes_absolute_x(nes));
     return 7;
   default:
-    nes_log("ERROR: Unknown opcode 0x%02X\n", opcode);
+    nes_log_error("ERROR: Unknown opcode 0x%02X\n", opcode);
     exit(1);
     return 0; // No operation
   }

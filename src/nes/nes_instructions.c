@@ -13,12 +13,12 @@ void nes_push(NES *nes, uint8_t value)
 {
   if (nes->SP == 0x00)
   {
-    nes_log("ERROR: Stack overflow\n");
+    nes_log_error("ERROR: Stack overflow\n");
     exit(1);
   }
   nes_write(nes, 0x100 | nes->SP, value);
   nes->SP--;
-  nes_log("INFO: Pushed value: 0x%02X to stack at address: 0x%04X\n", value, 0x100 | nes->SP);
+  nes_log_traceback("INFO: Pushed value: 0x%02X to stack at address: 0x%04X\n", value, 0x100 | nes->SP);
 }
 
 void nes_push_address(NES *nes, uint16_t address)
@@ -31,12 +31,12 @@ uint8_t nes_pull(NES *nes)
 {
   if (nes->SP == 0xFF)
   {
-    nes_log("ERROR: Stack underflow\n");
+    nes_log_error("ERROR: Stack underflow\n");
     exit(1);
   }
   nes->SP++;
   uint8_t value = nes_read(nes, 0x100 | nes->SP);
-  nes_log("INFO: Pulled value: 0x%02X from stack at address: 0x%04X\n", value, 0x100 | nes->SP);
+  nes_log_traceback("INFO: Pulled value: 0x%02X from stack at address: 0x%04X\n", value, 0x100 | nes->SP);
   return value;
 }
 

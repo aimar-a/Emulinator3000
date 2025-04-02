@@ -21,7 +21,7 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
     if (nes->ppu->cycle == 1)
     {
       nes->ppu->status &= ~VBLANK_FLAG;
-      nes_log("INFO: Exiting VBlank\n");
+      nes_log_traceback("INFO: Exiting VBlank\n");
       nes->ppu->scroll = 0; // TODO: nose que hay que asignar aqui
       nes->ppu->addr = 0;   // TODO: nose que hay que asignar aqui
     }
@@ -34,7 +34,7 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
   {
     if (nes->ppu->cycle == 1)
     {
-      nes_log("INFO: Starting new scanline %d\n", nes->ppu->scanline);
+      nes_log_traceback("INFO: Starting new scanline %d\n", nes->ppu->scanline);
       // Dibuja la pantalla
       nes_display_draw(nes->screen);
     }
@@ -54,10 +54,10 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
       if (nes->ppu->cycle == 1)
       {
         nes->ppu->status |= VBLANK_FLAG;
-        nes_log("INFO: Entering VBlank\n");
+        nes_log_traceback("INFO: Entering VBlank\n");
         if (nes->ppu->ctrl & VBLANK_FLAG)
         {
-          nes_log("INFO: NMI interrupt triggered\n");
+          nes_log_traceback("INFO: NMI interrupt triggered\n");
           // TODO: Implementar interrupción NMI (ni idea de lo q es)
           // trigger_nmi(); // Generar interrupción si está habilitada
         }
@@ -74,10 +74,10 @@ void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que h
     {
       nes->ppu->scanline = 0;
       nes->ppu->frame++;
-      nes_log("INFO: Frame: %d\n", nes->ppu->frame);
+      nes_log_traceback("INFO: Frame: %d\n", nes->ppu->frame);
       printf("Frame: %d\n", nes->ppu->frame);
     }
-    nes_log("INFO: Scanline: %d\n", nes->ppu->scanline);
+    nes_log_traceback("INFO: Scanline: %d\n", nes->ppu->scanline);
   }
 }
 
@@ -115,7 +115,7 @@ void ppu_step_copy(NES *nes)
     // add IRQ support for MMC3
     if (nes->ppu->cycle == 260 && (nes->ppu->mask & BACKGROUND_ENABLE) && (nes->ppu->mask & SPRITE_ENABLE))
     {
-      nes_log("ERROR: Scanline IRQ not implemented\n");
+      nes_log_error("ERROR: Scanline IRQ not implemented\n");
       // exit(1);
       //  TODO: implementar esto si hay tiempo (mappers)
       //  m_bus.scanlineIRQ();
@@ -285,7 +285,7 @@ void ppu_step_copy(NES *nes)
     // add IRQ support for MMC3
     if (nes->ppu->cycle == 260 && (nes->ppu->mask & BACKGROUND_ENABLE) && (nes->ppu->mask & SPRITE_ENABLE))
     {
-      nes_log("ERROR: Scanline IRQ not implemented\n");
+      nes_log_error("ERROR: Scanline IRQ not implemented\n");
       // exit(1);
       //  TODO: implementar esto si hay tiempo (mappers)
       //  m_bus.scanlineIRQ();
@@ -318,7 +318,7 @@ void ppu_step_copy(NES *nes)
           }
           if (nes->ppu->scanlineSpriteCount >= 8)
           {
-            nes_log("ERROR: Too many sprites on scanline %d\n", nes->ppu->scanline);
+            nes_log_error("ERROR: Too many sprites on scanline %d\n", nes->ppu->scanline);
             exit(1);
           }
           nes->ppu->scanlineSprites[j] = i;
@@ -376,12 +376,12 @@ void ppu_step_copy(NES *nes)
       // m_pipelineState = PreRender; // TODO: remplazar (creo que sobra)
       nes->ppu->scanline = 0;
       nes->ppu->frame++;
-      nes_log("INFO: Frame: %d\n", nes->ppu->frame);
+      nes_log_traceback("INFO: Frame: %d\n", nes->ppu->frame);
     }
   }
   else
   {
-    nes_log("ERROR: Scanline out of bounds: %d\n", nes->ppu->scanline);
+    nes_log_error("ERROR: Scanline out of bounds: %d\n", nes->ppu->scanline);
     exit(1);
   }
   ++nes->ppu->cycle;
@@ -402,7 +402,7 @@ void ppu_step_optimized(NES *nes)
   nes_display_draw(nes->screen);
 
   nes->ppu->frame++;
-  nes_log("INFO: Frame: %d\n", nes->ppu->frame);
+  nes_log_traceback("INFO: Frame: %d\n", nes->ppu->frame);
 
   nes->ppu->status |= VBLANK_FLAG;
 }
@@ -482,7 +482,7 @@ uint8_t readPalette(NES *nes, uint8_t addr)
 {
   if (addr >= 0x3F00 && addr < 0x3F20)
   {
-    nes_log("ERROR: implementar el otro tipo de acceso a memoria readPalette\n");
+    nes_log_error("ERROR: implementar el otro tipo de acceso a memoria readPalette\n");
     exit(1);
   }
   if (addr >= 0x10 && addr % 4 == 0)
