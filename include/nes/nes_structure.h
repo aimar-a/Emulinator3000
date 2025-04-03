@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <SDL2/SDL.h>
 
 #define NMI_VECTOR 0xFFFA
 #define RESET_VECTOR 0xFFFC
@@ -65,6 +66,108 @@ OAMDMA 	$4014 	AAAA AAAA 	W 	OAM DMA high address
 
 typedef struct
 {
+  // Pulse channel 1
+  struct
+  {
+    uint8_t duty_cycle;       // Duty cycle (0-3)
+    uint8_t volume;           // Volume/envelope (0-15)
+    bool constant_volume;     // Constant volume flag
+    bool length_halt;         // Length counter halt
+    bool sweep_enable;        // Sweep unit enable
+    uint8_t sweep_shift;      // Sweep shift amount
+    bool sweep_negate;        // Sweep negate flag
+    uint8_t sweep_period;     // Sweep period
+    uint16_t timer;           // Timer value
+    uint16_t timer_reload;    // Timer reload value
+    uint8_t length_counter;   // Length counter
+    uint8_t envelope_counter; // Envelope counter
+    uint8_t envelope_divider; // Envelope divider
+    uint8_t sweep_divider;    // Sweep divider
+    uint16_t sequencer;       // Waveform sequencer
+    double phase;             // Phase accumulator
+  } pulse1;
+
+  // Pulse channel 2 (similar to pulse1)
+  struct
+  {
+    uint8_t duty_cycle;
+    uint8_t volume;
+    bool constant_volume;
+    bool length_halt;
+    bool sweep_enable;
+    uint8_t sweep_shift;
+    bool sweep_negate;
+    uint8_t sweep_period;
+    uint16_t timer;
+    uint16_t timer_reload;
+    uint8_t length_counter;
+    uint8_t envelope_counter;
+    uint8_t envelope_divider;
+    uint8_t sweep_divider;
+    uint16_t sequencer;
+    double phase;
+  } pulse2;
+
+  // Triangle channel
+  struct
+  {
+    bool length_halt;
+    uint8_t linear_counter;
+    uint8_t linear_reload;
+    bool linear_reload_flag;
+    uint16_t timer;
+    uint16_t timer_reload;
+    uint8_t length_counter;
+    uint16_t sequencer;
+    double phase;
+  } triangle;
+
+  // Noise channel
+  struct
+  {
+    uint8_t volume;
+    bool constant_volume;
+    bool length_halt;
+    uint16_t shift_register;
+    uint16_t timer;
+    uint16_t timer_reload;
+    uint8_t length_counter;
+    uint8_t envelope_counter;
+    uint8_t envelope_divider;
+    uint8_t mode; // Noise mode flag
+  } noise;
+
+  // DMC channel (simplified)
+  struct
+  {
+    bool irq_enable;
+    bool loop;
+    uint8_t rate;
+    uint8_t output_level;
+    uint16_t sample_address;
+    uint16_t sample_length;
+  } dmc;
+
+  // Status/control registers
+  bool pulse1_enable;
+  bool pulse2_enable;
+  bool triangle_enable;
+  bool noise_enable;
+  bool dmc_enable;
+  bool frame_interrupt;
+
+  // Frame counter
+  uint8_t frame_counter_mode;
+  uint8_t frame_counter;
+
+  // Audio output
+  SDL_AudioDeviceID audio_device;
+  float audio_buffer[1024]; // Buffer for audio output
+  size_t audio_buffer_pos;
+} APU;
+
+typedef struct
+{
   uint8_t header[16];   // Cabecera iNES (16 bytes)
   uint8_t *prg_rom;     // PRG-ROM (Código del juego)
   uint8_t *chr_rom;     // CHR-ROM (Gráficos)
@@ -87,12 +190,19 @@ typedef struct
   uint8_t SP;      // Stack Pointer
   uint8_t P;       // Registro de estado
 
+  int cycles;       // Ciclos de CPU
+  int stall_cycles; // Ciclos de espera
+
   // PPU
   PPU *ppu;
 
+  // APU
+  APU *apu;
+
   // Memoria
-  uint8_t memory[0x8000]; // 64KB de memoria (deberia de ser 0x10000 pero vamos a leer el programa desde la rom, sin cargarlo a memoria)
-  NES_ROM *rom;           // ROM cargada
+  uint8_t memory[0x2000]; // 64KB de memoria (deberia de ser 0x10000 pero vamos a leer el programa desde la rom, sin cargarlo a memoria) (lo reduzco mas porque separamos en modulos)
+  uint8_t sram[0x2000];
+  NES_ROM *rom; // ROM cargada
 
   // Display
   uint8_t screen[256 * 240]; // 256x240 pixels

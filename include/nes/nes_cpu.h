@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 #include "nes_logger.h"
+#include "nes_apu.h"
 
 void nes_launch();
 void nes_reset(NES *nes);

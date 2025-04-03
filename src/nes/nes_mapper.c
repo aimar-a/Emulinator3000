@@ -5,12 +5,10 @@ void nes_rom_to_memory(NES *nes)
   if (!nes->memory)
   {
     nes_log_error("ERROR: nes->memory no está inicializado\n");
-    exit(1);
   }
   if (!nes->rom->prg_rom)
   {
     nes_log_error("ERROR: nes->rom->prg_rom no está inicializado\n");
-    exit(1);
   }
 
   // Cargar banco intercambiable en $8000-$BFFF (Primer banco)
@@ -52,6 +50,5 @@ void nes_rom_to_memory(NES *nes)
     break;
   default:
     nes_log_error("ERROR: Unsupported mapper: %d\n", nes->rom->mapper);
-    exit(1);
   }
 }

@@ -23,7 +23,6 @@ uint8_t nes_evaluate_opcode(NES *nes)
   {
   case 0x00:
     nes_log_error("ERROR: BRK instruction not implemented\n");
-    exit(1);
     nes_brk(nes);
     return 7;
   case 0x01:
@@ -478,7 +477,6 @@ uint8_t nes_evaluate_opcode(NES *nes)
     return 7;
   default:
     nes_log_error("ERROR: Unknown opcode 0x%02X\n", opcode);
-    exit(1);
     return 0; // No operation
   }
 }

@@ -17,8 +17,8 @@ bool cleanbbdd = false;
 bool createbbdd = false;
 bool deletebbdd = false;
 
-bool log_chip8_enabled = false; // Variable para habilitar/deshabilitar el log de Chip8
-bool log_nes_enabled = false;   // Variable para habilitar/deshabilitar el log de NES
+bool log_chip8_enabled = true; // Variable para habilitar/deshabilitar el log de Chip8
+bool log_nes_enabled = true;   // Variable para habilitar/deshabilitar el log de NES
 
 // Variable para almacenar la ruta de la base de datos
 

@@ -192,7 +192,34 @@ void ppu_write_oam(NES *nes, uint8_t addr, uint8_t data)
   if (addr >= 0x100)
   {
     nes_log_error("ERROR: OAM address out of range: 0x%02X\n", addr);
-    exit(1);
   }
   nes->ppu->oam[addr] = data;
+}
+
+void ppu_oamdma_transfer(NES *nes, uint8_t page)
+{
+  nes_log_traceback("INFO: Starting OAM DMA transfer from page 0x%02X\n", page);
+
+  // Calculate source address (page * 256)
+  uint16_t src_addr = (uint16_t)page << 8;
+  uint8_t *src = &nes->memory[src_addr];
+
+  // Get PPU OAM pointer (typically 0x2004)
+  uint8_t *oam = nes->ppu->oam;
+
+  // Perform the 256-byte transfer
+  for (int i = 0; i < 256; i++)
+  {
+    oam[i] = src[i];
+  }
+
+  // Log completion
+  nes_log_traceback("INFO: OAM DMA transfer completed (0x%04X-0x%04X -> OAM)\n",
+                    src_addr, src_addr + 255);
+
+  // DMA takes 513 or 514 cycles (depending on odd/even CPU cycle)
+  int cycles = (nes->cycles % 2 == 1) ? 513 : 514;
+  nes->stall_cycles += cycles;
+
+  nes_log_traceback("INFO: CPU stalled for %d cycles\n", cycles);
 }

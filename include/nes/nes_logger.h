@@ -12,6 +12,8 @@ extern char nes_traceback[][TRACEBACK_LINE_SIZE];
 extern const int nes_traceback_size;
 extern int nes_traceback_count;
 
+extern bool nes_terminate;
+
 // Escribe en el logger al instante
 void nes_log_instant(const char *format, ...);
 // Guarda el log en una variable para el traceback

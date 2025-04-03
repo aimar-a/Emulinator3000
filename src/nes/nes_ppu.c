@@ -8,80 +8,7 @@ const int VisibleScanlines = 240;
 const int ScanlineVisibleDots = 256;
 const int FrameEndScanline = 261;
 
-// Avanza un ciclo de la PPU de forma clasica
-void ppu_step(NES *nes) // TODO: lo de los ciclos no esta bien (quizas hay que hacer primero los ciclos y dentro los scanlines?)
-{                       // TODO: Implementar el resto de la PPU (registros y lo que hace cada uno, y creo q gestion de memoria y algo mas habra q hacer)
-  nes->ppu->cycle++;
-
-  // 1️⃣ Pre-Render (Scanline -1):
-  // Ocurre una scanline antes de que comience el dibujo de la imagen.
-  // La PPU prepara los registros internos y actualiza el desplazamiento del scroll.
-  if (nes->ppu->scanline == 261)
-  {
-    if (nes->ppu->cycle == 1)
-    {
-      nes->ppu->status &= ~VBLANK_FLAG;
-      nes_log_traceback("INFO: Exiting VBlank\n");
-      nes->ppu->scroll = 0; // TODO: nose que hay que asignar aqui
-      nes->ppu->addr = 0;   // TODO: nose que hay que asignar aqui
-    }
-  }
-  // 2️⃣ Renderizado Visible (Scanlines 0-239)
-  // Durante estas 240 scanlines, la PPU genera la imagen en la pantalla.
-  // Cada scanline tarda 341 ciclos de la PPU.
-  // Se procesan tiles y sprites para cada línea, sacando píxeles de la memoria VRAM.
-  else if (nes->ppu->scanline < 240)
-  {
-    if (nes->ppu->cycle == 1)
-    {
-      nes_log_traceback("INFO: Starting new scanline %d\n", nes->ppu->scanline);
-      // Dibuja la pantalla
-      nes_display_draw(nes->screen);
-    }
-    if (nes->ppu->cycle >= 1 && nes->ppu->cycle <= 256)
-    {
-      render_scanline(nes);
-    }
-  }
-  // 3️⃣ VBlank (Scanlines 240-261)
-  // Es la fase donde la PPU no dibuja nada en la pantalla.
-  // La CPU puede escribir en la VRAM sin riesgo de corrupción.
-  // La PPU activa el bit de VBlank en el registro $2002, indicando que la pantalla está lista para actualizarse.
-  else if (nes->ppu->scanline < 261)
-  {
-    if (nes->ppu->scanline == 240)
-    {
-      if (nes->ppu->cycle == 1)
-      {
-        nes->ppu->status |= VBLANK_FLAG;
-        nes_log_traceback("INFO: Entering VBlank\n");
-        if (nes->ppu->ctrl & VBLANK_FLAG)
-        {
-          nes_log_traceback("INFO: NMI interrupt triggered\n");
-          // TODO: Implementar interrupción NMI (ni idea de lo q es)
-          // trigger_nmi(); // Generar interrupción si está habilitada
-        }
-      }
-    }
-  }
-
-  if (nes->ppu->cycle >= 341)
-  {
-    nes->ppu->cycle = 0;
-    nes->ppu->scanline++;
-
-    if (nes->ppu->scanline > 261)
-    {
-      nes->ppu->scanline = 0;
-      nes->ppu->frame++;
-      nes_log_traceback("INFO: Frame: %d\n", nes->ppu->frame);
-      printf("Frame: %d\n", nes->ppu->frame);
-    }
-    nes_log_traceback("INFO: Scanline: %d\n", nes->ppu->scanline);
-  }
-}
-
-void ppu_step_copy(NES *nes)
+void ppu_step(NES *nes)
 {
   // PreRender
   if (nes->ppu->scanline == 261)
@@ -115,8 +42,7 @@ void ppu_step_copy(NES *nes)
     // add IRQ support for MMC3
     if (nes->ppu->cycle == 260 && (nes->ppu->mask & BACKGROUND_ENABLE) && (nes->ppu->mask & SPRITE_ENABLE))
     {
-      nes_log_error("ERROR: Scanline IRQ not implemented\n");
-      // exit(1);
+      nes_log_instant("WARNING: Scanline IRQ not implemented\n");
       //  TODO: implementar esto si hay tiempo (mappers)
       //  m_bus.scanlineIRQ();
     }
@@ -285,8 +211,7 @@ void ppu_step_copy(NES *nes)
     // add IRQ support for MMC3
     if (nes->ppu->cycle == 260 && (nes->ppu->mask & BACKGROUND_ENABLE) && (nes->ppu->mask & SPRITE_ENABLE))
     {
-      nes_log_error("ERROR: Scanline IRQ not implemented\n");
-      // exit(1);
+      nes_log_instant("WARNING: Scanline IRQ not implemented\n");
       //  TODO: implementar esto si hay tiempo (mappers)
       //  m_bus.scanlineIRQ();
     }
@@ -319,7 +244,6 @@ void ppu_step_copy(NES *nes)
           if (nes->ppu->scanlineSpriteCount >= 8)
           {
             nes_log_error("ERROR: Too many sprites on scanline %d\n", nes->ppu->scanline);
-            exit(1);
           }
           nes->ppu->scanlineSprites[j] = i;
           nes->ppu->scanlineSpriteCount++;
@@ -382,29 +306,8 @@ void ppu_step_copy(NES *nes)
   else
   {
     nes_log_error("ERROR: Scanline out of bounds: %d\n", nes->ppu->scanline);
-    exit(1);
   }
   ++nes->ppu->cycle;
-}
-
-// Genera un frame de la pantalla de forma optimizada
-void ppu_step_optimized(NES *nes)
-{
-  nes->ppu->status &= ~VBLANK_FLAG;
-  nes->ppu->scroll = 0; // TODO: nose que hay que asignar aqui
-  nes->ppu->addr = 0;   // TODO: nose que hay que asignar aqui
-
-  nes->ppu->scanline = 0;
-  for (; nes->ppu->scanline < 240; nes->ppu->scanline++)
-  {
-    render_scanline(nes);
-  }
-  nes_display_draw(nes->screen);
-
-  nes->ppu->frame++;
-  nes_log_traceback("INFO: Frame: %d\n", nes->ppu->frame);
-
-  nes->ppu->status |= VBLANK_FLAG;
 }
 
 void render_scanline(NES *nes)
@@ -483,7 +386,6 @@ uint8_t readPalette(NES *nes, uint8_t addr)
   if (addr >= 0x3F00 && addr < 0x3F20)
   {
     nes_log_error("ERROR: implementar el otro tipo de acceso a memoria readPalette\n");
-    exit(1);
   }
   if (addr >= 0x10 && addr % 4 == 0)
   {

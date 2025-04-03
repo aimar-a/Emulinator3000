@@ -4,6 +4,8 @@ const int nes_traceback_size = TRACEBACK_SIZE;
 char nes_traceback[TRACEBACK_SIZE][TRACEBACK_LINE_SIZE];
 int nes_traceback_count = 0;
 
+bool nes_terminate = false;
+
 void nes_log_instant(const char *format, ...)
 {
   if (!log_nes_enabled)
@@ -23,6 +25,17 @@ void nes_log_instant(const char *format, ...)
 
 void nes_log_traceback(const char *format, ...)
 {
+  if (format[0] == 'E')
+  {
+    nes_log_error("ERROR: This is an error message\n%s", format);
+    return;
+  }
+  else if (format[0] == 'W')
+  {
+    nes_log_error("ERROR: This is a warning message\n%s", format);
+    return;
+  }
+
   if (!log_nes_enabled)
     return;
 
@@ -39,12 +52,13 @@ void nes_log_traceback(const char *format, ...)
 
 void nes_log_error(const char *format, ...)
 {
-  nes_log_instant("\nERROR DETECTED -> Traceback:\n\n");
-  nes_save_traceback();
-  nes_log_instant("\n");
-
-  if (!log_nes_enabled)
+  if (format[0] != 'E')
+  {
+    nes_log_error("ERROR: This is not an error message\n%s", format);
     return;
+  }
+
+  nes_log_instant("\nERROR DETECTED... TERMINATING PROGRAM\n\n");
 
   FILE *log_file = fopen("log/nes_log.log", "a");
   if (!log_file)
@@ -57,8 +71,10 @@ void nes_log_error(const char *format, ...)
 
   fclose(log_file);
 
+  printf("\nERROR DETECTED... TERMINATING PROGRAM\n\n");
+
   // Stop the program
-  exit(1);
+  nes_terminate = true;
 }
 
 void nes_save_traceback()

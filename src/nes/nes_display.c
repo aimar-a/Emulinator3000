@@ -6,8 +6,6 @@ static SDL_Texture *texture;
 
 void nes_display_init()
 {
-  cargarConfiguracion("resources/config/config");
-
   if (SDL_Init(SDL_INIT_VIDEO) != 0)
   {
     nes_log_error("ERROR: SDL_Init failed: %s\n", SDL_GetError());

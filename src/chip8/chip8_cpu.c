@@ -22,16 +22,13 @@ void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
   if (chip8->memoria == NULL)
   {
     chip8_log("ERROR: No se pudo asignar memoria para memoria\n");
-    exit(1);
   }
 
   if (chip8->pantalla == NULL)
   {
     chip8_log("ERROR: No se pudo asignar memoria para pantalla\n");
-    exit(1);
   }
 }
-
 
 void chip8cpuLaunch(char *rom_path)
 {
@@ -46,9 +43,8 @@ void chip8cpuLaunch(char *rom_path)
   chip8.sp = 0;
   time_t tiempoInicio, tiempoFin;
 
+  time(&tiempoInicio); // guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
 
-  time(&tiempoInicio); //guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
-  
   chip8_log("INFO: Inicializando memoria y configuración de la pantalla\n");
   inicializarMemoria(&chip8, modosuperchip8);
 
@@ -65,14 +61,12 @@ void chip8cpuLaunch(char *rom_path)
   if (rom == NULL)
   {
     chip8_log("ERROR: No se pudo abrir el archivo ROM\n");
-    exit(1);
   }
   chip8_log("INFO: Cargando ROM en memoria\n");
   fread(&chip8.memoria[0x200], 1, 4096 - 0x200, rom);
   fclose(rom);
 
   chip8_log("INFO: Iniciando ciclo de ejecución\n");
-
 
   do
   {
@@ -85,53 +79,42 @@ void chip8cpuLaunch(char *rom_path)
     chip8timersDecrement();
     chip8inputCapturarTeclado();
     chip8opcodesEvaluate(opcode);
-    
+
   } while (!chip8.esc);
 
-  //BD INSERTAR PARTIDA 
-  time(&tiempoFin); //guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
-  int tiempoJugado =(int) difftime(tiempoFin,tiempoInicio); 
+  // BD INSERTAR PARTIDA
+  time(&tiempoFin); // guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
+  int tiempoJugado = (int)difftime(tiempoFin, tiempoInicio);
 
+  // llamamos a la funcion getIdJuego para conseguir la id del juego que estamos jugando apartir de su ROM
+  int id = getIdJuego(rom_path);
 
+  if (hajugado(currentUser, id) == true)
+  {
 
-  //llamamos a la funcion getIdJuego para conseguir la id del juego que estamos jugando apartir de su ROM
-   int id = getIdJuego(rom_path);
-
-
-  if(hajugado(currentUser, id)==true){
-
-    //hacemos el update sumando el tiempo que ya habia jugado + el que acaba de jugar
+    // hacemos el update sumando el tiempo que ya habia jugado + el que acaba de jugar
     int tiempojugadoanterior = getTiempoJugado(currentUser, id);
-    int tiempoTotal= tiempojugadoanterior + tiempoJugado;
-    updateTiempoJugado(tiempoTotal, currentUser, id);   //SI ha jugado a este juego hacemos update
+    int tiempoTotal = tiempojugadoanterior + tiempoJugado;
+    updateTiempoJugado(tiempoTotal, currentUser, id); // SI ha jugado a este juego hacemos update
+  }
+  else
+  {
 
-
-
-  }else{
-
-    insertarTiempoJugado(tiempoJugado, currentUser,id);   //si el usuario NO ha jugado a este juego hacemos insert. 
-
-
+    insertarTiempoJugado(tiempoJugado, currentUser, id); // si el usuario NO ha jugado a este juego hacemos insert.
   }
 
+  // insertamos los datos de la partida
+  // void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
 
-  //insertamos los datos de la partida
-  //void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
+  insertarPartida(currentUser, id, tiempoJugado, tiempoJugado * 0.5); // la puntuacion maxima vamos a dejarla asi
 
-  insertarPartida(currentUser, id, tiempoJugado, tiempoJugado*0.5); // la puntuacion maxima vamos a dejarla asi
-
-  //updatear Juego puntuacion y usuario record si se ha hecho un nuevo record   
-  int puntuacionPartida = tiempoJugado*0.5;
-  if(puntuacionPartida>getPuntuacionRecord(id)){
+  // updatear Juego puntuacion y usuario record si se ha hecho un nuevo record
+  int puntuacionPartida = tiempoJugado * 0.5;
+  if (puntuacionPartida > getPuntuacionRecord(id))
+  {
 
     updateUsuarioPuntuacionRecord(currentUser, puntuacionPartida, id);
-
-
   }
-  
-  
-
-
 
   chip8_log("INFO: Finalizando ejecución y liberando recursos\n");
   chip8displayDestroyPantalla();

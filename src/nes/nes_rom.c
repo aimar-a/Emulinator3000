@@ -52,13 +52,13 @@ int nes_load_rom(NES *nes, const char *filename)
   }
 
   fclose(file);
-  nes_log_traceback("INFO: ROM cargada correctamente\n");
+  nes_log_instant("INFO: ROM cargada correctamente\n");
   return 0;
 }
 
 void nes_get_rom_info(NES *nes)
 {
-  nes_log_traceback("INFO: Getting ROM info\n");
+  nes_log_instant("INFO: Getting ROM info\n");
 
   // Cantidad de bancos de PRG-ROM (16KB cada uno)
   nes->rom->prg_size = nes->rom->header[4];

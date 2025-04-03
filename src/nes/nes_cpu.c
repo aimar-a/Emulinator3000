@@ -2,8 +2,12 @@
 
 void nes_launch()
 {
+  nes_terminate = false;
+
   nes_log_clear();
   nes_log_instant("INFO: Launching NES\n");
+
+  cargarConfiguracion("resources/config/config");
 
   NES *nes = (NES *)malloc(sizeof(NES));
   if (!nes)
@@ -22,6 +26,15 @@ void nes_launch()
   if (!nes->ppu)
   {
     nes_log_error("ERROR: Failed to allocate memory for PPU structure\n");
+    free(nes->rom);
+    free(nes);
+    return;
+  }
+  nes->apu = (APU *)malloc(sizeof(APU));
+  if (!nes->apu)
+  {
+    nes_log_error("ERROR: Failed to allocate memory for APU structure\n");
+    free(nes->ppu);
     free(nes->rom);
     free(nes);
     return;
@@ -74,6 +87,8 @@ void nes_launch()
 
   nes_display_draw(nes->screen);
 
+  nes_apu_init(nes->apu);
+
   nes_run(nes);
 }
 
@@ -87,7 +102,7 @@ void nes_reset(NES *nes)
   nes->SP = 0xFD;
   nes->P = 0x24;
 
-  for (int i = 0; i < 0x8000; i++)
+  for (int i = 0; i < 0x2000; i++)
   {
     nes->memory[i] = 0;
   }
@@ -151,89 +166,53 @@ void nes_run(NES *nes)
 
   nes_log_instant("INFO: Starting NES emulation\n");
 
-  // -------------------
-  // Simulacion original
-  // -------------------
-  if (EXECUTION_TYPE == 0)
+  // Main emulation loop with accurate cycle timing
+  while (1)
   {
-    nes_log_instant("INFO: Starting original simulation\n");
-    while (true)
+    // Execute one CPU instruction and get consumed cycles
+    int cpu_cycles = cpu_step(nes);
+
+    // Run APU for each CPU cycle (APU runs at CPU clock rate)
+    for (int i = 0; i < cpu_cycles; i++)
     {
-      int cycles = cpu_step(nes); // Calcula los ciclos de CPU para la instrucción actual
+      nes_apu_clock(nes->apu);
+    }
 
-      // Tiempo de espera para simular el tiempo real de un ciclo de la CPU
-      SDL_Delay(cpu_cycle_time_ms * cycles); // Espera el tiempo correspondiente a los ciclos de CPU
+    // Run PPU for 3 cycles per CPU cycle (PPU runs 3x faster than CPU)
+    for (int i = 0; i < cpu_cycles * 3; i++)
+    {
+      ppu_step(nes);
+    }
 
-      // Ejecuta los ciclos de la PPU correspondientes al número de ciclos de CPU
-      for (int i = 0; i < cycles * 3; i++)
+    // Handle CPU stall cycles from DMA/other operations
+    while (nes->stall_cycles > 0)
+    {
+      // Still need to run PPU/APU during stalls
+      nes_apu_clock(nes->apu);
+      for (int i = 0; i < 3; i++)
       {
-        // Sincroniza el ciclo de la PPU
         ppu_step(nes);
-
-        // Retraso para simular el tiempo real de un ciclo de la PPU
-        SDL_Delay(ppu_cycle_time_ms); // Espera el tiempo correspondiente a un ciclo de la PPU
       }
-
-      // Actualiza los controladores
-      if (nes_controller_update(nes))
-      {
-        break;
-      }
+      nes->stall_cycles--;
+      nes->cycles++;
     }
-  }
-  // ---------------------
-  // Simulacion optimizada
-  // ---------------------
-  else if (EXECUTION_TYPE == 1)
-  {
-    nes_log_instant("INFO: Starting optimized simulation\n");
-    while (1)
+
+    // Update controllers
+    if (nes_controller_update(nes))
     {
-      for (int i = 0; i < 4; i++)
-      {
-        cpu_step(nes); // Ejecuta un ciclo de la CPU
-      }
-
-      // log_check_ppu_ram(nes);
-      ppu_step_optimized(nes); // Dibuja un frame de la pantalla
-
-      // Actualiza los controladores
-      if (nes_controller_update(nes))
-      {
-        break;
-      }
+      break;
     }
-  }
-  // ---------------------------
-  // Simulacion original copiada
-  // ---------------------------
-  else if (EXECUTION_TYPE == 2)
-  {
-    nes_log_instant("INFO: Starting copied simulation\n");
-    while (1)
+
+    // Check for termination
+    if (nes_terminate)
     {
-      // Espera el tiempo correspondiente a un ciclo de la CPU
-      SDL_Delay(cpu_cycle_time_ms);
-
-      // Calcula los ciclos de CPU para la instrucción actual
-      int cycles = cpu_step(nes);
-
-      // Ejecuta los ciclos de la PPU correspondientes al número de ciclos de CPU
-      for (int i = 0; i < cycles * 3; i++)
-      {
-        // Espera el tiempo correspondiente a un ciclo de la PPU
-        SDL_Delay(ppu_cycle_time_ms);
-
-        // Sincroniza el ciclo de la PPU
-        ppu_step_copy(nes);
-      }
-
-      // Actualiza los controladores
-      if (nes_controller_update(nes))
-      {
-        break;
-      }
+      break;
     }
+
+    // Optional: Add delay for speed control
+    // uint32_t elapsed = SDL_GetTicks() - last_time;
+    // if (elapsed < frame_time_ms) SDL_Delay(frame_time_ms - elapsed);
+    // last_time = SDL_GetTicks();
   }
 
   nes_log_instant("\nINFO: Traceback:\n");
@@ -243,7 +222,9 @@ void nes_run(NES *nes)
   nes_log_instant("INFO: NES emulation stopped\n");
   log_check_ppu_ram(nes);
 
-  nes_display_destroy(nes->screen);
+  nes_display_destroy();
+  nes_apu_cleanup(nes->apu);
+  free(nes->apu);
   free(nes->ppu);
   free(nes->rom);
   free(nes);
@@ -252,6 +233,17 @@ void nes_run(NES *nes)
 
 void log_check_ppu_ram(NES *nes)
 {
+  nes_log_instant("\nINFO: PPU CHR ROM:");
+  for (int i = 0; i < 0x2000; i++)
+  {
+    if (i % 16 == 0)
+    {
+      nes_log_instant("\n%04X: ", i);
+    }
+    nes_log_instant("%02X ", ppu_read_ram(nes, i));
+  }
+  nes_log_instant("\n\n");
+
   nes_log_instant("\nINFO: PPU VRAM:");
   for (int i = 0x2000; i < 0x3000; i++)
   {
@@ -259,7 +251,7 @@ void log_check_ppu_ram(NES *nes)
     {
       nes_log_instant("\n%04X: ", i);
     }
-    nes_log_instant("%02X ", nes->ppu->vram[i]);
+    nes_log_instant("%02X ", ppu_read_ram(nes, i));
   }
   nes_log_instant("\n\n");
 
@@ -270,7 +262,7 @@ void log_check_ppu_ram(NES *nes)
     {
       nes_log_instant("\n%02X: ", i);
     }
-    nes_log_instant("%02X ", nes->ppu->palette[i]);
+    nes_log_instant("%02X ", ppu_read_ram(nes, 0x3F00 + i));
   }
   nes_log_instant("\n\n");
 
@@ -295,5 +287,5 @@ uint8_t cpu_step(NES *nes)
     nes_push(nes, nes->P);
     nes->PC = nes_read_address(nes, NMI_VECTOR);
   }
-  return nes_evaluate_opcode(nes);
+  nes_evaluate_opcode(nes);
 }

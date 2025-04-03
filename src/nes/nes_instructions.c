@@ -14,7 +14,6 @@ void nes_push(NES *nes, uint8_t value)
   if (nes->SP == 0x00)
   {
     nes_log_error("ERROR: Stack overflow\n");
-    exit(1);
   }
   nes_write(nes, 0x100 | nes->SP, value);
   nes->SP--;
@@ -32,7 +31,6 @@ uint8_t nes_pull(NES *nes)
   if (nes->SP == 0xFF)
   {
     nes_log_error("ERROR: Stack underflow\n");
-    exit(1);
   }
   nes->SP++;
   uint8_t value = nes_read(nes, 0x100 | nes->SP);

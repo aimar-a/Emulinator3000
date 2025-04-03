@@ -51,8 +51,6 @@ typedef struct
 } Sprite;
 
 void ppu_step(NES *nes);
-void ppu_step_optimized(NES *nes);
-void ppu_step_copy(NES *nes);
 void render_scanline(NES *nes);
 uint8_t get_background_pixel(NES *nes, int x, int y);
 uint8_t get_sprite_pixel(NES *nes, int x, int y);
