@@ -1,46 +1,70 @@
-# Nombre del ejecutable y carpetas
-TARGET = bin/emulinator3000
+# Ejecutables y carpetas
+SERVER_TARGET = bin/emulinator3000
+CLIENT_TARGET = bin/cliente
 CC = gcc
+CXX = g++
 
-# Si estamos en Windows, añadimos las librerías de MinGW y SDL2
+# Detectar SO para SDL y otras libs
 ifdef WIN32
 	CFLAGS += -lmingw32 -lSDL2main -lSDL2_ttf
+	CXXFLAGS += -lmingw32 -lSDL2main -lSDL2_ttf
 # Si estamos en Linux, añadimos las librerías de SDL2
 else
 	CFLAGS += -lSDL2 -lSDL2_ttf
+	CXXFLAGS += -lSDL2 -lSDL2_ttf
 endif
-CFLAGS += -Wall -Wextra -pedantic -Iinclude -Iinclude/chip8 -Iinclude/menu -Iinclude/nes -Iinclude/database -Iinclude/config
 
-# Carpetas
+CFLAGS += -Wall -Wextra -pedantic -Iinclude -Iinclude/chip8 -Iinclude/menu -Iinclude/nes -Iinclude/database -Iinclude/config
+CXXFLAGS += -Wall -Wextra -pedantic -Icliente/include -Icliente/include/menu
+
+# Directorios
 SRC_DIR = src
 BUILD_DIR = build
-INCLUDE_DIR = include
 BIN_DIR = bin
+CLIENT_DIR = cliente/src
 
-# Archivos fuente y objetos
-SRC = $(wildcard $(SRC_DIR)/*.c $(SRC_DIR)/chip8/*.c $(SRC_DIR)/menu/*.c $(SRC_DIR)/nes/*.c $(SRC_DIR)/database/*.c $(SRC_DIR)/config/*.c)
-OBJ = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC))
+# Fuentes y objetos del servidor
+SERVER_SRC = $(wildcard $(SRC_DIR)/*.c $(SRC_DIR)/chip8/*.c $(SRC_DIR)/menu/*.c $(SRC_DIR)/nes/*.c $(SRC_DIR)/database/*.c $(SRC_DIR)/config/*.c)
+SERVER_OBJ = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SERVER_SRC))
 
-# Regla para compilar el ejecutable
-$(TARGET): $(OBJ) | $(BIN_DIR)
+# Fuentes y objetos del cliente
+CLIENT_SRC = $(wildcard $(CLIENT_DIR)/*.cpp $(CLIENT_DIR)/menu/*.cpp)
+CLIENT_OBJ = $(patsubst $(CLIENT_DIR)/%.cpp, $(BUILD_DIR)/cliente/%.o, $(CLIENT_SRC))
+
+# Regla por defecto: compilar ambos
+all: $(SERVER_TARGET) $(CLIENT_TARGET)
+
+# Compilar servidor
+$(SERVER_TARGET): $(SERVER_OBJ) | $(BIN_DIR)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-# Regla para compilar archivos fuente a objetos
+# Compilar cliente
+$(CLIENT_TARGET): $(CLIENT_OBJ) | $(BIN_DIR)
+	$(CXX) -o $@ $^ $(CXXFLAGS)
+
+# Compilar objetos servidor
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
-# Crear carpetas si no existen
+# Compilar objetos cliente
+$(BUILD_DIR)/cliente/%.o: $(CLIENT_DIR)/%.cpp | $(BUILD_DIR)/cliente
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
+
+# Crear carpetas necesarias
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/chip8 $(BUILD_DIR)/menu $(BUILD_DIR)/nes $(BUILD_DIR)/database $(BUILD_DIR)/config
+
+$(BUILD_DIR)/cliente:
+	mkdir -p $(BUILD_DIR)/cliente $(BUILD_DIR)/cliente/menu 
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
-# Limpiar archivos compilados
+# Limpieza
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET)
+	rm -rf $(BUILD_DIR) $(SERVER_TARGET) $(CLIENT_TARGET)
 
 # Recompilar desde cero
-rebuild: clean $(TARGET)
+rebuild: clean all
 
-.PHONY: clean rebuild
+.PHONY: clean rebuild all
