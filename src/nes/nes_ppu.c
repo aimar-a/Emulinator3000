@@ -66,13 +66,14 @@ void ppu_step(NES *nes)
         {
           // fetch tile
           uint16_t addr = 0x2000 | (nes->ppu->addr & 0x0FFF); // mask off fine y
-          // auto addr = 0x2000 + x / 8 + (y / 8) * (ScanlineVisibleDots / 8);
+          // uint16_t addr = 0x2000 + x / 8 + (y / 8) * (ScanlineVisibleDots / 8);
           uint8_t tile = ppu_read_ram(nes, addr);
 
           // fetch pattern
           // Each pattern occupies 16 bytes, so multiply by 16
-          addr = (tile * 16) + ((nes->ppu->addr >> 12 /*y % 8*/) & 0x7);     // Add fine y
-          (nes->ppu->ctrl & BACKGROUND_TILE_SELECT) ? addr += 0x1000 : addr; // set whether the pattern is in the high or low page
+          addr = (tile * 16) + ((nes->ppu->addr >> 12 /*y % 8*/) & 0x7); // Add fine y
+          if (nes->ppu->ctrl & BACKGROUND_TILE_SELECT)
+            addr += 0x1000; // set whether the pattern is in the high or low page
           // Get the corresponding bit determined by (8 - x_fine) from the right
           bgColor = (ppu_read_ram(nes, addr) >> (7 ^ x_fine)) & 1;             // bit 0 of palette entry
           bgColor |= ((ppu_read_ram(nes, addr + 8) >> (7 ^ x_fine)) & 1) << 1; // bit 1

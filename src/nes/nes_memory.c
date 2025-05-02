@@ -97,7 +97,14 @@ void nes_write(NES *nes, uint16_t address, uint8_t value)
   else if (address == 0x4016 || address == 0x4017)
   {
     nes_log_traceback(" (Controller I/O)");
-    nes_write_controller(nes, address, value);
+    if (address == 0x4016)
+    {
+      nes_write_controller(nes, address, value);
+    }
+    else
+    {
+      nes_log_instant("WARNING: Writing to controller 1/2 is not implemented yet.\n");
+    }
   }
   else if (address >= 0x4000 && address < 0x4014)
   {

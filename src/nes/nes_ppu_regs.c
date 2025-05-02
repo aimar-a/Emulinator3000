@@ -18,6 +18,7 @@ uint8_t ppu_read_register(NES *nes, uint16_t address)
     break;
 
   case 0x2004: // OAMDATA
+    nes_log_traceback("INFO: OAMDATA read: 0x%02X\n", nes->ppu->oam[nes->ppu->oamaddr]);
     value = nes->ppu->oam[nes->ppu->oamaddr];
     break;
 
@@ -65,6 +66,7 @@ void ppu_write_register(NES *nes, uint16_t address, uint8_t value)
     break;
 
   case 0x2004: // OAMDATA
+    nes_log_traceback("INFO: OAMDATA write: 0x%02X\n", value);
     nes->ppu->oam[nes->ppu->oamaddr] = value;
     nes->ppu->oamaddr++; // Wraps after 256 bytes
     break;

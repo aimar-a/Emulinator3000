@@ -74,7 +74,7 @@ uint8_t ppu_read_ram(NES *nes, uint16_t addr)
   else if (addr < 0x4000)
   {
     nes_log_traceback(" (Mirrors $3F00-$3F1F)");
-    nes_log_instant("WARNING: Reading from PPU mirrors is not implemented yet.\n");
+    nes_log_instant("WARNING: Reading from PPU mirrors is not implemented yet. Address: 0x%04X\n", addr);
     // TODO
   }
   else if (addr < 0x10000)
@@ -86,7 +86,6 @@ uint8_t ppu_read_ram(NES *nes, uint16_t addr)
   else
   {
     nes_log_error("ERROR: PPU Invalid address 0x%04X\n", addr);
-    exit(1);
   }
 
   nes_log_traceback(", Value read: 0x%02X\n", value);
@@ -170,16 +169,15 @@ void ppu_write_ram(NES *nes, uint16_t addr, uint8_t data)
     nes_log_instant("WARNING: Writing to PPU mirrors is not implemented yet.\n");
     // TODO
   }
-  else if (addr < 0x10000)
-  {
-    nes_log_traceback(" (Mirrors $0000-$3FFF)");
-    nes_log_instant("WARNING: Writing to PPU mirrors is not implemented yet.\n");
-    // TODO
-  }
+  // else if (addr < 0x10000)
+  //{
+  //   nes_log_traceback(" (Mirrors $0000-$3FFF)");
+  //   nes_log_instant("WARNING: Writing to PPU mirrors is not implemented yet.\n");
+  //   // TODO
+  // }
   else
   {
     nes_log_error("ERROR: PPU Invalid address 0x%04X\n", addr);
-    exit(1);
   }
 
   nes_log_traceback(", Value written: 0x%02X\n", data);
