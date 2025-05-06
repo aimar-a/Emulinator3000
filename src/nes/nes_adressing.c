@@ -56,9 +56,24 @@ uint8_t nes_zero_page_y(NES *nes)
 
 uint16_t nes_indirect(NES *nes)
 {
-  uint8_t address = nes_read(nes, nes->PC);
-  nes->PC += 1;
-  uint16_t pointer = nes_read(nes, address) | (nes_read(nes, (address + 1) & 0xFF) << 8);
+  uint16_t addr = (nes_read(nes, nes->PC) | nes_read(nes, nes->PC + 1) << 8);
+  nes->PC += 2;
+
+  // Emular el bug del 6502 al hacer JMP ($xxFF)
+  uint8_t ptr_low = nes_read(nes, addr);
+  uint8_t ptr_high;
+  if ((addr & 0x00FF) == 0x00FF)
+  {
+    // Bug: la página no avanza, se queda en xx00 en vez de xx+1 00
+    ptr_high = nes_read(nes, addr & 0xFF00);
+  }
+  else
+  {
+    ptr_high = nes_read(nes, addr + 1);
+  }
+
+  uint16_t pointer = (ptr_high << 8) | ptr_low;
+
   nes_log_traceback("INFO: Indirect pointer calculated: 0x%04X\n", pointer);
   return pointer;
 }
