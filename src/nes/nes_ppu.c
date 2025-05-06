@@ -316,17 +316,16 @@ void ppu_step_simple(NES *nes)
   // Increment PPU cycle counter
   nes->ppu->cycle++;
 
+  if (nes->ppu->cycle == 1)
+  {
+    nes_log_traceback("INFO: PPU frame: %d, scanline: %d\n", nes->ppu->frame, nes->ppu->scanline);
+  }
+
   // Handle end of scanline
   if (nes->ppu->cycle >= 341)
   {
     nes->ppu->cycle = 0;
     nes->ppu->scanline++;
-
-    // Handle end of frame
-    if (nes->ppu->scanline >= 261)
-    {
-      nes->ppu->scanline = 0;
-    }
   }
 
   // Visible scanlines (0-239)
@@ -336,13 +335,13 @@ void ppu_step_simple(NES *nes)
     if (nes->ppu->cycle >= 1 && nes->ppu->cycle <= 256)
     {
       // Background rendering
-      if (nes->ppu->mask & 0x08)
+      if (nes->ppu->mask & BACKGROUND_ENABLE)
       {
         render_background_pixel(nes);
       }
 
       // Sprite rendering
-      if (nes->ppu->mask & 0x10)
+      if (nes->ppu->mask & SPRITE_ENABLE)
       {
         // render_sprite_pixel(nes->ppu);
       }
@@ -363,12 +362,12 @@ void ppu_step_simple(NES *nes)
   else if (nes->ppu->scanline == 241 && nes->ppu->cycle == 1)
   {
     // Set VBlank flag
-    nes->ppu->status |= 0x80;
+    nes->ppu->status |= VBLANK_FLAG;
 
     // Trigger NMI if enabled
-    if (nes->ppu->ctrl & 0x80)
+    if (nes->ppu->ctrl & NMI_ENABLE)
     {
-      // cpu_nmi(); // Would trigger NMI on CPU
+      nes->pending_nmi = true;
     }
   }
 
@@ -378,8 +377,10 @@ void ppu_step_simple(NES *nes)
     // Clear VBlank flag at end of VBlank
     if (nes->ppu->cycle == 1)
     {
+      nes->ppu->scanline = 0;
       nes->ppu->status &= ~0x80;
       nes->ppu->frame++;
+      nes_display_draw(nes->screen);
     }
   }
 }
@@ -391,7 +392,7 @@ void render_background_pixel(NES *nes)
 
   // Get nametable address (0x2000-0x2FFF)
   uint16_t nametable_addr = 0x2000 | (nes->ppu->addr & 0x0FFF);
-  uint8_t tile_index = nes->ppu->vram[nametable_addr];
+  uint8_t tile_index = ppu_read_ram(nes, nametable_addr);
 
   // Get pattern table address (depends on PPUCTRL)
   uint16_t pattern_addr = (nes->ppu->ctrl & 0x10) ? 0x1000 : 0x0000;
@@ -401,8 +402,8 @@ void render_background_pixel(NES *nes)
   uint8_t fine_y = (nes->ppu->addr >> 12) & 0x7;
 
   // Get tile data
-  uint8_t pattern_lsb = nes->ppu->vram[pattern_addr + fine_y];
-  uint8_t pattern_msb = nes->ppu->vram[pattern_addr + fine_y + 8];
+  uint8_t pattern_lsb = ppu_read_ram(nes, pattern_addr + fine_y);
+  uint8_t pattern_msb = ppu_read_ram(nes, pattern_addr + fine_y + 8);
 
   // Get palette index (2 bits)
   uint8_t bit_pos = 7 - (x % 8);
@@ -415,10 +416,6 @@ void render_background_pixel(NES *nes)
 
   // Write to framebuffer
   nes->screen[y * 256 + x] = color;
-  if (nes->ppu->frame > 1000)
-  {
-    nes_log_instant("INFO: Frame: %d, Scanline: %d, Cycle: %d, Color: %02X\n", nes->ppu->frame, nes->ppu->scanline, nes->ppu->cycle, color);
-  }
 }
 
 void fetch_background_data(PPU *ppu)

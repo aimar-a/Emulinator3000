@@ -288,6 +288,17 @@ void log_check_ppu_ram(NES *nes)
     nes_log_instant("%02X ", nes->ppu->oam[i]);
   }
   nes_log_instant("\n\n");
+
+  nes_log_instant("INFO: SCREEN:");
+  for (int i = 0; i < 256 * 240; i++)
+  {
+    if (i % 16 == 0)
+    {
+      nes_log_instant("\n%04X: ", i);
+    }
+    nes_log_instant("%02X ", nes->screen[i]);
+  }
+  nes_log_instant("\n\n");
 }
 
 uint8_t cpu_step(NES *nes)

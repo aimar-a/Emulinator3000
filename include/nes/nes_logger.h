@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include "config_file.h"
 
-#define TRACEBACK_SIZE 200      // Tamaño del traceback
+#define TRACEBACK_SIZE 10000    // Tamaño del traceback
 #define TRACEBACK_LINE_SIZE 256 // Tamaño de cada línea del traceback
 
 extern char nes_traceback[][TRACEBACK_LINE_SIZE];
