@@ -311,6 +311,171 @@ void ppu_step(NES *nes)
   ++nes->ppu->cycle;
 }
 
+void ppu_step_simple(NES *nes)
+{
+  // Increment PPU cycle counter
+  nes->ppu->cycle++;
+
+  // Handle end of scanline
+  if (nes->ppu->cycle >= 341)
+  {
+    nes->ppu->cycle = 0;
+    nes->ppu->scanline++;
+
+    // Handle end of frame
+    if (nes->ppu->scanline >= 261)
+    {
+      nes->ppu->scanline = 0;
+    }
+  }
+
+  // Visible scanlines (0-239)
+  if (nes->ppu->scanline < 240)
+  {
+    // Visible cycles (1-256)
+    if (nes->ppu->cycle >= 1 && nes->ppu->cycle <= 256)
+    {
+      // Background rendering
+      if (nes->ppu->mask & 0x08)
+      {
+        render_background_pixel(nes);
+      }
+
+      // Sprite rendering
+      if (nes->ppu->mask & 0x10)
+      {
+        // render_sprite_pixel(nes->ppu);
+      }
+    }
+
+    // Fetch next tile data during cycles 1-256
+    if (nes->ppu->cycle >= 1 && nes->ppu->cycle <= 256)
+    {
+      fetch_background_data(nes->ppu);
+    }
+  }
+  // Post-render scanline (240)
+  else if (nes->ppu->scanline == 240)
+  {
+    // Do nothing (idle)
+  }
+  // VBlank scanlines (241-260)
+  else if (nes->ppu->scanline == 241 && nes->ppu->cycle == 1)
+  {
+    // Set VBlank flag
+    nes->ppu->status |= 0x80;
+
+    // Trigger NMI if enabled
+    if (nes->ppu->ctrl & 0x80)
+    {
+      // cpu_nmi(); // Would trigger NMI on CPU
+    }
+  }
+
+  // Pre-render scanline (261)
+  if (nes->ppu->scanline == 261)
+  {
+    // Clear VBlank flag at end of VBlank
+    if (nes->ppu->cycle == 1)
+    {
+      nes->ppu->status &= ~0x80;
+      nes->ppu->frame++;
+    }
+  }
+}
+
+void render_background_pixel(NES *nes)
+{
+  uint16_t x = nes->ppu->cycle - 1;
+  uint16_t y = nes->ppu->scanline;
+
+  // Get nametable address (0x2000-0x2FFF)
+  uint16_t nametable_addr = 0x2000 | (nes->ppu->addr & 0x0FFF);
+  uint8_t tile_index = nes->ppu->vram[nametable_addr];
+
+  // Get pattern table address (depends on PPUCTRL)
+  uint16_t pattern_addr = (nes->ppu->ctrl & 0x10) ? 0x1000 : 0x0000;
+  pattern_addr += tile_index * 16;
+
+  // Get fine Y scroll (0-7)
+  uint8_t fine_y = (nes->ppu->addr >> 12) & 0x7;
+
+  // Get tile data
+  uint8_t pattern_lsb = nes->ppu->vram[pattern_addr + fine_y];
+  uint8_t pattern_msb = nes->ppu->vram[pattern_addr + fine_y + 8];
+
+  // Get palette index (2 bits)
+  uint8_t bit_pos = 7 - (x % 8);
+  uint8_t palette_index = ((pattern_msb >> bit_pos) & 1) << 1 |
+                          ((pattern_lsb >> bit_pos) & 1);
+
+  // Get palette color
+  uint8_t palette_addr = 0x3F00; // Background palette
+  uint8_t color = nes->ppu->palette[palette_addr + palette_index];
+
+  // Write to framebuffer
+  nes->screen[y * 256 + x] = color;
+  if (nes->ppu->frame > 1000)
+  {
+    nes_log_instant("INFO: Frame: %d, Scanline: %d, Cycle: %d, Color: %02X\n", nes->ppu->frame, nes->ppu->scanline, nes->ppu->cycle, color);
+  }
+}
+
+void fetch_background_data(PPU *ppu)
+{
+  // Simplified - actual PPU has several fetch cycles
+  if (ppu->cycle % 8 == 0)
+  {
+    // Increment coarse X scroll
+    if ((ppu->addr & 0x001F) == 31)
+    {
+      ppu->addr &= ~0x001F; // Wrap around
+      ppu->addr ^= 0x0400;  // Switch nametable
+    }
+    else
+    {
+      ppu->addr++;
+    }
+  }
+
+  // Increment Y at end of scanline
+  if (ppu->cycle == 256)
+  {
+    if ((ppu->addr & 0x7000) != 0x7000)
+    {
+      ppu->addr += 0x1000; // Increment fine Y
+    }
+    else
+    {
+      ppu->addr &= ~0x7000;
+      uint16_t coarse_y = (ppu->addr & 0x03E0) >> 5;
+      if (coarse_y == 29)
+      {
+        coarse_y = 0;
+        ppu->addr ^= 0x0800; // Switch nametable
+      }
+      else if (coarse_y == 31)
+      {
+        coarse_y = 0;
+      }
+      else
+      {
+        coarse_y++;
+      }
+      ppu->addr = (ppu->addr & ~0x03E0) | (coarse_y << 5);
+    }
+  }
+}
+
+// Helper function to convert NES color to RGB
+uint32_t nes_color_to_rgb(NES *nes, uint8_t nes_color)
+{
+  // NES colors are stored in a specific palette, convert to RGB here
+  // This is a simplified example, actual conversion may vary
+  uint32_t rgb = nes->ppu->palette[nes_color];
+  return (rgb & 0xFF0000) | ((rgb & 0x00FF00) >> 8) | ((rgb & 0x0000FF) << 8);
+}
+
 void render_scanline(NES *nes)
 {
   for (int x = 0; x < 256; x++)

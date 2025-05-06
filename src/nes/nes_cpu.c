@@ -181,7 +181,7 @@ void nes_run(NES *nes)
     // Run PPU for 3 cycles per CPU cycle (PPU runs 3x faster than CPU)
     for (int i = 0; i < cpu_cycles * 3; i++)
     {
-      ppu_step(nes);
+      ppu_step_simple(nes);
     }
 
     // Handle CPU stall cycles from DMA/other operations
@@ -191,7 +191,7 @@ void nes_run(NES *nes)
       nes_apu_clock(nes->apu);
       for (int i = 0; i < 3; i++)
       {
-        ppu_step(nes);
+        ppu_step_simple(nes);
       }
       nes->stall_cycles--;
       nes->cycles++;
@@ -233,6 +233,18 @@ void nes_run(NES *nes)
 
 void log_check_ppu_ram(NES *nes)
 {
+  nes_log_instant("\nINFO: PPU REGISTERS:");
+  nes_log_instant("\nPPUCTRL: 0x%02X", nes->ppu->ctrl);
+  nes_log_instant("\nPPUMASK: 0x%02X", nes->ppu->mask);
+  nes_log_instant("\nPPUSTATUS: 0x%02X", nes->ppu->status);
+  nes_log_instant("\nOAMADDR: 0x%02X", nes->ppu->oamaddr);
+  nes_log_instant("\nOAMDATA: 0x%02X", nes->ppu->oamdata);
+  nes_log_instant("\nPPUSCROLL: 0x%02X", nes->ppu->scroll);
+  nes_log_instant("\nPPUADDR: 0x%02X", nes->ppu->addr);
+  nes_log_instant("\nPPUDATA: 0x%02X", nes->ppu->data);
+  nes_log_instant("\nOAMDMA: 0x%02X", nes->ppu->dma);
+  nes_log_instant("\n\n");
+
   nes_log_instant("\nINFO: PPU CHR ROM:");
   for (int i = 0; i < 0x2000; i++)
   {
