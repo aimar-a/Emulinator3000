@@ -17,7 +17,12 @@ typedef struct
 {
   uint8_t vram[0x4000]; // 16 KB de VRAM (aunque solo se usan 4 KB directamente)
   uint8_t oam[256];     // 256 Bytes para los sprites (Object Attribute Memory)
-  uint8_t palette[64];  // 64 Bytes para la paleta de colores
+
+  uint8_t secondary_oam[32]; // Holds up to 8 sprites for current scanline
+  bool sprite_priority[256]; // Tracks sprite rendering per pixel
+  bool sprite0_visible;      // True if sprite 0 is on current scanline
+
+  uint8_t palette[64]; // 64 Bytes para la paleta de colores
 
   // Registros
   /*

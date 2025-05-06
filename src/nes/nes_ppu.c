@@ -328,6 +328,13 @@ void ppu_step_simple(NES *nes)
     nes->ppu->scanline++;
   }
 
+  // SPRITE EVALUATION (critical timing!)
+  if ((nes->ppu->scanline < 240 || nes->ppu->scanline == 261) && nes->ppu->cycle == 257)
+  {
+    memset(nes->ppu->sprite_priority, 0, 256);
+    evaluate_sprites(nes->ppu);
+  }
+
   // Visible scanlines (0-239)
   if (nes->ppu->scanline < 240)
   {
@@ -343,7 +350,7 @@ void ppu_step_simple(NES *nes)
       // Sprite rendering
       if (nes->ppu->mask & SPRITE_ENABLE)
       {
-        // render_sprite_pixel(nes->ppu);
+        render_sprite_pixel(nes);
       }
     }
 
@@ -416,6 +423,130 @@ void render_background_pixel(NES *nes)
 
   // Write to framebuffer
   nes->screen[y * 256 + x] = color;
+}
+
+void render_sprite_pixel(NES *nes)
+{
+  uint16_t x = nes->ppu->cycle - 1; // Current x position (0-255)
+  uint16_t y = nes->ppu->scanline;  // Current scanline (0-239)
+
+  // Sprite size (8x8 or 8x16, determined by PPUCTRL bit 5)
+  bool sprite_8x16 = nes->ppu->ctrl & 0x20;
+  uint8_t sprite_height = sprite_8x16 ? 16 : 8;
+
+  // Check each sprite in OAM (max 8 per scanline)
+  for (int i = 0; i < 8; i++)
+  {
+    // Get sprite attributes from secondary OAM
+    uint8_t sprite_y = nes->ppu->secondary_oam[i * 4 + 0];
+    uint8_t sprite_index = nes->ppu->secondary_oam[i * 4 + 1];
+    uint8_t sprite_attr = nes->ppu->secondary_oam[i * 4 + 2];
+    uint8_t sprite_x = nes->ppu->secondary_oam[i * 4 + 3];
+
+    // Check if this sprite is visible at current position
+    if (x >= sprite_x && x < sprite_x + 8 &&
+        y >= sprite_y && y < sprite_y + sprite_height)
+    {
+
+      // Calculate which row of the sprite we're rendering
+      uint8_t sprite_row = y - sprite_y;
+
+      // Handle vertical flip
+      if (sprite_attr & 0x80)
+      {
+        sprite_row = (sprite_height - 1) - sprite_row;
+      }
+
+      // Get pattern table address
+      uint16_t pattern_addr;
+      if (sprite_8x16)
+      {
+        // 8x16 sprites use specific banks
+        pattern_addr = (sprite_index & 0x01) ? 0x1000 : 0x0000;
+        pattern_addr += (sprite_index & 0xFE) * 16;
+        pattern_addr += (sprite_row >= 8) ? 16 : 0;
+        sprite_row %= 8;
+      }
+      else
+      {
+        // 8x8 sprites use pattern table from PPUCTRL
+        pattern_addr = (nes->ppu->ctrl & 0x08) ? 0x1000 : 0x0000;
+        pattern_addr += sprite_index * 16;
+      }
+
+      // Get pattern data
+      uint8_t pattern_lsb = nes->ppu->vram[pattern_addr + sprite_row];
+      uint8_t pattern_msb = nes->ppu->vram[pattern_addr + sprite_row + 8];
+
+      // Calculate which bit we need (handle horizontal flip)
+      uint8_t bit_pos = (sprite_attr & 0x40) ? (x - sprite_x) : (7 - (x - sprite_x));
+
+      // Get palette index (2 bits)
+      uint8_t palette_index = ((pattern_msb >> bit_pos) & 1) << 1 |
+                              ((pattern_lsb >> bit_pos) & 1);
+
+      // Transparent pixel (palette index 0)
+      if (palette_index == 0)
+        continue;
+
+      // Get palette color (sprite palettes start at 0x3F10)
+      uint8_t palette_addr = 0x3F10 + ((sprite_attr & 0x03) << 2);
+      uint8_t color = nes->ppu->palette[palette_addr + palette_index];
+
+      // Handle sprite priority (0: in front of background, 1: behind)
+      bool bg_priority = sprite_attr & 0x20;
+
+      // Only draw if:
+      // 1. This is the first non-transparent sprite pixel at this position, OR
+      // 2. Sprite has higher priority than previous sprite
+      if (!nes->ppu->sprite_priority[x] || !bg_priority)
+      {
+        nes->screen[y * 256 + x] = color;
+        nes->ppu->sprite_priority[x] = true;
+
+        // Set sprite 0 hit flag if needed
+        if (i == 0 && nes->ppu->sprite0_visible &&
+            nes->ppu->mask & 0x18 && // Both bg and sprites enabled
+            x != 255)
+        { // Not at cycle 256
+          nes->ppu->status |= 0x40;
+        }
+      }
+
+      break; // Only one sprite per pixel (NES limitation)
+    }
+  }
+}
+
+void evaluate_sprites(PPU *ppu)
+{
+  uint8_t sprite_count = 0;
+  ppu->sprite0_visible = false;
+
+  for (int i = 0; i < 64; i++)
+  {
+    uint8_t sprite_y = ppu->oam[i * 4 + 0];
+    uint8_t sprite_row = ppu->scanline - sprite_y;
+
+    // Check if sprite is on current scanline
+    if (sprite_row < (ppu->ctrl & 0x20 ? 16 : 8))
+    {
+      // Copy sprite to secondary OAM
+      if (sprite_count < 8)
+      {
+        memcpy(&ppu->secondary_oam[sprite_count * 4], &ppu->oam[i * 4], 4);
+        if (i == 0)
+          ppu->sprite0_visible = true;
+        sprite_count++;
+      }
+      else
+      {
+        // Set sprite overflow flag
+        ppu->status |= 0x20;
+        break;
+      }
+    }
+  }
 }
 
 void fetch_background_data(PPU *ppu)

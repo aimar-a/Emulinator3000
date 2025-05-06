@@ -55,10 +55,10 @@ void nes_launch()
   nes_display_init();
   nes_log_instant("INFO: Display initialized\n");
 
-  if (nes_load_rom(nes, "resources/nes-roms/Super_mario_brothers.nes"))
+  // if (nes_load_rom(nes, "resources/nes-roms/Super_mario_brothers.nes"))
   // if (nes_load_rom(nes, "resources/nes-roms/Donkey Kong (World) (Rev A).nes"))
   // if (nes_load_rom(nes, "resources/nes-roms/Duck Hunt (World).nes"))
-  // if (nes_load_rom(nes, "resources/nes-roms/Tennis (USA) (GameCube Edition).nes"))
+  if (nes_load_rom(nes, "resources/nes-roms/Tennis (USA) (GameCube Edition).nes"))
   {
     nes_log_error("ERROR: Failed to load ROM\n");
     free(nes->ppu);
@@ -135,6 +135,15 @@ void nes_reset(NES *nes)
   {
     nes->ppu->oam[i] = 0;
   }
+  for (int i = 0; i < 32; i++)
+  {
+    nes->ppu->secondary_oam[i] = 0;
+  }
+  for (int i = 0; i < 256; i++)
+  {
+    nes->ppu->sprite_priority[i] = false;
+  }
+  nes->ppu->sprite0_visible = false;
   for (int i = 0; i < 64; i++)
   {
     nes->ppu->palette[i] = 0;
