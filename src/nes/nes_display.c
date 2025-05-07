@@ -46,7 +46,7 @@ void nes_display_init()
 
 void nes_display_draw(uint8_t *screen_buffer)
 {
-  // NES color palette (simplified - real NES has 64 carefully chosen colors)
+  // NES color palette
   static const uint32_t nes_palette[64] = {
       // Row 0 (Grays/dark colors)
       0x666666, 0x002A88, 0x1412A7, 0x3B00A4, 0x5C007E, 0x6E0040, 0x6C0600, 0x561D00,
@@ -71,8 +71,8 @@ void nes_display_draw(uint8_t *screen_buffer)
   {
     for (int x = 0; x < SCREEN_WIDTH_NES; x++)
     {
-      // Get palette index (0-3)
-      uint8_t palette_index = screen_buffer[x + y * SCREEN_WIDTH_NES] & 0x03;
+      // Get the color index from the screen buffer
+      uint8_t palette_index = screen_buffer[x + y * SCREEN_WIDTH_NES] & 0x3F;
 
       // Get actual NES color (from palette RAM in a real emulator)
       uint32_t nes_color = nes_palette[palette_index];
