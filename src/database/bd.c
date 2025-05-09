@@ -54,6 +54,7 @@ void crearBD()
     char sql3[] = "CREATE TABLE IF NOT EXISTS PARTIDA ("
                   "id_partida INTEGER PRIMARY KEY AUTOINCREMENT,"
                   "user VARCHAR(20) NOT NULL,"
+                  "fecha_inicio TIMESTAMP NOT NULL,"
                   "id_juego INTEGER NOT NULL,"
                   "tiempo_jugado INT NOT NULL,"
                   "puntuacion_maxima INT NOT NULL,"
@@ -209,7 +210,7 @@ void insertarUsuarios(char *user, char *contraseña)
     sqlite3_close(db);
 }
 
-void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax)
+void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char* fecha)
 {
 
     // Abrimos la base de datos
@@ -221,14 +222,15 @@ void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax)
 
     sqlite3_stmt *stmt;
 
-    char sql[] = "INSERT INTO PARTIDA (user, id_juego, tiempo_jugado, puntuacion_maxima) VALUES (?, ?, ?, ?);";
+    char sql[] = "INSERT INTO PARTIDA (user,fecha_inicio, id_juego, tiempo_jugado, puntuacion_maxima) VALUES (?, ?, ?, ?, ?);";
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);
-    sqlite3_bind_int(stmt, 2, idjuego);
-    sqlite3_bind_int(stmt, 3, tiempojugado);
-    sqlite3_bind_int(stmt, 4, puntmax);
+    sqlite3_bind_text(stmt, 2, fecha, strlen(fecha), SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 3, idjuego);
+    sqlite3_bind_int(stmt, 4, tiempojugado);
+    sqlite3_bind_int(stmt, 5, puntmax);
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -378,7 +380,7 @@ void insertarAmigos(char *user1, char *user2, char *estado)
     sqlite3_close(db);
 }
 
-// Creamos las funciones para actualizar las tablas
+// Creamos las funciones para actualizar los datos que nos interesan de las tablas
 
 // updateTiempoJugado(de un usuario a un juego)
 
