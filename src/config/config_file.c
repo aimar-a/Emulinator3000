@@ -15,7 +15,7 @@ int SCREEN_SCALE_NES = 4;
 bool load = false;
 bool cleanbbdd = false;
 bool createbbdd = false;
-bool deletebbdd = false;
+bool deletebbdd = true;
 
 bool log_chip8_enabled = true; // Variable para habilitar/deshabilitar el log de Chip8
 bool log_nes_enabled = true;   // Variable para habilitar/deshabilitar el log de NES

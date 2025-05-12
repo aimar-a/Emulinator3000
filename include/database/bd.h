@@ -19,7 +19,8 @@ int abrirBaseDeDatos(sqlite3 **db);
 void limpiarBaseDeDatos();
 void eliminarBaseDeDatos();
 void insertarUsuarios(char *user, char *contraseña);
-void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax);
+void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char* fechaInicio,char*fechaFin);
+
 void insertarJuego(char *titulo, char *rom);
 void insertarTiempoJugado(int tiempojugado, char *user, int idjuego);
 void insertarLogros(char *nombre, char *descripcion, int idjuego);

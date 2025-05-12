@@ -14,9 +14,9 @@ SCREEN_HEIGHT_NES=240
 SCREEN_SCALE_NES=4
 
 [Settings]
-load=true
+load=false
 cleanbbdd=false
-createbbdd=false
+createbbdd=true
 deletebbdd=false
 
 [Logger]

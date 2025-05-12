@@ -55,6 +55,7 @@ void crearBD()
                   "id_partida INTEGER PRIMARY KEY AUTOINCREMENT,"
                   "user VARCHAR(20) NOT NULL,"
                   "fecha_inicio TIMESTAMP NOT NULL,"
+                  "fecha_fin TIMESTAMP NOT NULL,"
                   "id_juego INTEGER NOT NULL,"
                   "tiempo_jugado INT NOT NULL,"
                   "puntuacion_maxima INT NOT NULL,"
@@ -210,7 +211,7 @@ void insertarUsuarios(char *user, char *contraseña)
     sqlite3_close(db);
 }
 
-void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char* fecha)
+void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char* fechaInicio,char*fechaFin)
 {
 
     // Abrimos la base de datos
@@ -222,15 +223,17 @@ void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, cha
 
     sqlite3_stmt *stmt;
 
-    char sql[] = "INSERT INTO PARTIDA (user,fecha_inicio, id_juego, tiempo_jugado, puntuacion_maxima) VALUES (?, ?, ?, ?, ?);";
+    char sql[] = "INSERT INTO PARTIDA (user,fecha_inicio, fecha_fin, id_juego, tiempo_jugado, puntuacion_maxima) VALUES (?, ?, ?, ?, ?,?);";
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, fecha, strlen(fecha), SQLITE_STATIC);
-    sqlite3_bind_int(stmt, 3, idjuego);
-    sqlite3_bind_int(stmt, 4, tiempojugado);
-    sqlite3_bind_int(stmt, 5, puntmax);
+    sqlite3_bind_text(stmt, 2, fechaInicio, strlen(fechaInicio), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, fechaFin, strlen(fechaFin), SQLITE_STATIC);
+
+    sqlite3_bind_int(stmt, 4, idjuego);
+    sqlite3_bind_int(stmt, 5, tiempojugado);
+    sqlite3_bind_int(stmt, 6, puntmax);
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);

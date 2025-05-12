@@ -104,10 +104,23 @@ void chip8cpuLaunch(char *rom_path)
   }
 
   // insertamos los datos de la partida
-  // void insertarPartida(char* user, int idjuego, int tiempojugado, int puntmax){
+  //void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char* fecha,char*fecha)
 
-  insertarPartida(currentUser, id, tiempoJugado, tiempoJugado * 0.5); // la puntuacion maxima vamos a dejarla asi
+  struct tm* currentTimeInicio;
+  struct tm* currentTimeFin;
 
+  currentTimeInicio = localtime(&tiempoInicio);
+
+  char fechaInicio[30];
+  strftime(fechaInicio, sizeof(fechaInicio), "%d/%m/%Y %H:%M:%S", currentTimeInicio);
+
+  currentTimeFin = localtime(&tiempoFin);
+
+  char fechaFin[30];
+  strftime(fechaFin, sizeof(fechaFin), "%d/%m/%Y %H:%M:%S", currentTimeFin);
+
+  insertarPartida(currentUser, id, tiempoJugado, tiempoJugado * 0.5, fechaInicio, fechaFin); // la puntuacion maxima vamos a dejarla asi
+  printf("Partida insertada");
   // updatear Juego puntuacion y usuario record si se ha hecho un nuevo record
   int puntuacionPartida = tiempoJugado * 0.5;
   if (puntuacionPartida > getPuntuacionRecord(id))
