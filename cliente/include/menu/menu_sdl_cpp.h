@@ -13,6 +13,5 @@
 int showSettingsWindow();
 bool isRomSelected(char romOptions[][128], char selectedRom[128], int romCount);
 void showInitialWindow();
-void loadRomsFromDirectory(const char *path, char roms[][128], int *romCount);
 
 #endif

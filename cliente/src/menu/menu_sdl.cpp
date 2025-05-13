@@ -9,30 +9,6 @@ int romListVisible = 0;
 int scrollOffset = 0;
 const int maxVisibleRoms = 3;
 
-void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *romCount)
-{
-  DIR *dir = opendir(dirPath);
-  if (dir == NULL)
-  {
-    printf("No se pudo abrir el directorio %s\n", dirPath);
-    return;
-  }
-
-  struct dirent *entry;
-  *romCount = 0;
-
-  while ((entry = readdir(dir)) != NULL)
-  {
-    if (strstr(entry->d_name, ".ch8") != NULL)
-    {
-      strcpy(romOptions[*romCount], entry->d_name);
-      (*romCount)++;
-    }
-  }
-
-  closedir(dir);
-}
-
 bool isRomSelected(char romOptions[][128], char selectedRom[128], int romCount)
 {
   for (int i = 0; i < romCount; i++)
@@ -135,7 +111,8 @@ int showSettingsWindow()
 
   char romOptions[107][128];
   int romCount = 0;
-  loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount);
+  // loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount);
+  // TODO obtener roms disponibles desde socket
 
   int romsPerPage = 15;                                        // ROMs por página (5 filas x 3 columnas)
   int currentPage = 0;                                         // Página actual
@@ -315,6 +292,7 @@ int showSettingsWindow()
     char fullRomPath[256];
     sprintf(fullRomPath, "resources/chip8-roms/games/%s", selectedRom);
     // chip8cpuLaunch(fullRomPath);
+    // TODO enviar rom seleccionada al servidor
   }
 
   return 1;

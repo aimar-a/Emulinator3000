@@ -23,7 +23,7 @@
 #define ROMS_PATH "resources/chip8-roms"
 
 extern char *currentUser; // Declaración de la variable global
-void menuUsuario();
+void menuUsuario(SOCKET sock);
 void menuCambioContraseña();
 void menuInicial();
 void menuChip8();

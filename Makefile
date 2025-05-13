@@ -4,17 +4,25 @@ CLIENT_TARGET = bin/cliente
 CC = gcc
 CXX = g++
 
-# Detectar SO para SDL y otras libs
-ifdef WIN32
-	CFLAGS += -lmingw32 -lSDL2main -lSDL2_ttf
-	CXXFLAGS += -lmingw32 -lSDL2main -lSDL2_ttf
-else
-	CFLAGS += -lSDL2 -lSDL2_ttf
-	CXXFLAGS += -lSDL2 -lSDL2_ttf
-endif
-
+# Flags de compilación (compartidos)
 CFLAGS += -Wall -Wextra -pedantic -Iinclude -Iinclude/chip8 -Iinclude/menu -Iinclude/nes -Iinclude/database -Iinclude/config
 CXXFLAGS += -Wall -Wextra -pedantic -Icliente/include -Icliente/include/menu
+
+# Flags de enlazado
+LDFLAGS = 
+
+# Detección de sistema operativo
+ifeq ($(OS),Windows_NT)
+    # Windows
+    CFLAGS += -D_WIN32
+    CXXFLAGS += -D_WIN32
+    SERVER_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32
+    CLIENT_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32
+else
+    # Linux/macOS
+    SERVER_LDFLAGS = -lSDL2 -lSDL2_ttf
+    CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf
+endif
 
 # Directorios
 SRC_DIR = src
@@ -35,31 +43,31 @@ all: $(SERVER_TARGET) $(CLIENT_TARGET)
 
 # Compilar servidor
 $(SERVER_TARGET): $(SERVER_OBJ) | $(BIN_DIR)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) $(SERVER_LDFLAGS)
 
 # Compilar cliente
 $(CLIENT_TARGET): $(CLIENT_OBJ) | $(BIN_DIR)
-	$(CXX) -o $@ $^ $(CXXFLAGS)
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(CLIENT_LDFLAGS)
 
-# Compilar objetos servidor (crea carpeta automáticamente)
+# Compilar objetos servidor
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
-# Compilar objetos cliente (crea carpeta automáticamente)
+# Compilar objetos cliente
 $(BUILD_DIR)/cliente/%.o: $(CLIENT_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 # Crear carpeta bin si no existe
 $(BIN_DIR):
-	mkdir -p $(BIN_DIR)
+	@mkdir -p $(BIN_DIR)
 
 # Limpieza
 clean:
-	rm -rf $(BUILD_DIR) $(SERVER_TARGET) $(CLIENT_TARGET)
+	@rm -rf $(BUILD_DIR) $(BIN_DIR)
 
 # Recompilar desde cero
 rebuild: clean all
 
-.PHONY: clean rebuild all
+.PHONY: all clean rebuild

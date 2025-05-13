@@ -8,6 +8,7 @@
 #include "config_file.h"
 extern sqlite3 *db;
 #include "nes_cpu.h"
+#include "server.h"
 
 /*
 
@@ -94,8 +95,10 @@ int main(int argc, char *argv[])
     limpiarBaseDeDatos();
   }
 
+  server_run();
+
   // Iniciar el menu de usuario
-  menuUsuario();
+  // menuUsuario();
 
   // Iniciar la NES directamente
   // nes_launch();

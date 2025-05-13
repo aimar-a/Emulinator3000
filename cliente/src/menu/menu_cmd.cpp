@@ -45,7 +45,7 @@ void getString(char *str, int maxLen)
 
 char *currentUser = NULL;
 
-void menuUsuario()
+void menuUsuario(SOCKET sock)
 {
   // opciones:
   //   1.Iniciar sesion --> Lleva a otro menu donde poner Usuario y contrasenya
@@ -79,23 +79,8 @@ void menuUsuario()
       char contra[MAX_STRING_LENGTH];
       getString(contra, MAX_STRING_LENGTH);
 
-      // implementacion BD (comprobar si existe un usuario con esa contrasenya)
-      if (1) // existeUsuarioYPas(usuario, contra) == true)
-      {
-        pass = true;
-        printf("Accediendo.....\n");
-        currentUser = usuario;
-        Sleep(1000);
-        menuInicial();
-        break;
-      }
-      else
-      {
-        printf("Usuario o contrasenya incorrectos\n");
-        Sleep(400);
-        printf("Volviendo al menu....\n");
-        Sleep(1000);
-      }
+      // TODO enviar a server por socket y comprobar si existe el usuario y la contrasenya
+      menuInicial();
     }
     else if (option == '2')
     {
@@ -112,21 +97,27 @@ void menuUsuario()
       // implementacion BD (insertar usuario)
       if (usuario[0] != '\0' && contra[0] != '\0make')
       {
-        if (1) // existeUsuario(usuario) != true)
+        // TODO enviar a server por socket y comprobar si existe el usuario y la contrasenya
+        // TODO si no existe, insertar en la base de datos
+        // TODO si existe, mostrar mensaje de error
+
+        uint8_t is_register = 1;
+        send(sock, (const char *)&is_register, sizeof(is_register), 0);
+        send(sock, usuario, sizeof(usuario), 0);
+        send(sock, contra, sizeof(contra), 0);
+
+        char response[20];
+        recv(sock, response, sizeof(response), 0);
+        if (strcmp(response, "OK") == 0)
         {
-          currentUser = usuario;
-          // insertarUsuarios(usuario, contra);
-          printf("Registro Exitoso\n");
+          currentUser = strdup(usuario); // Asignar el nombre de usuario a la variable global
+          printf("Usuario registrado correctamente\n");
           Sleep(1000);
           menuInicial();
-          break;
         }
         else
         {
-          printf("Ese nombre de usuario ya existe, prueba a poner otro nombre\n");
-          Sleep(500);
-          printf("Volviendo al menu....\n");
-          Sleep(1000);
+          printf("El usuario ya existe\n");
         }
       }
       else
@@ -241,7 +232,7 @@ void menuInicial()
     case '0':
       printf("Volviendo al menu anterior....\n");
       Sleep(1000);
-      menuUsuario();
+      // menuUsuario(); // TODO creo q esto se puede quitar
       break;
     default:
       printf("Opcion invalida\n");
