@@ -211,7 +211,7 @@ void insertarUsuarios(char *user, char *contraseña)
     sqlite3_close(db);
 }
 
-void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char* fechaInicio,char*fechaFin)
+void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char *fechaInicio, char *fechaFin)
 {
 
     // Abrimos la base de datos
@@ -448,14 +448,14 @@ void updateEstado_Amigos(char *user1, char *user2, char *estado)
 // updateContrasena (de usuario)
 
 // da error "Database is locked"
-void updateContrasena(char *newcontrasena, char *user)
+bool updateContrasena(char *newcontrasena, char *user)
 {
 
     // Abrimos la base de datos
     if (sqlite3_open(db_filename, &db) != SQLITE_OK)
     {
         printf("Error al abrir la base de datos\n");
-        return;
+        return false;
     }
 
     sqlite3_stmt *stmt;
@@ -466,7 +466,7 @@ void updateContrasena(char *newcontrasena, char *user)
     {
         printf("Error en la preparación de la consulta: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
-        return;
+        return false;
     }
 
     // Vincular los valores a la consulta
@@ -479,7 +479,7 @@ void updateContrasena(char *newcontrasena, char *user)
         printf("Error al ejecutar el UPDATE: %s\n", sqlite3_errmsg(db));
         sqlite3_finalize(stmt);
         sqlite3_close(db);
-        return;
+        return false;
     }
 
     // Impresión de éxito
@@ -488,6 +488,7 @@ void updateContrasena(char *newcontrasena, char *user)
     // Limpiar
     sqlite3_finalize(stmt);
     sqlite3_close(db);
+    return true;
 }
 
 // updateUsuarioRecord (Juego)

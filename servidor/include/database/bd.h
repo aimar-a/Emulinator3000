@@ -19,7 +19,7 @@ int abrirBaseDeDatos(sqlite3 **db);
 void limpiarBaseDeDatos();
 void eliminarBaseDeDatos();
 void insertarUsuarios(char *user, char *contraseña);
-void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char* fechaInicio,char*fechaFin);
+void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char *fechaInicio, char *fechaFin);
 
 void insertarJuego(char *titulo, char *rom);
 void insertarTiempoJugado(int tiempojugado, char *user, int idjuego);
@@ -30,7 +30,7 @@ void insertarAmigos(char *user1, char *user2, char *estado);
 // Funciones para actualizar los datos en las tablas
 void updateTiempoJugado(int tiempoJugado, char *user, int id_juego);
 void updateEstado_Amigos(char *user1, char *user2, char *estado);
-void updateContrasena(char *newcontrasena, char *user);
+bool updateContrasena(char *newcontrasena, char *user);
 void updateUsuarioPuntuacionRecord(char *usuario, int newPunt, int idjuego);
 
 // mas funciones

@@ -117,7 +117,7 @@ void menuUsuario(socket_t sock)
         net::send_data(sock, contra, strlen(contra) + 1);
 
         char response[4];
-        net::receive_data(sock, response, sizeof(response)); // TODO creo q no va
+        net::receive_data(sock, response, sizeof(response));
 
         if (strcmp(response, "ACK") == 0)
         {
@@ -168,38 +168,40 @@ void menuCambioContraseña(socket_t sock)
   char contraActual[MAX_STRING_LENGTH];
   getString(contraActual, MAX_STRING_LENGTH);
 
-  if (1) // comprobarContraseña(currentUser, contraActual) == true)
+  uint8_t option = 0x01;
+  net::send_data(sock, &option, sizeof(option));
+  net::send_data(sock, contraActual, strlen(contraActual) + 1);
+  char response[4];
+  net::receive_data(sock, response, sizeof(response));
+  printf("Respuesta del servidor: %s\n", response);
+  if (strcmp(response, "ACK") == 0)
   {
     printf("Contrasenya correcta\n\n");
-    while (1)
+    printf("Introduce tu nueva contrasenya: ");
+    char nuevaContra[MAX_STRING_LENGTH];
+    getString(nuevaContra, MAX_STRING_LENGTH);
+    net::send_data(sock, nuevaContra, strlen(nuevaContra) + 1);
+    char response[4];
+    net::receive_data(sock, response, sizeof(response));
+    if (strcmp(response, "ACK") == 0)
     {
-      printf("Introduzca nueva contrasenya: ");
-
-      char contraNueva1[MAX_STRING_LENGTH];
-      getString(contraNueva1, MAX_STRING_LENGTH);
-
-      printf("Vuelva a introducir la nueva contrasenya: ");
-
-      char contraNueva2[MAX_STRING_LENGTH];
-      getString(contraNueva2, MAX_STRING_LENGTH);
-
-      // Comprobar que las contrasenyas coinciden
-      if (strcmp(contraNueva1, contraNueva2) != 0)
-      {
-        printf("Las contrasenyas no coinciden. Intentalo de nuevo.\n\n");
-        Sleep(1000);
-        continue;
-      }
-
-      // updateContrasena(contraNueva1, currentUser);
-      printf("Cambio de Contrasenya Exitoso....\n");
+      printf("Contrasenya cambiada correctamente\n");
+      Sleep(1000);
+      return;
+    }
+    else
+    {
+      printf("Error al cambiar la contrasenya\n");
       Sleep(1000);
       return;
     }
   }
-  printf("Contrasenya incorrecta, fuera de aqui impostor!!\n");
-  Sleep(1000);
-  return;
+  else
+  {
+    printf("Contrasenya incorrecta, fuera de aqui impostor!!\n");
+    Sleep(1000);
+    return;
+  }
 }
 
 void menuInicial(socket_t sock)
@@ -222,14 +224,19 @@ void menuInicial(socket_t sock)
     printf("Opcion: ");
 
     option = getOption();
+    uint8_t opcion_socket = 0x00;
 
     switch (option)
     {
     case '1':
-      showInitialWindow(); // a veces da core dump error, si no se soluciona para la entrega usar el otro
+      opcion_socket = 0x02; // Recibir ROMs CHIP8
+      net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
+      showInitialWindow(sock); // a veces da core dump error, si no se soluciona para la entrega usar el otro
       //  menuListaROMs();
       break;
     case '2':
+      opcion_socket = 0x03; // Recibir ROMs NES
+      net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       menuAdvertenciaNES();
       break;
     case 'p':
@@ -241,6 +248,8 @@ void menuInicial(socket_t sock)
       menuConfiguracion(sock);
       break;
     case '0':
+      opcion_socket = 0x00;
+      net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       printf("Volviendo al menu anterior....\n");
       Sleep(1000);
       // menuUsuario(); // TODO creo q esto se puede quitar

@@ -1,7 +1,3 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <string.h>
-#include <dirent.h>
 #include "menu_sdl.hpp"
 
 int selectedDelay = 5;
@@ -95,7 +91,7 @@ void showWarningWindow()
   TTF_CloseFont(font);
 }
 
-int showSettingsWindow()
+int showSettingsWindow(socket_t sock)
 {
   char selectedRom[128] = ""; // Inicializar la variable de la ROM seleccionada
 
@@ -113,6 +109,12 @@ int showSettingsWindow()
   int romCount = 0;
   // loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount);
   // TODO obtener roms disponibles desde socket
+
+  net::receive_data(sock, &romCount, sizeof(romCount));
+  for (int i = 0; i < romCount; i++)
+  {
+    net::receive_data(sock, romOptions[i], sizeof(romOptions[i]));
+  }
 
   int romsPerPage = 15;                                        // ROMs por página (5 filas x 3 columnas)
   int currentPage = 0;                                         // Página actual
@@ -298,7 +300,7 @@ int showSettingsWindow()
   return 1;
 }
 
-void showInitialWindow()
+void showInitialWindow(socket_t sock)
 {
   SDL_Window *window = SDL_CreateWindow("Emulinator3000", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, SDL_WINDOW_SHOWN);
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -335,9 +337,9 @@ void showInitialWindow()
           SDL_DestroyRenderer(renderer);
           SDL_DestroyWindow(window);
 
-          if (showSettingsWindow())
+          if (showSettingsWindow(sock))
           {
-            showInitialWindow();
+            showInitialWindow(sock);
           }
           return;
         }

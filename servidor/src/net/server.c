@@ -140,7 +140,7 @@ void clienteAnonimo(socket_t client_socket)
     if (username[0] == '\0' || password[0] == '\0')
     {
       printf("Nombre de usuario o contraseña vacíos\n");
-      if (!sendData(client_socket, "ERR", 3))
+      if (!sendData(client_socket, "ERR", 4))
       {
         printf("Error al enviar error: %d\n", WSAGetLastError());
         close_socket(client_socket);
@@ -160,7 +160,7 @@ void clienteAnonimo(socket_t client_socket)
       {
         insertarUsuarios(username, password);
         printf("Usuario registrado: %s\n", username);
-        if (!sendData(client_socket, "ACK", 3))
+        if (!sendData(client_socket, "ACK", 4))
         {
           printf("Error al enviar confirmación: %d\n", WSAGetLastError());
           close_socket(client_socket);
@@ -192,7 +192,7 @@ void clienteAnonimo(socket_t client_socket)
       if (existeUsuarioYPas(username, password))
       {
         printf("Usuario autenticado: %s\n", username);
-        if (!sendData(client_socket, "ACK", 3))
+        if (!sendData(client_socket, "ACK", 4))
         {
           printf("Error al enviar confirmación: %d\n", WSAGetLastError());
           close_socket(client_socket);
@@ -207,7 +207,7 @@ void clienteAnonimo(socket_t client_socket)
       else
       {
         printf("Autenticación fallida: %s\n", username);
-        if (!sendData(client_socket, "ERR", 3))
+        if (!sendData(client_socket, "ERR", 4))
         {
           printf("Error al enviar error: %d\n", WSAGetLastError());
           close_socket(client_socket);
@@ -280,9 +280,93 @@ void clienteConocido(socket_t client_socket, char *username)
       break;
     }
 
+    case 0x00:
+      printf("Cliente cierra sesion...\n");
+      return;
+
     case 0x01: // Cambiar contraseña
       printf("Cambiando contraseña...\n");
-      // Implementar cambio de contraseña
+      // Recibir vieja contraseña
+      if (!receiveData(client_socket, buffer, sizeof(buffer), &bytes_received))
+      {
+        printf("Error al recibir contraseña: %d\n", WSAGetLastError());
+        close_socket(client_socket);
+        close_socket(server_socket);
+#ifdef _WIN32
+        WSACleanup();
+#endif
+        return;
+      }
+      printf("Contraseña vieja: %s\n", buffer);
+      if (!existeUsuarioYPas(username, buffer))
+      {
+        printf("Contraseña incorrecta\n");
+        if (!sendData(client_socket, "ERR", 4))
+        {
+          printf("Error al enviar error: %d\n", WSAGetLastError());
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
+          WSACleanup();
+#endif
+          return;
+        }
+        continue;
+      }
+      else
+      {
+        printf("Contraseña correcta\n");
+        if (!sendData(client_socket, "ACK", 4))
+        {
+          printf("Error al enviar confirmación: %d\n", WSAGetLastError());
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
+          WSACleanup();
+#endif
+          return;
+        }
+      }
+      // Recibir nueva contraseña
+      if (!receiveData(client_socket, buffer, sizeof(buffer), &bytes_received))
+      {
+        printf("Error al recibir nueva contraseña: %d\n", WSAGetLastError());
+        close_socket(client_socket);
+        close_socket(server_socket);
+#ifdef _WIN32
+        WSACleanup();
+#endif
+        return;
+      }
+      printf("Nueva contraseña: %s\n", buffer);
+      if (!updateContrasena(buffer, username))
+      {
+        printf("Error al cambiar contraseña\n");
+        if (!sendData(client_socket, "ERR", 4))
+        {
+          printf("Error al enviar error: %d\n", WSAGetLastError());
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
+          WSACleanup();
+#endif
+          return;
+        }
+      }
+      else
+      {
+        printf("Contraseña cambiada con éxito\n");
+        if (!sendData(client_socket, "ACK", 4))
+        {
+          printf("Error al enviar confirmación: %d\n", WSAGetLastError());
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
+          WSACleanup();
+#endif
+          return;
+        }
+      }
       break;
 
     case 0x02: // Enviar ROMs CHIP8
