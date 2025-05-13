@@ -1,12 +1,10 @@
 #ifndef SERVER_H
 #define SERVER_H
-
 #include <stdio.h>
-#ifdef _WIN32
-#include <winsock2.h>
-#else
-#include <sys/socket.h>
-#endif
+#include <string.h>
+#include <errno.h>
+
+#include "network_util.h"
 
 #include <stdint.h>
 #include <dirent.h>

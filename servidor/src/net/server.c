@@ -1,35 +1,4 @@
 #include "server.h"
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-
-// Definiciones específicas de plataforma
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <windows.h>
-#pragma comment(lib, "ws2_32.lib")
-#define close_socket closesocket
-#define sleep_ms(x) Sleep(x)
-typedef SOCKET socket_t;
-#define INVALID_SOCKET_VALUE INVALID_SOCKET
-#define SOCKET_ERROR_VALUE SOCKET_ERROR
-#else
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <dirent.h>
-#include <sys/types.h>
-#define close_socket close
-#define sleep_ms(x) usleep(x * 1000)
-typedef int socket_t;
-#define INVALID_SOCKET_VALUE -1
-#define SOCKET_ERROR_VALUE -1
-#define WSAGetLastError() errno
-#endif
-
-#include "network_util.h"
 
 // Prototipos de funciones
 void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *romCount);
