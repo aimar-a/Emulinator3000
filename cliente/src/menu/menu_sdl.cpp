@@ -2,7 +2,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
 #include <dirent.h>
-#include "menu_sdl_cpp.h"
+#include "menu_sdl.hpp"
 
 int selectedDelay = 5;
 int romListVisible = 0;

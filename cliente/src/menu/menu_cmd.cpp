@@ -1,11 +1,11 @@
-#include "menu_cmd_cpp.h"
+#include "menu_cmd.hpp"
 #include <string.h>
 void clearScreen()
 {
 #ifdef _WIN32
-  system("cls");
+  // system("cls");
 #else
-  system("clear");
+  // system("clear");
 #endif
 }
 
@@ -45,7 +45,7 @@ void getString(char *str, int maxLen)
 
 char *currentUser = NULL;
 
-void menuUsuario(SOCKET sock)
+void menuUsuario(socket_t sock)
 {
   // opciones:
   //   1.Iniciar sesion --> Lleva a otro menu donde poner Usuario y contrasenya
@@ -54,9 +54,7 @@ void menuUsuario(SOCKET sock)
   // 4.En MenuInicial meter opcion de cambiar Contrasenya
   // 5. el SALIR  de menuInicial tiene que ir a menuUsuario
 
-  bool pass = false;
-
-  while (pass == false)
+  while (1)
   {
     clearScreen();
     printf("Seleccione una de las siguientes opciones\n");
@@ -79,8 +77,24 @@ void menuUsuario(SOCKET sock)
       char contra[MAX_STRING_LENGTH];
       getString(contra, MAX_STRING_LENGTH);
 
-      // TODO enviar a server por socket y comprobar si existe el usuario y la contrasenya
-      menuInicial();
+      char is_register = 0;
+      net::send_data(sock, &is_register, sizeof(is_register));
+      net::send_data(sock, usuario, strlen(usuario) + 1);
+      net::send_data(sock, contra, strlen(contra) + 1);
+
+      char response[4];
+      net::receive_data(sock, response, sizeof(response)); // TODO creo q no va
+
+      if (strcmp(response, "ACK") == 0)
+      {
+        currentUser = strdup(usuario);
+        menuInicial(sock);
+      }
+      else
+      {
+        printf("Usuario o contrasenya incorrectos\n");
+        Sleep(1000);
+      }
     }
     else if (option == '2')
     {
@@ -97,27 +111,25 @@ void menuUsuario(SOCKET sock)
       // implementacion BD (insertar usuario)
       if (usuario[0] != '\0' && contra[0] != '\0make')
       {
-        // TODO enviar a server por socket y comprobar si existe el usuario y la contrasenya
-        // TODO si no existe, insertar en la base de datos
-        // TODO si existe, mostrar mensaje de error
+        char is_register = 1;
+        net::send_data(sock, &is_register, sizeof(is_register));
+        net::send_data(sock, usuario, strlen(usuario) + 1);
+        net::send_data(sock, contra, strlen(contra) + 1);
 
-        uint8_t is_register = 1;
-        send(sock, (const char *)&is_register, sizeof(is_register), 0);
-        send(sock, usuario, sizeof(usuario), 0);
-        send(sock, contra, sizeof(contra), 0);
+        char response[4];
+        net::receive_data(sock, response, sizeof(response)); // TODO creo q no va
 
-        char response[20];
-        recv(sock, response, sizeof(response), 0);
-        if (strcmp(response, "OK") == 0)
+        if (strcmp(response, "ACK") == 0)
         {
           currentUser = strdup(usuario); // Asignar el nombre de usuario a la variable global
           printf("Usuario registrado correctamente\n");
           Sleep(1000);
-          menuInicial();
+          menuInicial(sock);
         }
         else
         {
           printf("El usuario ya existe\n");
+          Sleep(1000);
         }
       }
       else
@@ -130,7 +142,6 @@ void menuUsuario(SOCKET sock)
     }
     else if (option == '0')
     {
-
       printf("Cerrando....\n");
       Sleep(1000);
       break;
@@ -146,7 +157,7 @@ void menuUsuario(SOCKET sock)
 }
 
 // esto no funciona porque hay que meter el codigo en un bucle
-void menuCambioContraseña()
+void menuCambioContraseña(socket_t sock)
 {
   clearScreen();
   printf("--- Cambio de Contraseña ---\n");
@@ -191,7 +202,7 @@ void menuCambioContraseña()
   return;
 }
 
-void menuInicial()
+void menuInicial(socket_t sock)
 {
   char option = ' ';
 
@@ -227,7 +238,7 @@ void menuInicial()
       break;
     case 'c':
     case 'C':
-      menuConfiguracion();
+      menuConfiguracion(sock);
       break;
     case '0':
       printf("Volviendo al menu anterior....\n");
@@ -244,7 +255,7 @@ void menuInicial()
   }
 }
 
-void menuConfiguracion()
+void menuConfiguracion(socket_t sock)
 {
   char option = ' ';
 
@@ -266,7 +277,7 @@ void menuConfiguracion()
     switch (option)
     {
     case '1':
-      menuCambioContraseña();
+      menuCambioContraseña(sock);
       break;
     case '2':
       menuEscalaChip8();
@@ -452,7 +463,7 @@ void menuAdvertenciaNES()
 }
 
 // Ya no se usa
-void menuChip8()
+void menuChip8(socket_t sock)
 {
   char option = ' ';
   while (option != '0')
@@ -471,7 +482,7 @@ void menuChip8()
     switch (option)
     {
     case '1':
-      menuListaROMs();
+      menuListaROMs(sock);
       break;
     case '2':
       printf("Configurando...\n");
@@ -525,7 +536,7 @@ void listarROMsRecursivo(const char *directory, char roms[][256], int *count)
   closedir(dp);
 }
 
-void menuListaROMs()
+void menuListaROMs(socket_t sock)
 {
   char roms[200][256];
   int romCount = 0;

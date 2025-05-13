@@ -1,6 +1,6 @@
 #include <iostream>
-#include "menu_cmd_cpp.h"
-#include "cliente.h"
+#include "menu_cmd.hpp"
+#include "cliente.hpp"
 
 int main(int argc, char *argv[])
 {

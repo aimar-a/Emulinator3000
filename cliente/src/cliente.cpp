@@ -1,35 +1,23 @@
-#include "cliente.h"
+#include "cliente.hpp"
+#include "menu_cmd.hpp" // Incluir el archivo del menú
 
+// Implementación de la función principal del cliente
 void client_run()
 {
-  WSADATA wsa;
-  SOCKET sock;
-  struct sockaddr_in server;
+  net::ConnectionConfig config;
+  config.host = SERVER_IP; // Dirección IP del servidor
+  config.port = PORT;      // Puerto del servidor
 
-  // Inicializar Winsock
-  if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+  socket_t sock = net::connect(config); // Establecer conexión
+  if (sock == INVALID_SOCKET_VALUE)
   {
-    printf("WSAStartup failed: %d\n", WSAGetLastError());
+    std::cerr << "Error al conectar al servidor: " << WSAGetLastError() << std::endl;
     return;
   }
 
-  // Crear y conectar socket (igual que antes)
-  sock = socket(AF_INET, SOCK_STREAM, 0);
-  server.sin_family = AF_INET;
-  server.sin_addr.s_addr = inet_addr(SERVER_IP);
-  server.sin_port = htons(PORT);
-
-  if (connect(sock, (struct sockaddr *)&server, sizeof(server)) < 0)
-  {
-    printf("Connect failed: %d\n", WSAGetLastError());
-    closesocket(sock);
-    return;
-  }
   printf("Conectado al servidor\n");
 
   menuUsuario(sock);
 
-  closesocket(sock);
-  WSACleanup();
   return;
 }

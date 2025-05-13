@@ -1,37 +1,90 @@
 #include "server.h"
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+
+// Definiciones específicas de plataforma
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+#pragma comment(lib, "ws2_32.lib")
+#define close_socket closesocket
+#define sleep_ms(x) Sleep(x)
+typedef SOCKET socket_t;
+#define INVALID_SOCKET_VALUE INVALID_SOCKET
+#define SOCKET_ERROR_VALUE SOCKET_ERROR
+#else
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <dirent.h>
+#include <sys/types.h>
+#define close_socket close
+#define sleep_ms(x) usleep(x * 1000)
+typedef int socket_t;
+#define INVALID_SOCKET_VALUE -1
+#define SOCKET_ERROR_VALUE -1
+#define WSAGetLastError() errno
+#endif
+
+#include "network_util.h"
+
+// Prototipos de funciones
+void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *romCount);
+void servirChip8();
+void servirNES();
+
+// Definir server socket globalmente
+socket_t server_socket;
+size_t bytes_received;
+char buffer[1024];
 
 void server_run()
 {
+#ifdef _WIN32
+  // Inicializar Winsock solo en Windows
   WSADATA wsa;
-  SOCKET server_socket, client_socket;
-  struct sockaddr_in server, client;
-  int c, bytes_sent;
-  uint8_t pixels[SCREEN_WIDTH * SCREEN_HEIGHT / 8]; // Buffer CHIP8 (1 bit por pixel)
-
-  // Inicializar Winsock
   if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
   {
     printf("Error al inicializar Winsock: %d\n", WSAGetLastError());
     return;
   }
+#endif
+
+  socket_t client_socket;
+  struct sockaddr_in server, client;
+#ifdef _WIN32
+  int c;
+#else
+  socklen_t c;
+#endif
+  uint8_t pixels[SCREEN_WIDTH * SCREEN_HEIGHT / 8]; // Buffer CHIP8 (1 bit por pixel)
 
   // Crear socket
-  if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+  if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET_VALUE)
   {
     printf("Error al crear socket: %d\n", WSAGetLastError());
+#ifdef _WIN32
+    WSACleanup();
+#endif
     return;
   }
 
   // Configurar dirección del servidor
   server.sin_family = AF_INET;
-  server.sin_addr.s_addr = INADDR_ANY; // inet_addr(SERVER_IP);
+  server.sin_addr.s_addr = INADDR_ANY;
   server.sin_port = htons(SERVER_PORT);
 
   // Enlazar socket
-  if (bind(server_socket, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR)
+  if (bind(server_socket, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR_VALUE)
   {
     printf("Error en bind: %d\n", WSAGetLastError());
-    closesocket(server_socket);
+    close_socket(server_socket);
+#ifdef _WIN32
+    WSACleanup();
+#endif
     return;
   }
 
@@ -41,336 +94,337 @@ void server_run()
   // Aceptar conexión entrante
   c = sizeof(struct sockaddr_in);
   client_socket = accept(server_socket, (struct sockaddr *)&client, &c);
-  if (client_socket == INVALID_SOCKET)
+  if (client_socket == INVALID_SOCKET_VALUE)
   {
     printf("Error al aceptar conexión: %d\n", WSAGetLastError());
-    closesocket(server_socket);
+    close_socket(server_socket);
+#ifdef _WIN32
+    WSACleanup();
+#endif
     return;
   }
 
   printf("Cliente conectado\n");
-  // primero estaria bien autentificar al cliente
-  while (true)
+
+  clienteAnonimo(client_socket);
+
+  // Limpieza
+  close_socket(client_socket);
+  close_socket(server_socket);
+#ifdef _WIN32
+  WSACleanup();
+#endif
+}
+
+void clienteAnonimo(socket_t client_socket)
+{
+  // Autenticación del cliente
+  while (1)
   {
-    // 1. Recibir el nombre de usuario y la contraseña y si quiere registrarse o login
-    uint8_t is_register;
+    char is_register;
     char username[32];
     char password[32];
-    bytes_sent = recv(client_socket, &is_register, sizeof(is_register), 0);
-    if (bytes_sent == SOCKET_ERROR)
+
+    // Recibir datos de autenticación
+    if (!receiveData(client_socket, &is_register, sizeof(is_register), &bytes_received))
     {
-      printf("Error al recibir registro: %d\n", WSAGetLastError());
-      closesocket(client_socket);
-      closesocket(server_socket);
-      WSACleanup();
-      return;
+      printf("Error al recibir datos de autenticación: %d\n", WSAGetLastError());
+      close_socket(client_socket);
+      close_socket(server_socket);
+      {
+        printf("Error al recibir datos de autenticación: %d\n", WSAGetLastError());
+        close_socket(client_socket);
+        close_socket(server_socket);
+#ifdef _WIN32
+        WSACleanup();
+#endif
+        return;
+      }
     }
-    bytes_sent = recv(client_socket, username, sizeof(username), 0);
-    if (bytes_sent == SOCKET_ERROR)
+    printf("Registro o login: %s\n", is_register ? "Registro" : "Login");
+
+    if (!receiveData(client_socket, username, sizeof(username), &bytes_received))
     {
       printf("Error al recibir nombre de usuario: %d\n", WSAGetLastError());
-      closesocket(client_socket);
-      closesocket(server_socket);
+      close_socket(client_socket);
+      close_socket(server_socket);
+#ifdef _WIN32
       WSACleanup();
+#endif
       return;
     }
-    bytes_sent = recv(client_socket, password, sizeof(password), 0);
-    if (bytes_sent == SOCKET_ERROR)
+    printf("Nombre de usuario: %s\n", username);
+
+    if (!receiveData(client_socket, password, sizeof(password), &bytes_received))
     {
       printf("Error al recibir contraseña: %d\n", WSAGetLastError());
-      closesocket(client_socket);
-      closesocket(server_socket);
+      close_socket(client_socket);
+      close_socket(server_socket);
+#ifdef _WIN32
       WSACleanup();
+#endif
       return;
     }
+    printf("Contraseña: %s\n", password);
 
-    // Asegurarse de que el nombre de usuario y la contraseña no estén vacíos
+    // Validar campos vacíos
     if (username[0] == '\0' || password[0] == '\0')
     {
       printf("Nombre de usuario o contraseña vacíos\n");
-      bytes_sent = send(client_socket, "ERROR", 5, 0);
-      if (bytes_sent == SOCKET_ERROR)
+      if (!sendData(client_socket, "ERR", 3))
       {
         printf("Error al enviar error: %d\n", WSAGetLastError());
-        closesocket(client_socket);
-        closesocket(server_socket);
+        close_socket(client_socket);
+        close_socket(server_socket);
+#ifdef _WIN32
         WSACleanup();
+#endif
         return;
       }
-      continue; // Volver a solicitar el nombre de usuario y la contraseña
+      continue;
     }
 
-    // Registrar usuario
+    // Registrar o autenticar usuario
     if (is_register)
     {
-      if (existeUsuario(username) != true)
+      if (!existeUsuario(username))
       {
         insertarUsuarios(username, password);
-        printf("Usuario registrado correctamente\n");
-        printf("Usuario: %s\n", username);
-        printf("Contrasenya: %s\n", password);
-        bytes_sent = send(client_socket, "OK", 2, 0);
-        if (bytes_sent == SOCKET_ERROR)
+        printf("Usuario registrado: %s\n", username);
+        if (!sendData(client_socket, "ACK", 3))
         {
           printf("Error al enviar confirmación: %d\n", WSAGetLastError());
-          closesocket(client_socket);
-          closesocket(server_socket);
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
           WSACleanup();
+#endif
           return;
         }
-        break; // Salir del bucle de autenticación
+        clienteConocido(client_socket, username);
       }
       else
       {
-        printf("El usuario ya existe\n");
-        printf("Usuario: %s\n", username);
-        printf("Contrasenya: %s\n", password);
-        bytes_sent = send(client_socket, "ERROR", 5, 0);
-        if (bytes_sent == SOCKET_ERROR)
+        printf("Usuario ya existe: %s\n", username);
+        if (sendData(client_socket, "ERR", 3))
         {
           printf("Error al enviar error: %d\n", WSAGetLastError());
-          closesocket(client_socket);
-          closesocket(server_socket);
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
           WSACleanup();
+#endif
           return;
         }
       }
     }
-    // Login
     else
     {
-      if (existeUsuarioYPas(username, password) == true)
+      if (existeUsuarioYPas(username, password))
       {
-        printf("Usuario y contrasenya correctos\n");
-        printf("Usuario: %s\n", username);
-        printf("Contrasenya: %s\n", password);
-        bytes_sent = send(client_socket, "OK", 2, 0);
-        if (bytes_sent == SOCKET_ERROR)
+        printf("Usuario autenticado: %s\n", username);
+        if (!sendData(client_socket, "ACK", 3))
         {
           printf("Error al enviar confirmación: %d\n", WSAGetLastError());
-          closesocket(client_socket);
-          closesocket(server_socket);
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
           WSACleanup();
+#endif
           return;
         }
-        break; // Salir del bucle de autenticación
+        clienteConocido(client_socket, username);
       }
       else
       {
-        printf("Usuario o contrasenya incorrectos\n");
-        printf("Usuario: %s\n", username);
-        printf("Contrasenya: %s\n", password);
-        bytes_sent = send(client_socket, "ERROR", 5, 0);
-
-        if (bytes_sent == SOCKET_ERROR)
+        printf("Autenticación fallida: %s\n", username);
+        if (!sendData(client_socket, "ERR", 3))
         {
           printf("Error al enviar error: %d\n", WSAGetLastError());
-          closesocket(client_socket);
-          closesocket(server_socket);
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
           WSACleanup();
+#endif
           return;
         }
-        closesocket(client_socket);
-        closesocket(server_socket);
-        WSACleanup();
-        return;
       }
     }
   }
+}
 
-  while (true)
+void clienteConocido(socket_t client_socket, char *username)
+{ // Bucle principal del servidor
+  while (1)
   {
     uint8_t selection;
-    bytes_sent = recv(client_socket, &selection, sizeof(selection), 0);
-    if (bytes_sent == SOCKET_ERROR)
+    if (!receiveData(client_socket, &selection, sizeof(selection), &bytes_received))
     {
-      printf("Error al recibir selección: %d\n", WSAGetLastError());
-      closesocket(client_socket);
-      closesocket(server_socket);
+      printf("Error al recibir opción: %d\n", WSAGetLastError());
+      close_socket(client_socket);
+      close_socket(server_socket);
+#ifdef _WIN32
       WSACleanup();
+#endif
       return;
     }
-    printf("Seleccionado: %02X\n", selection);
-    /*
-      0xE0 -> Emular Chip8
-      0xE1 -> Emular NES
 
-      0x00 -> Salir
-      0x01 -> Cambiar contraseña
-      0x02 -> Enviar roms de Chip8
-      0x03 -> Enviar roms de NES
-      ... mas opciones de perfilUsuario a implementar TODO
-    */
+    printf("Opción seleccionada: %02X\n", selection);
 
-    if (selection == 0xE0)
+    switch (selection)
     {
-      // Emular CHIP8
+    case 0xE0: // Emular CHIP8
+    {
       printf("Emulando CHIP8...\n");
-      // Aquí iría el código de emulación de CHIP8
-      // 1. Obtener la ROM seleccionada
       char selectedRom[128];
-      bytes_sent = recv(client_socket, selectedRom, sizeof(selectedRom), 0);
-      if (bytes_sent == SOCKET_ERROR)
+      if (!receiveData(client_socket, selectedRom, sizeof(selectedRom), &bytes_received))
       {
-        printf("Error al recibir ROM seleccionada: %d\n", WSAGetLastError());
-        closesocket(client_socket);
-        closesocket(server_socket);
+        printf("Error al recibir ROM: %d\n", WSAGetLastError());
+        close_socket(client_socket);
+        close_socket(server_socket);
+#ifdef _WIN32
         WSACleanup();
+#endif
         return;
       }
       printf("ROM seleccionada: %s\n", selectedRom);
-      // 2. Ejecutar la ROM
-      char romPath[256];
-      sprintf(romPath, "resources/chip8-roms/games/%s", selectedRom);
-      // chip8cpuLaunch(romPath);
-
       servirChip8();
+      break;
     }
-    else if (selection == 0xE1)
+
+    case 0xE1: // Emular NES
     {
-      // Emular NES
       printf("Emulando NES...\n");
-      // Aquí iría el código de emulación de NES
-      // 1. Obtener la ROM seleccionada
       char selectedRom[128];
-      bytes_sent = recv(client_socket, selectedRom, sizeof(selectedRom), 0);
-      if (bytes_sent == SOCKET_ERROR)
+      if (!receiveData(client_socket, selectedRom, sizeof(selectedRom), &bytes_received))
       {
-        printf("Error al recibir ROM seleccionada: %d\n", WSAGetLastError());
-        closesocket(client_socket);
-        closesocket(server_socket);
+        printf("Error al recibir ROM: %d\n", WSAGetLastError());
+        close_socket(client_socket);
+        close_socket(server_socket);
+#ifdef _WIN32
         WSACleanup();
+#endif
         return;
       }
       printf("ROM seleccionada: %s\n", selectedRom);
-      // 2. Ejecutar la ROM
-      char romPath[256];
-      sprintf(romPath, "resources/nes-roms/games/%s", selectedRom);
-      // nes_launch(romPath);
-
       servirNES();
+      break;
     }
-    else if (selection == 0x01)
-    {
-      // Cambiar contraseña
+
+    case 0x01: // Cambiar contraseña
       printf("Cambiando contraseña...\n");
-      // Aquí iría el código para cambiar la contraseña
-    }
-    else if (selection == 0x02)
+      // Implementar cambio de contraseña
+      break;
+
+    case 0x02: // Enviar ROMs CHIP8
     {
-      // Enviar roms de CHIP8
-      printf("Enviando roms de CHIP8...\n");
-      // Aquí iría el código para enviar las roms de CHIP8
+      printf("Enviando ROMs CHIP8...\n");
       char romOptions[128][128];
       int romCount = 0;
       loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount);
-      // Enviar la lista de ROMs al cliente
-      bytes_sent = send(client_socket, (char *)&romCount, sizeof(romCount), 0);
-      if (bytes_sent == SOCKET_ERROR)
+
+      if (!sendData(client_socket, (char *)&romCount, sizeof(romCount)))
       {
-        printf("Error al enviar lista de ROMs: %d\n", WSAGetLastError());
-        closesocket(client_socket);
-        closesocket(server_socket);
+        printf("Error al enviar conteo ROMs: %d\n", WSAGetLastError());
+        close_socket(client_socket);
+        close_socket(server_socket);
+#ifdef _WIN32
         WSACleanup();
+#endif
         return;
       }
+
       for (int i = 0; i < romCount; i++)
       {
-        bytes_sent = send(client_socket, romOptions[i], sizeof(romOptions[i]), 0);
-        if (bytes_sent == SOCKET_ERROR)
+        if (!sendData(client_socket, romOptions[i], sizeof(romOptions[i])))
         {
           printf("Error al enviar ROM: %d\n", WSAGetLastError());
-          closesocket(client_socket);
-          closesocket(server_socket);
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
           WSACleanup();
+#endif
           return;
         }
       }
-      printf("Roms de CHIP8 enviadas\n");
+      break;
     }
-    else if (selection == 0x03)
-    {
-      // Enviar roms de NES
-      printf("Enviando roms de NES...\n");
-      // Aquí iría el código para enviar las roms de NES
-      // TODO
-    }
-    else
-    {
+
+    case 0x03: // Enviar ROMs NES
+      printf("Enviando ROMs NES...\n");
+      // Implementar similar a CHIP8
+      break;
+
+    default:
       printf("Opción no válida\n");
-      closesocket(client_socket);
-      closesocket(server_socket);
+      close_socket(client_socket);
+      close_socket(server_socket);
+#ifdef _WIN32
       WSACleanup();
+#endif
       return;
     }
   }
-
-  // Limpieza
-  closesocket(client_socket);
-  closesocket(server_socket);
-  WSACleanup();
 }
 
 void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *romCount)
 {
-  DIR *dir = opendir(dirPath);
-  if (dir == NULL)
-  {
-    printf("No se pudo abrir el directorio %s\n", dirPath);
-    return;
-  }
+#ifdef _WIN32
+  WIN32_FIND_DATA findFileData;
+  HANDLE hFind = FindFirstFile((dirPath + "\\*.ch8"), &findFileData);
 
-  struct dirent *entry;
   *romCount = 0;
 
-  while ((entry = readdir(dir)) != NULL)
+  if (hFind != INVALID_HANDLE_VALUE)
   {
-    if (strstr(entry->d_name, ".ch8") != NULL)
+    do
     {
-      strcpy(romOptions[*romCount], entry->d_name);
-      (*romCount)++;
-    }
-  }
+      if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+      {
+        strcpy(romOptions[*romCount], findFileData.cFileName);
+        (*romCount)++;
+      }
+    } while (FindNextFile(hFind, &findFileData) != 0);
 
-  closedir(dir);
+    FindClose(hFind);
+  }
+#else
+  DIR *dir = opendir(dirPath);
+  if (dir != NULL)
+  {
+    struct dirent *entry;
+    *romCount = 0;
+
+    while ((entry = readdir(dir)) != NULL && *romCount < 128)
+    {
+      if (strstr(entry->d_name, ".ch8") != NULL)
+      {
+        strcpy(romOptions[*romCount], entry->d_name);
+        (*romCount)++;
+      }
+    }
+    closedir(dir);
+  }
+#endif
 }
 
 void servirChip8()
 {
-  // Aquí iría el código para servir la emulación de CHIP8
-  // Por ejemplo, podrías enviar frames al cliente a través del socket
-  // y recibir comandos desde el cliente.
-
   while (1)
   {
-    // 1. Aquí ejecutas un ciclo de emulación que actualice el buffer 'pixels'
-    //    (tu código existente de CHIP8/NES)
+    // Lógica de emulación CHIP8
+    sleep_ms(16); // ~60 FPS
 
-    // 2. Enviar frame al cliente
-    uint16_t width = htons(SCREEN_WIDTH);
-    uint16_t height = htons(SCREEN_HEIGHT);
-
-    // Enviar dimensiones
-    // bytes_sent = send(client_socket, (char *)&width, sizeof(width), 0);
-    // bytes_sent = send(client_socket, (char *)&height, sizeof(height), 0);
-
-    // Enviar datos de píxeles
-    // bytes_sent = send(client_socket, (char *)pixels, sizeof(pixels), 0);
-
-    // if (bytes_sent == SOCKET_ERROR)
-    //{
-    //   printf("Error al enviar datos: %d\n", WSAGetLastError());
-    //   break;
-    // }
-
-    // Pequeña pausa para controlar el FPS
-    Sleep(16); // ~60 FPS
+    // Verificar si el cliente sigue conectado
+    // Podrías implementar un heartbeat aquí
   }
 }
 
 void servirNES()
 {
-  // Aquí iría el código para servir la emulación de NES
-  // Por ejemplo, podrías enviar frames al cliente a través del socket
-  // y recibir comandos desde el cliente.
+  while (1)
+  {
+    // Lógica de emulación NES
+    sleep_ms(16); // ~60 FPS
+  }
 }
