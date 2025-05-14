@@ -1,10 +1,5 @@
 #include "server.h"
 
-// Prototipos de funciones
-void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *romCount);
-void servirChip8();
-void servirNES();
-
 // Definir server socket globalmente
 socket_t server_socket;
 size_t bytes_received;
@@ -266,7 +261,7 @@ void clienteConocido(socket_t client_socket, char *username)
         return;
       }
       printf("ROM seleccionada: %s\n", selectedRom);
-      servirChip8();
+      servirChip8(client_socket, selectedRom);
       break;
     }
 
@@ -472,16 +467,35 @@ void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *rom
 #endif
 }
 
-void servirChip8()
+void servirChip8(socket_t sock, char *selectedRom)
 {
+  char fullRomPath[256];
+  sprintf(fullRomPath, "resources/chip8-roms/games/%s", selectedRom);
+  Chip8 *chip8 = chip8init(fullRomPath);
   while (1)
   {
+    // Lógica de emulación CHIP8
+    chip8step(chip8);
+
+    // Enviar datos de pantalla al cliente
+    if (!sendData(sock, chip8->pantalla, SCREEN_WIDTH * SCREEN_HEIGHT / 8))
+    {
+      printf("Error al enviar datos de pantalla: %d\n", WSAGetLastError());
+      break;
+    }
+
     // Lógica de emulación CHIP8
     sleep_ms(16); // ~60 FPS
 
     // Verificar si el cliente sigue conectado
     // Podrías implementar un heartbeat aquí
+    if (chip8->esc)
+    {
+      printf("Cliente solicita salir...\n");
+      break;
+    }
   }
+  chip8terminate(chip8);
 }
 
 void servirNES()

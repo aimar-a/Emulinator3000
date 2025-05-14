@@ -13,9 +13,10 @@
 #include <SDL2/SDL.h>
 #include "chip8_logger.h"
 
-
 extern int selectedDelay;
-void chip8cpuLaunch(char *rom_path);
-
+Chip8 *chip8init(char *rom_path);
+void chip8step(Chip8 *chip8);
+void chip8terminate(Chip8 *chip8);
+void inicializarMemoria(Chip8 *chip8, bool modosuperchip8);
 
 #endif // CPU_H

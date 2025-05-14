@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "menu_cmd.h"
 #include <stdbool.h>
+
 void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
 {
   if (modosuperchip8)
@@ -30,7 +31,75 @@ void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
   }
 }
 
-void chip8cpuLaunch(char *rom_path)
+void chip8step(Chip8 *chip8)
+{
+  SDL_Delay(selectedDelay);
+
+  uint16_t opcode = (chip8->memoria[chip8->pc] << 8) | chip8->memoria[chip8->pc + 1];
+  chip8->pc += 2;
+
+  chip8displayPrintPantalla();
+  chip8timersDecrement();
+  chip8inputCapturarTeclado();
+  chip8opcodesEvaluate(opcode);
+}
+
+void chip8terminate(Chip8 *chip8)
+{
+  // BD INSERTAR PARTIDA
+  time(&chip8->tiempoFin); // guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
+  int tiempoJugado = (int)difftime(chip8->tiempoFin, chip8->tiempoInicio);
+
+  // llamamos a la funcion getIdJuego para conseguir la id del juego que estamos jugando apartir de su ROM
+  int id = getIdJuego(chip8->rom_path);
+
+  if (hajugado(currentUser, id) == true)
+  {
+
+    // hacemos el update sumando el tiempo que ya habia jugado + el que acaba de jugar
+    int tiempojugadoanterior = getTiempoJugado(currentUser, id);
+    int tiempoTotal = tiempojugadoanterior + tiempoJugado;
+    updateTiempoJugado(tiempoTotal, currentUser, id); // SI ha jugado a este juego hacemos update
+  }
+  else
+  {
+
+    insertarTiempoJugado(tiempoJugado, currentUser, id); // si el usuario NO ha jugado a este juego hacemos insert.
+  }
+
+  // insertamos los datos de la partida
+  // void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char* fecha,char*fecha)
+
+  struct tm *currentTimeInicio;
+  struct tm *currentTimeFin;
+
+  currentTimeInicio = localtime(&chip8->tiempoInicio);
+
+  char fechaInicio[30];
+  strftime(fechaInicio, sizeof(fechaInicio), "%d/%m/%Y %H:%M:%S", currentTimeInicio);
+
+  currentTimeFin = localtime(&chip8->tiempoFin);
+
+  char fechaFin[30];
+  strftime(fechaFin, sizeof(fechaFin), "%d/%m/%Y %H:%M:%S", currentTimeFin);
+
+  insertarPartida(currentUser, id, tiempoJugado, tiempoJugado * 0.5, fechaInicio, fechaFin); // la puntuacion maxima vamos a dejarla asi
+  printf("Partida insertada");
+  // updatear Juego puntuacion y usuario record si se ha hecho un nuevo record
+  int puntuacionPartida = tiempoJugado * 0.5;
+  if (puntuacionPartida > getPuntuacionRecord(id))
+  {
+
+    updateUsuarioPuntuacionRecord(currentUser, puntuacionPartida, id);
+  }
+
+  chip8_log("INFO: Finalizando ejecución y liberando recursos\n");
+  chip8displayDestroyPantalla();
+  // chip8inputDestroyTeclado(&chip8.teclado[0]);
+  // chip8timersDestroy(&chip8.delay_timer, &chip8.sound_timer);
+}
+
+Chip8 *chip8init(char *rom_path)
 {
   chip8_log_clear();
   chip8_log("INFO: Inicializando CPU\n");
@@ -41,9 +110,10 @@ void chip8cpuLaunch(char *rom_path)
   chip8.pc = 0x200;
   chip8.I = 0;
   chip8.sp = 0;
-  time_t tiempoInicio, tiempoFin;
 
-  time(&tiempoInicio); // guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
+  chip8.rom_path = rom_path;
+
+  time(&chip8.tiempoInicio); // guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
 
   chip8_log("INFO: Inicializando memoria y configuración de la pantalla\n");
   inicializarMemoria(&chip8, modosuperchip8);
@@ -67,70 +137,4 @@ void chip8cpuLaunch(char *rom_path)
   fclose(rom);
 
   chip8_log("INFO: Iniciando ciclo de ejecución\n");
-
-  do
-  {
-    SDL_Delay(selectedDelay);
-
-    uint16_t opcode = (chip8.memoria[chip8.pc] << 8) | chip8.memoria[chip8.pc + 1];
-    chip8.pc += 2;
-
-    chip8displayPrintPantalla();
-    chip8timersDecrement();
-    chip8inputCapturarTeclado();
-    chip8opcodesEvaluate(opcode);
-
-  } while (!chip8.esc);
-
-  // BD INSERTAR PARTIDA
-  time(&tiempoFin); // guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
-  int tiempoJugado = (int)difftime(tiempoFin, tiempoInicio);
-
-  // llamamos a la funcion getIdJuego para conseguir la id del juego que estamos jugando apartir de su ROM
-  int id = getIdJuego(rom_path);
-
-  if (hajugado(currentUser, id) == true)
-  {
-
-    // hacemos el update sumando el tiempo que ya habia jugado + el que acaba de jugar
-    int tiempojugadoanterior = getTiempoJugado(currentUser, id);
-    int tiempoTotal = tiempojugadoanterior + tiempoJugado;
-    updateTiempoJugado(tiempoTotal, currentUser, id); // SI ha jugado a este juego hacemos update
-  }
-  else
-  {
-
-    insertarTiempoJugado(tiempoJugado, currentUser, id); // si el usuario NO ha jugado a este juego hacemos insert.
-  }
-
-  // insertamos los datos de la partida
-  //void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char* fecha,char*fecha)
-
-  struct tm* currentTimeInicio;
-  struct tm* currentTimeFin;
-
-  currentTimeInicio = localtime(&tiempoInicio);
-
-  char fechaInicio[30];
-  strftime(fechaInicio, sizeof(fechaInicio), "%d/%m/%Y %H:%M:%S", currentTimeInicio);
-
-  currentTimeFin = localtime(&tiempoFin);
-
-  char fechaFin[30];
-  strftime(fechaFin, sizeof(fechaFin), "%d/%m/%Y %H:%M:%S", currentTimeFin);
-
-  insertarPartida(currentUser, id, tiempoJugado, tiempoJugado * 0.5, fechaInicio, fechaFin); // la puntuacion maxima vamos a dejarla asi
-  printf("Partida insertada");
-  // updatear Juego puntuacion y usuario record si se ha hecho un nuevo record
-  int puntuacionPartida = tiempoJugado * 0.5;
-  if (puntuacionPartida > getPuntuacionRecord(id))
-  {
-
-    updateUsuarioPuntuacionRecord(currentUser, puntuacionPartida, id);
-  }
-
-  chip8_log("INFO: Finalizando ejecución y liberando recursos\n");
-  chip8displayDestroyPantalla();
-  // chip8inputDestroyTeclado(&chip8.teclado[0]);
-  // chip8timersDestroy(&chip8.delay_timer, &chip8.sound_timer);
 }

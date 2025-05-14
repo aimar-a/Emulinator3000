@@ -291,10 +291,10 @@ int showSettingsWindow(socket_t sock)
 
   if (playGame)
   {
-    char fullRomPath[256];
-    sprintf(fullRomPath, "resources/chip8-roms/games/%s", selectedRom);
+    char option_socket = 0xE0;
+    net::send_data(sock, &option_socket, sizeof(option_socket));
+    net::send_data(sock, selectedRom, strlen(selectedRom) + 1);
     // chip8cpuLaunch(fullRomPath);
-    // TODO enviar rom seleccionada al servidor
   }
 
   return 1;
