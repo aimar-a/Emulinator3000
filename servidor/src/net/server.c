@@ -179,9 +179,9 @@ void clienteAnonimo(socket_t client_socket)
       else
       {
         printf("Usuario ya existe: %s\n", username);
-        if (sendData(client_socket, "ERR", 3))
+        if (!sendData(client_socket, "ERR", 3))
         {
-          printf("Error al enviar error: %d\n", WSAGetLastError());
+          printf("Error al enviar error1: %d\n", WSAGetLastError());
           close_socket(client_socket);
           close_socket(server_socket);
 #ifdef _WIN32
