@@ -1,4 +1,4 @@
-# Ejecutables y carpetas
+# Ejecutables y carpetas 
 SERVER_TARGET = bin/emulinator3000
 CLIENT_TARGET = bin/cliente
 CC = gcc
@@ -6,22 +6,21 @@ CXX = g++
 
 # Flags de compilación (compartidos)
 CFLAGS += -Wall -Wextra -pedantic -Iservidor/include -Iservidor/include/chip8 -Iservidor/include/menu -Iservidor/include/nes -Iservidor/include/database -Iservidor/include/config -Iservidor/include/net
-CXXFLAGS += -Wall -Wextra -pedantic -Icliente/include -Icliente/include/menu -Icliente/include/net
 
-# Flags de enlazado
-LDFLAGS = 
+# Añadido para poder incluir bd.h desde cliente (archivos .cpp)
+CXXFLAGS += -Wall -Wextra -pedantic -Icliente/include -Icliente/include/menu -Icliente/include/net -Iservidor/include -Iservidor/include/database
 
 # Detección de sistema operativo
 ifeq ($(OS),Windows_NT)
     # Windows
     CFLAGS += -D_WIN32
     CXXFLAGS += -D_WIN32
-    SERVER_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32
-    CLIENT_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32
+    SERVER_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32 -lsqlite3
+    CLIENT_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32 -lsqlite3
 else
     # Linux/macOS
-    SERVER_LDFLAGS = -lSDL2 -lSDL2_ttf
-    CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf
+    SERVER_LDFLAGS = -lSDL2 -lSDL2_ttf -lsqlite3
+    CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lsqlite3
 endif
 
 # Directorios

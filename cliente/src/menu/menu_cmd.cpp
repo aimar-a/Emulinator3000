@@ -1,5 +1,6 @@
 #include "menu_cmd.hpp"
 #include <string.h>
+#include "bd.h"
 void clearScreen()
 {
 #ifdef _WIN32
@@ -243,7 +244,10 @@ void menuInicial(socket_t sock)
       break;
     case 'p':
     case 'P':
-      menuPerfil();
+      opcion_socket = 0x70; // Perfil
+      net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
+      menuPerfil(sock);
+
       break;
     case 'c':
     case 'C':
@@ -692,9 +696,10 @@ void listarROMsRecursivoNES(const char *directory, char roms[][256], int *count)
   closedir(dp);
 }
 
-void menuPerfil()
+void menuPerfil(socket_t sock)
 {
   char option = ' ';
+  uint8_t opcion_socket = 0x00;
   while (option != '0')
   {
     option = ' ';
@@ -712,21 +717,29 @@ void menuPerfil()
     switch (option)
     {
     case '1':
+      opcion_socket = 0x11; // Ver logros
+      net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       printf("Ver Logros no implementado\n");
       Sleep(1000);
       printf("Volviendo al menu....\n");
       Sleep(1000);
       break;
     case '2':
+      opcion_socket = 0x12; // Ver Amigos
+      net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       printf("Ver Amigos no implementado\n");
       Sleep(1000);
       printf("Volviendo al menu....\n");
       Sleep(1000);
       break;
     case '3':
-      menuVerTiempoJugado();
+      opcion_socket = 0x13; // Ver Tiempo jugado
+      net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
+      menuVerTiempoJugado(sock);
       break;
     case '0':
+      opcion_socket = 0x10; // Volver
+      net::send_data(sock, &opcion_socket, sizeof(opcion_socket));  
       printf("Volviendo...\n");
       break;
     default:
@@ -736,7 +749,7 @@ void menuPerfil()
   }
 }
 
-void menuVerTiempoJugado()
+void menuVerTiempoJugado(socket_t sock)//cambiar el metodo para que coja sock
 {
   while (1)
   {
@@ -746,6 +759,16 @@ void menuVerTiempoJugado()
     char **nombreJuegos = NULL;
     int *tiemposSegundos = NULL;
     int cantidadJuegos = 0; // getTiempoJugadoTodosLosJuegos(user, &nombreJuegos, &tiemposSegundos);
+
+    net::send_data(sock, user, strlen(user) + 1);
+
+    //recibimos la cantidad del servidor
+    net::receive_data(sock, &cantidadJuegos, sizeof(cantidadJuegos)); 
+
+    printf("CantidadJuegos: %i",cantidadJuegos); //ESTO FUNCIONA, es decir el servidor hace la query correctamente y el cliente lo recive
+    printf("tiempoSegundos: %i",tiemposSegundos); //NO FUNCIONA, devuelve 0
+
+    
     if (cantidadJuegos == -1)
     {
       printf("Error al obtener los tiempos jugados\n");

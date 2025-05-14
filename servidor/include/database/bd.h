@@ -1,6 +1,10 @@
 #ifndef _BD_H_
 #define _BD_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,8 +44,12 @@ bool comprobarContraseña(char *user, char *password);
 int getIdJuego(char *romjuego);
 bool hajugado(char *user, int id_juego);
 int getTiempoJugado(char *user, int idJuego);
+
 int getPuntuacionRecord(int idJuego);
 int getTiempoJugadoTodosLosJuegos(char *user, char ***nombreJuegos, int **tiempos);
 int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **tiemposJugados, int **puntuacionesMaximas);
+#ifdef __cplusplus
+}
+#endif
 
 #endif
