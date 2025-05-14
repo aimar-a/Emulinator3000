@@ -19,5 +19,11 @@ void client_run()
 
   menuUsuario(sock);
 
+#ifdef _WIN32
+  WSACleanup(); // Limpiar Winsock en Windows
+#endif
+  close_socket(sock); // Cerrar el socket
+  printf("Conexión cerrada\n");
+
   return;
 }

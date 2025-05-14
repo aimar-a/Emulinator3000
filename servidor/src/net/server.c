@@ -57,25 +57,28 @@ void server_run()
     return;
   }
 
-  printf("Servidor iniciado. Esperando conexiones...\n");
-  listen(server_socket, 1);
-
-  // Aceptar conexión entrante
-  c = sizeof(struct sockaddr_in);
-  client_socket = accept(server_socket, (struct sockaddr *)&client, &c);
-  if (client_socket == INVALID_SOCKET_VALUE)
+  while (1)
   {
-    printf("Error al aceptar conexión: %d\n", WSAGetLastError());
-    close_socket(server_socket);
+    printf("Servidor iniciado. Esperando conexiones...\n");
+    listen(server_socket, 1);
+
+    // Aceptar conexión entrante
+    c = sizeof(struct sockaddr_in);
+    client_socket = accept(server_socket, (struct sockaddr *)&client, &c);
+    if (client_socket == INVALID_SOCKET_VALUE)
+    {
+      printf("Error al aceptar conexión: %d\n", WSAGetLastError());
+      close_socket(server_socket);
 #ifdef _WIN32
-    WSACleanup();
+      WSACleanup();
 #endif
-    return;
+      return;
+    }
+
+    printf("Cliente conectado\n");
+
+    clienteAnonimo(client_socket);
   }
-
-  printf("Cliente conectado\n");
-
-  clienteAnonimo(client_socket);
 
   // Limpieza
   close_socket(client_socket);
@@ -90,12 +93,12 @@ void clienteAnonimo(socket_t client_socket)
   // Autenticación del cliente
   while (1)
   {
-    char is_register;
+    char option;
     char username[32];
     char password[32];
 
     // Recibir datos de autenticación
-    if (!receiveData(client_socket, &is_register, sizeof(is_register), &bytes_received))
+    if (!receiveData(client_socket, &option, sizeof(option), &bytes_received))
     {
       printf("Error al recibir datos de autenticación: %d\n", WSAGetLastError());
       close_socket(client_socket);
@@ -110,7 +113,14 @@ void clienteAnonimo(socket_t client_socket)
         return;
       }
     }
-    printf("Registro o login: %s\n", is_register ? "Registro" : "Login");
+    printf("Opción seleccionada: %02X\n", option);
+
+    if (option == 0x00) // Salir
+    {
+      printf("Cliente se desconecta...\n");
+      close_socket(client_socket);
+      return;
+    }
 
     if (!receiveData(client_socket, username, sizeof(username), &bytes_received))
     {
@@ -153,8 +163,7 @@ void clienteAnonimo(socket_t client_socket)
       continue;
     }
 
-    // Registrar o autenticar usuario
-    if (is_register)
+    if (option == 0x02) // Registro
     {
       if (!existeUsuario(username))
       {
@@ -187,7 +196,7 @@ void clienteAnonimo(socket_t client_socket)
         }
       }
     }
-    else
+    else if (option == 0x01) // Autenticación
     {
       if (existeUsuarioYPas(username, password))
       {
@@ -424,7 +433,9 @@ void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *rom
 {
 #ifdef _WIN32
   WIN32_FIND_DATA findFileData;
-  HANDLE hFind = FindFirstFile((dirPath + "\\*.ch8"), &findFileData);
+  char searchPath[MAX_PATH];
+  sprintf(searchPath, "%s\\*.ch8", dirPath);
+  HANDLE hFind = FindFirstFile(searchPath, &findFileData);
 
   *romCount = 0;
 

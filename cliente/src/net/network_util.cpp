@@ -5,8 +5,24 @@
 
 namespace net
 {
+#ifdef _WIN32
+  void init_winsock()
+  {
+    WSADATA wsaData;
+    int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (result != 0)
+    {
+      throw network_error("WSAStartup failed", result);
+    }
+  }
+#else
+  // En Linux no necesitamos inicialización especial
+  void init_winsock() {}
+#endif
+
   socket_t connect(const ConnectionConfig &config)
   {
+    init_winsock();
     // Crear el socket
     socket_t sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == INVALID_SOCKET_VALUE)

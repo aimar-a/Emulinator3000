@@ -77,8 +77,8 @@ void menuUsuario(socket_t sock)
       char contra[MAX_STRING_LENGTH];
       getString(contra, MAX_STRING_LENGTH);
 
-      char is_register = 0;
-      net::send_data(sock, &is_register, sizeof(is_register));
+      char option_socket = 0x01;
+      net::send_data(sock, &option_socket, sizeof(option_socket));
       net::send_data(sock, usuario, strlen(usuario) + 1);
       net::send_data(sock, contra, strlen(contra) + 1);
 
@@ -111,8 +111,8 @@ void menuUsuario(socket_t sock)
       // implementacion BD (insertar usuario)
       if (usuario[0] != '\0' && contra[0] != '\0make')
       {
-        char is_register = 1;
-        net::send_data(sock, &is_register, sizeof(is_register));
+        char option_socket = 0x02;
+        net::send_data(sock, &option_socket, sizeof(option_socket));
         net::send_data(sock, usuario, strlen(usuario) + 1);
         net::send_data(sock, contra, strlen(contra) + 1);
 
@@ -142,6 +142,8 @@ void menuUsuario(socket_t sock)
     }
     else if (option == '0')
     {
+      char option_socket = 0x00;
+      net::send_data(sock, &option_socket, sizeof(option_socket));
       printf("Cerrando....\n");
       Sleep(1000);
       break;
