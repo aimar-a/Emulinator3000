@@ -4,6 +4,7 @@
 #include "superchip8bool.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include <time.h>
 
 // extern uint8_t pantalla_chip8[64 * 32];
 // extern uint8_t pantalla_superchip8[128 * 64];

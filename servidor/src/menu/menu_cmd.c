@@ -593,7 +593,7 @@ void menuListaROMs()
       {
         int seleccion = opcion[0] - '0';
 
-        chip8cpuLaunch(roms[seleccion - 1]);
+        // chip8cpuLaunch(roms[seleccion - 1]);
         return;
       }
     }
@@ -603,7 +603,7 @@ void menuListaROMs()
       int seleccion = atoi(opcion);
       if (seleccion >= 1 && seleccion <= romCount)
       {
-        chip8cpuLaunch(roms[seleccion - 1]);
+        // chip8cpuLaunch(roms[seleccion - 1]);
         return;
       }
     }

@@ -291,7 +291,7 @@ int showSettingsWindow()
     {
         char fullRomPath[256];
         sprintf(fullRomPath, "resources/chip8-roms/games/%s", selectedRom);
-        chip8cpuLaunch(fullRomPath);
+        chip8init(fullRomPath);
     }
 
     return 1;

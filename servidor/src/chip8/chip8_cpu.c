@@ -38,7 +38,7 @@ void chip8step(Chip8 *chip8)
   uint16_t opcode = (chip8->memoria[chip8->pc] << 8) | chip8->memoria[chip8->pc + 1];
   chip8->pc += 2;
 
-  chip8displayPrintPantalla();
+  // chip8displayPrintPantalla();
   chip8timersDecrement();
   chip8inputCapturarTeclado();
   chip8opcodesEvaluate(opcode);
@@ -94,9 +94,9 @@ void chip8terminate(Chip8 *chip8)
   }
 
   chip8_log("INFO: Finalizando ejecución y liberando recursos\n");
-  chip8displayDestroyPantalla();
-  // chip8inputDestroyTeclado(&chip8.teclado[0]);
-  // chip8timersDestroy(&chip8.delay_timer, &chip8.sound_timer);
+  // chip8displayDestroyPantalla();
+  //  chip8inputDestroyTeclado(&chip8.teclado[0]);
+  //  chip8timersDestroy(&chip8.delay_timer, &chip8.sound_timer);
 }
 
 Chip8 *chip8init(char *rom_path)
@@ -123,7 +123,7 @@ Chip8 *chip8init(char *rom_path)
   memset(chip8.stack, 0, sizeof(chip8.stack));
   memset(chip8.memoria, 0, sizeof(chip8.memoria));
   chip8inputInitTeclado(&chip8.teclado[0], &chip8.esc);
-  chip8displayInitPantalla(&chip8.pantalla[0]);
+  // chip8displayInitPantalla(&chip8.pantalla[0]);
   chip8opcodesInit(&chip8);
 
   FILE *rom = fopen(rom_path, "rb");

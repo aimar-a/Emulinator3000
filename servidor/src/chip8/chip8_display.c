@@ -10,7 +10,7 @@ void chip8displayLimpiarPantalla()
   {
     pantalla[i] = 0;
   }
-  chip8displayPrintPantalla();
+  // chip8displayPrintPantalla();
   chip8_log("INFO: Pantalla limpiada.\n");
 }
 
