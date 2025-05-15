@@ -972,21 +972,75 @@ int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **ti
     return cantidadPartidas;
 }
 
-int getNombreJuegos (char *user, char ***nombreJuegos) {
+int getNombreJuegos(char *user, char ***nombreJuegos)
+{
     sqlite3_stmt *stmt;
+    int rc;
+    int count = 0;
+    char **games = NULL;
 
-    char* sql[] = "SELECT titulo FROM JUEGO WHERE id_juego in (SELECT id_juego FROM TIEMPO_JUGADO WHERE user = ?)";
+    const char *sql = "SELECT titulo FROM JUEGO WHERE id_juego in (SELECT id_juego FROM TIEMPO_JUGADO WHERE user = ?)";
 
-    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-
-    sqlite3_bind_text(sql, 1, user, -1, SQLITE_STATIC);
-
-    if (sqlite3_step(stmt) == SQLITE_ROW)
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
     {
-
-        
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return -1;
     }
 
+    rc = sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to bind parameter: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+
+    // First count how many rows we have
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
+    {
+        count++;
+    }
+
+    if (rc != SQLITE_DONE)
+    {
+        fprintf(stderr, "Failed to step through statement: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+
+    // Allocate array for game names
+    games = (char **)malloc(count * sizeof(char *));
+    if (!games)
+    {
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+
+    // Reset the statement to run again
+    sqlite3_reset(stmt);
+
+    // Now fetch the actual data
+    count = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const char *title = (const char *)sqlite3_column_text(stmt, 0);
+        games[count] = strdup(title);
+        if (!games[count])
+        {
+            // Handle memory allocation failure
+            for (int i = 0; i < count; i++)
+            {
+                free(games[i]);
+            }
+            free(games);
+            sqlite3_finalize(stmt);
+            return -1;
+        }
+        count++;
+    }
+
+    *nombreJuegos = games;
     sqlite3_finalize(stmt);
-    sqlite3_close(db);
+    return count;
 }

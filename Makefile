@@ -8,7 +8,7 @@ CXX = g++
 CFLAGS += -Wall -Wextra -pedantic -Iservidor/include -Iservidor/include/chip8 -Iservidor/include/menu -Iservidor/include/nes -Iservidor/include/database -Iservidor/include/config -Iservidor/include/net
 
 # Añadido para poder incluir bd.h desde cliente (archivos .cpp)
-CXXFLAGS += -Wall -Wextra -pedantic -Icliente/include -Icliente/include/menu -Icliente/include/net -Iservidor/include -Iservidor/include/database
+CXXFLAGS += -Wall -Wextra -pedantic -Icliente/include -Icliente/include/menu -Icliente/include/net
 
 # Detección de sistema operativo
 ifeq ($(OS),Windows_NT)

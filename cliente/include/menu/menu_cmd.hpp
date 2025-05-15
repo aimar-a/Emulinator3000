@@ -39,6 +39,6 @@ void extraerNombreROM(const char *entrada, char *nombre);
 void listarROMsRecursivoNES(const char *directory, char roms[][256], int *count);
 void menuPerfil(socket_t sock);
 void menuVerTiempoJugado(socket_t sock);
-void mostrarPartidasJugadas(char *nombreJuego);
+void mostrarPartidasJugadas(socket_t sock, char *nombreJuego);
 
 #endif // !MENU_H

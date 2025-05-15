@@ -1,9 +1,9 @@
 #include "menu_cmd.hpp"
 #include <string.h>
-#include "bd.h"
 
 void clearScreen()
 {
+  printf("----------------------------------------\n");
 #ifdef _WIN32
   // system("cls");
 #else
@@ -245,21 +245,18 @@ void menuInicial(socket_t sock)
       break;
     case 'p':
     case 'P':
-      opcion_socket = 0x70; // Perfil
-      net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       menuPerfil(sock);
-
       break;
     case 'c':
     case 'C':
       menuConfiguracion(sock);
       break;
     case '0':
+      currentUser = NULL; // Limpiar el nombre de usuario
       opcion_socket = 0x00;
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       printf("Volviendo al menu anterior....\n");
       Sleep(1000);
-      // menuUsuario(); // TODO creo q esto se puede quitar
       break;
     default:
       printf("Opcion invalida\n");
@@ -739,8 +736,6 @@ void menuPerfil(socket_t sock)
       menuVerTiempoJugado(sock);
       break;
     case '0':
-      opcion_socket = 0x10; // Volver
-      net::send_data(sock, &opcion_socket, sizeof(opcion_socket));  
       printf("Volviendo...\n");
       break;
     default:
@@ -750,35 +745,35 @@ void menuPerfil(socket_t sock)
   }
 }
 
-void menuVerTiempoJugado(socket_t sock)//cambiar el metodo para que coja sock
+void menuVerTiempoJugado(socket_t sock) // cambiar el metodo para que coja sock
 {
+  char **nombreJuegos = NULL;
+  int *tiemposSegundos;
+  int cantidadJuegos = 0; // getTiempoJugadoTodosLosJuegos(user, &nombreJuegos, &tiemposSegundos);
+
+  // recibimos la cantidad del servidor
+  net::receive_data(sock, &cantidadJuegos, sizeof(cantidadJuegos));
+
+  // recibimos la lista de nombres de juegos
+  nombreJuegos = (char **)malloc(cantidadJuegos * sizeof(char *));
+  for (int i = 0; i < cantidadJuegos; i++)
+  {
+    nombreJuegos[i] = (char *)malloc(MAX_STRING_LENGTH);
+    net::receive_data(sock, nombreJuegos[i], MAX_STRING_LENGTH);
+  }
+
+  // recibimos la lista de tiempos jugados
+  tiemposSegundos = (int *)malloc(cantidadJuegos * sizeof(int));
+  for (int i = 0; i < cantidadJuegos; i++)
+  {
+    net::receive_data(sock, &tiemposSegundos[i], sizeof(int));
+  }
+
   while (1)
   {
     clearScreen();
     printf("--- Tiempo Jugado ---\n");
-    char *user = currentUser; // El error salta en esta linea
-    printf("AAAAAAAAAAAAAAAAAA") // No llega aquí
-    char **nombreJuegos = NULL;
-    int *tiemposSegundos;
-    int cantidadJuegos = 0; // getTiempoJugadoTodosLosJuegos(user, &nombreJuegos, &tiemposSegundos);
-    // printf("AAAAAAAAAAAAAAA")
-    net::send_data(sock, user, strlen(user) + 1);
-
-    //recibimos la cantidad del servidor
-    net::receive_data(sock, &cantidadJuegos, sizeof(cantidadJuegos)); 
-
-    printf("CantidadJuegos: %i",cantidadJuegos); //ESTO FUNCIONA, es decir el servidor hace la query correctamente y el cliente lo recibe
-    
-    // recibimos el tiempo en segundos del servidor
-
-    net::receive_data(sock, &tiemposSegundos, sizeof(tiemposSegundos));
-    
-    printf("tiempoSegundos: %i",tiemposSegundos); //NO FUNCIONA, devuelve 0
-
-    // recibimos los nombres de los juegos
-
-    // Y lo printeamos
-    
+    printf("CantidadJuegos: %i\n", cantidadJuegos);
 
     if (cantidadJuegos == -1)
     {
@@ -790,7 +785,7 @@ void menuVerTiempoJugado(socket_t sock)//cambiar el metodo para que coja sock
       printf("No se han jugado juegos\n");
       return;
     }
-    printf("Juegos jugados por %s:\n", user);
+    printf("Juegos jugados por %s:\n", currentUser);
     for (int i = 0; i < cantidadJuegos; i++)
     {
       int horas = tiemposSegundos[i] / 3600;
@@ -817,6 +812,13 @@ void menuVerTiempoJugado(socket_t sock)//cambiar el metodo para que coja sock
     {
       printf("Volviendo...\n");
       Sleep(1000);
+      // Liberar memoria
+      for (int i = 0; i < cantidadJuegos; i++)
+      {
+        free(nombreJuegos[i]);
+      }
+      free(nombreJuegos);
+      free(tiemposSegundos);
       return;
     }
 
@@ -825,7 +827,7 @@ void menuVerTiempoJugado(socket_t sock)//cambiar el metodo para que coja sock
     if (seleccion >= 1 && seleccion <= cantidadJuegos)
     {
       char *nombreJuego = nombreJuegos[seleccion - 1];
-      mostrarPartidasJugadas(nombreJuego);
+      mostrarPartidasJugadas(sock, nombreJuego);
     }
     else
     {
@@ -834,25 +836,55 @@ void menuVerTiempoJugado(socket_t sock)//cambiar el metodo para que coja sock
     }
     printf("Volviendo al menu....\n");
     Sleep(1000);
-
-    // Liberar memoria
-    free(nombreJuegos);
-    free(tiemposSegundos);
-    free(cantidadJuegos);
   }
+  // Liberar memoria
+  for (int i = 0; i < cantidadJuegos; i++)
+  {
+    free(nombreJuegos[i]);
+  }
+  free(nombreJuegos);
+  free(tiemposSegundos);
 }
 
-void mostrarPartidasJugadas(char *nombreJuego)
+void mostrarPartidasJugadas(socket_t sock, char *nombreJuego)
 {
+  uint8_t opcion_socket = 0x14; // Ver partidas jugadas
+  net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
+  net::send_data(sock, nombreJuego, strlen(nombreJuego) + 1);
+
+  char **partidas = NULL;
+  int *tiemposJugados = NULL;
+  int *puntuacionesMaximas = NULL;
+  int cantidadPartidas = 0;
+
+  // Obtener las partidas jugadas
+  net::receive_data(sock, &cantidadPartidas, sizeof(cantidadPartidas));
+
+  // Recibir la lista de partidas
+  partidas = (char **)malloc(cantidadPartidas * sizeof(char *));
+  for (int i = 0; i < cantidadPartidas; i++)
+  {
+    partidas[i] = (char *)malloc(MAX_STRING_LENGTH);
+    net::receive_data(sock, partidas[i], MAX_STRING_LENGTH);
+  }
+  // Recibir la lista de tiempos jugados
+  tiemposJugados = (int *)malloc(cantidadPartidas * sizeof(int));
+  for (int i = 0; i < cantidadPartidas; i++)
+  {
+    net::receive_data(sock, &tiemposJugados[i], sizeof(int));
+  }
+  // Recibir la lista de puntuaciones maximas
+  puntuacionesMaximas = (int *)malloc(cantidadPartidas * sizeof(int));
+  for (int i = 0; i < cantidadPartidas; i++)
+  {
+    net::receive_data(sock, &puntuacionesMaximas[i], sizeof(int));
+  }
+
   while (1)
   {
     clearScreen();
     printf("--- Partidas Jugadas ---\n");
-    char *user = currentUser;
-    char **partidas = NULL;
-    int *tiemposJugados = NULL;
-    int *puntuacionesMaximas = NULL;
-    int cantidadPartidas = 0; // getPartidasDeJuego(user, nombreJuego, &partidas, &tiemposJugados, &puntuacionesMaximas);
+    // getPartidasDeJuego(user, nombreJuego, &partidas, &tiemposJugados, &puntuacionesMaximas);
     if (cantidadPartidas == -1)
     {
       printf("Error al obtener las partidas jugadas\n");
@@ -873,10 +905,6 @@ void mostrarPartidasJugadas(char *nombreJuego)
       printf("     Tiempo Jugado: %d horas %d minutos %d segundos\n", horas, minutos, segundos);
       printf("     Puntuacion Maxima: %d\n", puntuacionesMaximas[i]);
     }
-    // Liberar memoria
-    free(partidas);
-    free(tiemposJugados);
-    free(puntuacionesMaximas);
 
     printf("\n0. Volver\n");
     printf("Seleccione una opcion: ");
@@ -894,4 +922,12 @@ void mostrarPartidasJugadas(char *nombreJuego)
     printf("Volviendo al menu....\n");
     Sleep(1000);
   }
+  // Liberar memoria
+  for (int i = 0; i < cantidadPartidas; i++)
+  {
+    free(partidas[i]);
+  }
+  free(partidas);
+  free(tiemposJugados);
+  free(puntuacionesMaximas);
 }

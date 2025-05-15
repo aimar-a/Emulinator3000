@@ -1,10 +1,6 @@
 #ifndef _BD_H_
 #define _BD_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,7 +19,7 @@ int abrirBaseDeDatos(sqlite3 **db);
 void limpiarBaseDeDatos();
 void eliminarBaseDeDatos();
 void insertarUsuarios(char *user, char *contraseña);
-void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char *fechaInicio, char *fechaFin);
+void insertarPartida(char *user, int idjuego, int puntmax, char *fechaInicio, char *fechaFin);
 
 void insertarJuego(char *titulo, char *rom);
 void insertarTiempoJugado(int tiempojugado, char *user, int idjuego);
@@ -48,9 +44,6 @@ int getTiempoJugado(char *user, int idJuego);
 int getPuntuacionRecord(int idJuego);
 int getTiempoJugadoTodosLosJuegos(char *user, char ***nombreJuegos, int **tiempos);
 int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **tiemposJugados, int **puntuacionesMaximas);
-int getNombreJuegos (char *user, char ***nombreJuegos);
-#ifdef __cplusplus
-}
-#endif
+int getNombreJuegos(char *user, char ***nombreJuegos);
 
 #endif

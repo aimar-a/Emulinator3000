@@ -1,5 +1,6 @@
 #include "network_util.h"
 #include <string.h>
+#include <stdio.h>
 
 bool sendData(socket_t sock, const void *data, size_t size)
 {
