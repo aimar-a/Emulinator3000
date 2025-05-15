@@ -6,7 +6,7 @@ size_t bytes_received;
 char buffer[1024];
 
 void server_run()
-{
+{ 
 #ifdef _WIN32
   // Inicializar Winsock solo en Windows
   WSADATA wsa;
@@ -365,6 +365,7 @@ void clienteConocido(socket_t client_socket, char *username)
           printf("Error al enviar confirmación: %d\n", WSAGetLastError());
           close_socket(client_socket);
           close_socket(server_socket);
+          
 #ifdef _WIN32
           WSACleanup();
 #endif
@@ -385,6 +386,7 @@ void clienteConocido(socket_t client_socket, char *username)
         printf("Error al enviar conteo ROMs: %d\n", WSAGetLastError());
         close_socket(client_socket);
         close_socket(server_socket);
+
 #ifdef _WIN32
         WSACleanup();
 #endif
@@ -398,6 +400,7 @@ void clienteConocido(socket_t client_socket, char *username)
           printf("Error al enviar ROM: %d\n", WSAGetLastError());
           close_socket(client_socket);
           close_socket(server_socket);
+
 #ifdef _WIN32
           WSACleanup();
 #endif
@@ -420,9 +423,10 @@ void clienteConocido(socket_t client_socket, char *username)
                 printf("Error al recibir VER PERFIL: %d\n", WSAGetLastError());
                 close_socket(client_socket);
                 close_socket(server_socket);
-                #ifdef _WIN32
+
+              #ifdef _WIN32
                 WSACleanup();
-                #endif
+              #endif
                 return;
             }
 
@@ -434,19 +438,23 @@ void clienteConocido(socket_t client_socket, char *username)
                 case 0x12: 
                   printf("Ver Amigos..\n");
                   break; 
+
                 case 0x13:
                     printf("Ver Tiempo Jugado...\n");
 
                     char user[256];  // Reservamos espacio para el nombre de usuario
+
                     char **nombreJuegos = NULL;
                     int *tiemposSegundos = NULL;
                     int cantidadJuegos = 0;
 
                     // Recibimos el nombre del usuario
+
                     if (!receiveData(client_socket, user, sizeof(user), &bytes_received)) {
                         printf("Error al recibir nombre de usuario: %d\n", WSAGetLastError());
                         close_socket(client_socket);
                         close_socket(server_socket);
+
                 #ifdef _WIN32
                         WSACleanup();
                 #endif
@@ -456,13 +464,16 @@ void clienteConocido(socket_t client_socket, char *username)
                     printf("Nombre de usuario: %s\n", user);  // Usar `user`, no `username`
 
                     // Obtenemos la cantidad de juegos y datos asociados
+
                     cantidadJuegos = getTiempoJugadoTodosLosJuegos(user, &nombreJuegos, &tiemposSegundos);
 
                     // Enviamos cantidad de juegos al cliente
+
                     if (!sendData(client_socket, &cantidadJuegos, sizeof(cantidadJuegos))) {
                         printf("Error al enviar CantidadJuegos: %d\n", WSAGetLastError());
                         close_socket(client_socket);
                         close_socket(server_socket);
+
                 #ifdef _WIN32
                         WSACleanup();
                 #endif
@@ -470,6 +481,43 @@ void clienteConocido(socket_t client_socket, char *username)
                     }
 
                     // Aquí podrías enviar también los nombres de juegos y los tiempos si es necesario
+
+                    // Vamos a obtener los tiempos
+
+                    tiemposSegundos = getTiempoJugadoTodosLosJuegos(user, &nombreJuegos, &tiemposSegundos);
+
+                    // printf(tiemposSegundos);
+
+                    // Enviamos el tiempo al cliente
+
+                    if(!sendData(client_socket, &tiemposSegundos, sizeof(tiemposSegundos))) {
+                      printf("Error al enviar TiemposJuegos: %d\n", WSAGetLastError());
+                      close_socket(client_socket);
+                      close_socket(server_socket);
+                      
+                #ifdef _WIN32
+                      WSACleanup();
+                #endif
+                      return;
+                    }
+
+                    // Vamos a obtener los nombres de los juegos
+
+                    nombreJuegos = getNombreJuegos(client_socket, &nombreJuegos);
+
+                    // Enviamos los nombres al cliente
+
+                    if(!sendData(client_socket, &nombreJuegos, sizeof(nombreJuegos))) {
+                      printf("Error al enviar NombreJuegos: %d\n", WSAGetLastError());
+                      close_socket(client_socket);
+                      close_socket(server_socket);
+
+                #ifdef _WIN32
+                      WSACleanup();
+                #endif
+                      return;
+                    }
+                    
 
                     break;
               

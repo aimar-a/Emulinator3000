@@ -68,7 +68,7 @@ void chip8terminate(Chip8 *chip8)
   }
 
   // insertamos los datos de la partida
-  // void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char* fecha,char*fecha)
+  // void insertarPartida(char *user, int idjuego, int puntmax, char* fecha,char*fecha)
 
   struct tm *currentTimeInicio;
   struct tm *currentTimeFin;
@@ -83,7 +83,7 @@ void chip8terminate(Chip8 *chip8)
   char fechaFin[30];
   strftime(fechaFin, sizeof(fechaFin), "%d/%m/%Y %H:%M:%S", currentTimeFin);
 
-  insertarPartida(currentUser, id, tiempoJugado, tiempoJugado * 0.5, fechaInicio, fechaFin); // la puntuacion maxima vamos a dejarla asi
+  insertarPartida(currentUser, id, tiempoJugado * 0.5, fechaInicio, fechaFin); // la puntuacion maxima vamos a dejarla asi
   printf("Partida insertada");
   // updatear Juego puntuacion y usuario record si se ha hecho un nuevo record
   int puntuacionPartida = tiempoJugado * 0.5;

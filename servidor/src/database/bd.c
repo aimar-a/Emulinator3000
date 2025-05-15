@@ -57,7 +57,6 @@ void crearBD()
                   "fecha_inicio TIMESTAMP NOT NULL,"
                   "fecha_fin TIMESTAMP NOT NULL,"
                   "id_juego INTEGER NOT NULL,"
-                  "tiempo_jugado INT NOT NULL,"
                   "puntuacion_maxima INT NOT NULL,"
                   "FOREIGN KEY (user) REFERENCES USUARIOS(user),"
                   "FOREIGN KEY (id_juego) REFERENCES JUEGO(id_juego));";
@@ -211,7 +210,7 @@ void insertarUsuarios(char *user, char *contraseña)
     sqlite3_close(db);
 }
 
-void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, char *fechaInicio, char *fechaFin)
+void insertarPartida(char *user, int idjuego, int puntmax, char *fechaInicio, char *fechaFin)
 {
 
     // Abrimos la base de datos
@@ -223,7 +222,7 @@ void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, cha
 
     sqlite3_stmt *stmt;
 
-    char sql[] = "INSERT INTO PARTIDA (user,fecha_inicio, fecha_fin, id_juego, tiempo_jugado, puntuacion_maxima) VALUES (?, ?, ?, ?, ?,?);";
+    char sql[] = "INSERT INTO PARTIDA (user,fecha_inicio, fecha_fin, id_juego, puntuacion_maxima) VALUES (?, ?, ?, ?,?);";
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
@@ -232,8 +231,7 @@ void insertarPartida(char *user, int idjuego, int tiempojugado, int puntmax, cha
     sqlite3_bind_text(stmt, 3, fechaFin, strlen(fechaFin), SQLITE_STATIC);
 
     sqlite3_bind_int(stmt, 4, idjuego);
-    sqlite3_bind_int(stmt, 5, tiempojugado);
-    sqlite3_bind_int(stmt, 6, puntmax);
+    sqlite3_bind_int(stmt, 5, puntmax);
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -972,4 +970,23 @@ int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **ti
     sqlite3_close(db);
 
     return cantidadPartidas;
+}
+
+int getNombreJuegos (char *user, char ***nombreJuegos) {
+    sqlite3_stmt *stmt;
+
+    char* sql[] = "SELECT titulo FROM JUEGO WHERE id_juego in (SELECT id_juego FROM TIEMPO_JUGADO WHERE user = ?)";
+
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+    sqlite3_bind_text(sql, 1, user, -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+
+        
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
 }

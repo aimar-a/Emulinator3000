@@ -48,6 +48,7 @@ int getTiempoJugado(char *user, int idJuego);
 int getPuntuacionRecord(int idJuego);
 int getTiempoJugadoTodosLosJuegos(char *user, char ***nombreJuegos, int **tiempos);
 int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **tiemposJugados, int **puntuacionesMaximas);
+int getNombreJuegos (char *user, char ***nombreJuegos);
 #ifdef __cplusplus
 }
 #endif

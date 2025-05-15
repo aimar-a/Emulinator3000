@@ -1,6 +1,7 @@
 #include "menu_cmd.hpp"
 #include <string.h>
 #include "bd.h"
+
 void clearScreen()
 {
 #ifdef _WIN32
@@ -755,20 +756,30 @@ void menuVerTiempoJugado(socket_t sock)//cambiar el metodo para que coja sock
   {
     clearScreen();
     printf("--- Tiempo Jugado ---\n");
-    char *user = currentUser;
+    char *user = currentUser; // El error salta en esta linea
+    printf("AAAAAAAAAAAAAAAAAA") // No llega aquí
     char **nombreJuegos = NULL;
-    int *tiemposSegundos = NULL;
+    int *tiemposSegundos;
     int cantidadJuegos = 0; // getTiempoJugadoTodosLosJuegos(user, &nombreJuegos, &tiemposSegundos);
-
+    // printf("AAAAAAAAAAAAAAA")
     net::send_data(sock, user, strlen(user) + 1);
 
     //recibimos la cantidad del servidor
     net::receive_data(sock, &cantidadJuegos, sizeof(cantidadJuegos)); 
 
-    printf("CantidadJuegos: %i",cantidadJuegos); //ESTO FUNCIONA, es decir el servidor hace la query correctamente y el cliente lo recive
+    printf("CantidadJuegos: %i",cantidadJuegos); //ESTO FUNCIONA, es decir el servidor hace la query correctamente y el cliente lo recibe
+    
+    // recibimos el tiempo en segundos del servidor
+
+    net::receive_data(sock, &tiemposSegundos, sizeof(tiemposSegundos));
+    
     printf("tiempoSegundos: %i",tiemposSegundos); //NO FUNCIONA, devuelve 0
 
+    // recibimos los nombres de los juegos
+
+    // Y lo printeamos
     
+
     if (cantidadJuegos == -1)
     {
       printf("Error al obtener los tiempos jugados\n");
@@ -797,6 +808,7 @@ void menuVerTiempoJugado(socket_t sock)//cambiar el metodo para que coja sock
     }
 
     printf("\nNumero del juego para ver partidas jugadas\n");
+
     printf("0. Volver\n");
     printf("Seleccione una opcion: ");
     char opcion[MAX_STRING_LENGTH];
@@ -826,6 +838,7 @@ void menuVerTiempoJugado(socket_t sock)//cambiar el metodo para que coja sock
     // Liberar memoria
     free(nombreJuegos);
     free(tiemposSegundos);
+    free(cantidadJuegos);
   }
 }
 
