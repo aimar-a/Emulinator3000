@@ -555,7 +555,7 @@ void menuListaROMs(socket_t sock)
   int romCount = 0;
 
   printf("Listado de ROMs disponibles:\n");
-  listarROMsRecursivo(ROMS_PATH, roms, &romCount);
+  // listarROMsRecursivo(ROMS_PATH, roms, &romCount);
 
   if (romCount == 0)
   {

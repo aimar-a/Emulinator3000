@@ -46,4 +46,6 @@ int getTiempoJugadoTodosLosJuegos(char *user, char ***nombreJuegos, int **tiempo
 int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **tiemposJugados, int **puntuacionesMaximas);
 int getNombreJuegos(char *user, char ***nombreJuegos);
 
+int getJuegosDisponibles(char ***nombreJuegos);
+
 #endif

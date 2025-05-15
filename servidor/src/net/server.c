@@ -377,9 +377,11 @@ void clienteConocido(socket_t client_socket, char *username)
     case 0x02: // Enviar ROMs CHIP8
     {
       printf("Enviando ROMs CHIP8...\n");
-      char romOptions[128][128];
+      char romOptions[128][128]; // Array para almacenar nombres de ROMs
       int romCount = 0;
-      loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount);
+      // loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount);
+      romCount = getJuegosDisponibles(&romOptions);
+      printf("Cantidad de ROMs: %d\n", romCount);
 
       if (!sendData(client_socket, (char *)&romCount, sizeof(romCount)))
       {

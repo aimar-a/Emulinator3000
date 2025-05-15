@@ -19,7 +19,6 @@
 #endif
 
 #define MAX_STRING_LENGTH 128
-#define ROMS_PATH "resources/chip8-roms"
 
 extern char *currentUser;
 

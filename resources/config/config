@@ -16,7 +16,7 @@ SCREEN_SCALE_NES=4
 [Settings]
 load=false
 cleanbbdd=false
-createbbdd=true
+createbbdd=false
 deletebbdd=false
 
 [Logger]

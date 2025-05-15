@@ -1044,3 +1044,74 @@ int getNombreJuegos(char *user, char ***nombreJuegos)
     sqlite3_finalize(stmt);
     return count;
 }
+
+int getJuegosDisponibles(char ***nombreJuegos)
+{
+    // Abrimos la base de datos
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    {
+        printf("Error al abrir la base de datos\n");
+        return -1;
+    }
+
+    sqlite3_stmt *stmt;
+    int rc;
+    int count = 0;
+    char **games = NULL;
+
+    const char *sql = "SELECT titulo FROM JUEGO";
+
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return -1;
+    }
+
+    // First count how many rows we have
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
+    {
+        count++;
+    }
+
+    if (rc != SQLITE_DONE)
+    {
+        fprintf(stderr, "Failed to step through statement: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+
+    // Allocate array for game names
+    games = (char **)malloc(count * sizeof(char *));
+    if (!games)
+    {
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+
+    // Reset the statement to run again
+    sqlite3_reset(stmt);
+
+    // Now fetch the actual data
+    count = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const char *title = (const char *)sqlite3_column_text(stmt, 0);
+        games[count] = strdup(title);
+        if (!games[count])
+        {
+            // Handle memory allocation failure
+            for (int i = 0; i < count; i++)
+            {
+                free(games[i]);
+            }
+            free(games);
+            sqlite3_finalize(stmt);
+            return -1;
+        }
+        count++;
+    }
+    *nombreJuegos = games;
+    sqlite3_finalize(stmt);
+    return count;
+}

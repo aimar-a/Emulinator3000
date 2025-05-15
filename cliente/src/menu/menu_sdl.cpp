@@ -105,10 +105,8 @@ int showSettingsWindow(socket_t sock)
   int running = 1;
   int playGame = 0;
 
-  char romOptions[107][128];
+  char romOptions[256][128];
   int romCount = 0;
-  // loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount);
-  // TODO obtener roms disponibles desde socket
 
   net::receive_data(sock, &romCount, sizeof(romCount));
   for (int i = 0; i < romCount; i++)
