@@ -445,7 +445,7 @@ void menuAdvertenciaNES()
     case 'S':
       printf("Cargando emulador NES...\n");
       Sleep(1000);
-      nes_launch();
+      // nes_launch();
     case 'n':
     case 'N':
       printf("Volviendo al menu principal...\n");

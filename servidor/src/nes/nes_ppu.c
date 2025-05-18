@@ -277,7 +277,8 @@ void ppu_step(NES *nes)
       //     m_screen.setPixel(x, y, nes->ppu->picture_buffer[x][y]);
       //   }
       // }
-      nes_display_draw(nes->screen);
+
+      // nes_display_draw(nes->screen);
     }
   }
   // VerticalBlank
@@ -387,7 +388,7 @@ void ppu_step_simple(NES *nes)
       nes->ppu->scanline = 0;
       nes->ppu->status &= ~0x80;
       nes->ppu->frame++;
-      nes_display_draw(nes->screen);
+      // nes_display_draw(nes->screen);
     }
   }
 }

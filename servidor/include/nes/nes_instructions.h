@@ -10,7 +10,6 @@
 #include "nes_controller.h"
 #include "nes_mapper.h"
 #include "nes_rom.h"
-#include "nes_display.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -19,7 +19,7 @@ int chip8displayInitPantalla(uint8_t *pantalla_, bool modosuperchip8)
     printf("INFO: Modo SuperChip8 activado. Resolución: %dx%d\n", SCREEN_WIDTH_CHIP8, SCREEN_HEIGHT_CHIP8);
   }
 
-  chip8displayLimpiarPantalla();
+  // chip8displayLimpiarPantalla();
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
   {
     printf("ERROR: No se pudo inicializar SDL: %s\n", SDL_GetError());

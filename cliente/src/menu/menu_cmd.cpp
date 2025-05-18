@@ -239,9 +239,12 @@ void menuInicial(socket_t sock)
       //  menuListaROMs();
       break;
     case '2':
-      opcion_socket = 0x03; // Recibir ROMs NES
+      // opcion_socket = 0x03; // Recibir ROMs NES
+      // net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
+      opcion_socket = 0xE1; // Emular NES
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
-      menuAdvertenciaNES();
+      emulate_nes(sock);
+      // menuAdvertenciaNES();
       break;
     case 'p':
     case 'P':

@@ -6,9 +6,7 @@ CXX = g++
 
 # Flags de compilación (compartidos)
 CFLAGS += -Wall -Wextra -pedantic -Iservidor/include -Iservidor/include/chip8 -Iservidor/include/menu -Iservidor/include/nes -Iservidor/include/database -Iservidor/include/config -Iservidor/include/net
-
-# Añadido para poder incluir bd.h desde cliente (archivos .cpp)
-CXXFLAGS += -Wall -Wextra -pedantic -Icliente/include -Icliente/include/menu -Icliente/include/net
+CXXFLAGS += -Wall -Wextra -pedantic -Icliente/include -Icliente/include/menu -Icliente/include/net -Icliente/include/nes -Icliente/include/chip8 -Icliente/include/config
 
 # Detección de sistema operativo
 ifeq ($(OS),Windows_NT)
@@ -16,11 +14,11 @@ ifeq ($(OS),Windows_NT)
     CFLAGS += -D_WIN32
     CXXFLAGS += -D_WIN32
     SERVER_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32 -lsqlite3
-    CLIENT_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32 -lsqlite3
+    CLIENT_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32
 else
     # Linux/macOS
     SERVER_LDFLAGS = -lSDL2 -lSDL2_ttf -lsqlite3
-    CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lsqlite3
+    CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf
 endif
 
 # Directorios
@@ -31,10 +29,10 @@ CLIENT_DIR = cliente/src
 
 # Fuentes y objetos del servidor
 SERVER_SRC = $(wildcard $(SERVER_DIR)/*.c $(SERVER_DIR)/chip8/*.c $(SERVER_DIR)/menu/*.c $(SERVER_DIR)/nes/*.c $(SERVER_DIR)/database/*.c $(SERVER_DIR)/config/*.c $(SERVER_DIR)/net/*.c)
-SERVER_OBJ = $(patsubst $(SERVER_DIR)/%.c, $(BUILD_DIR)/%.o, $(SERVER_SRC))
+SERVER_OBJ = $(patsubst $(SERVER_DIR)/%.c, $(BUILD_DIR)/servidor/%.o, $(SERVER_SRC))
 
 # Fuentes y objetos del cliente
-CLIENT_SRC = $(wildcard $(CLIENT_DIR)/*.cpp $(CLIENT_DIR)/menu/*.cpp $(CLIENT_DIR)/net/*.cpp)
+CLIENT_SRC = $(wildcard $(CLIENT_DIR)/*.cpp $(CLIENT_DIR)/menu/*.cpp $(CLIENT_DIR)/net/*.cpp $(CLIENT_DIR)/nes/*.cpp $(CLIENT_DIR)/chip8/*.cpp $(CLIENT_DIR)/config/*.cpp)
 CLIENT_OBJ = $(patsubst $(CLIENT_DIR)/%.cpp, $(BUILD_DIR)/cliente/%.o, $(CLIENT_SRC))
 
 # Regla por defecto: compilar ambos
@@ -49,7 +47,7 @@ $(CLIENT_TARGET): $(CLIENT_OBJ) | $(BIN_DIR)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(CLIENT_LDFLAGS)
 
 # Compilar objetos servidor
-$(BUILD_DIR)/%.o: $(SERVER_DIR)/%.c
+$(BUILD_DIR)/servidor/%.o: $(SERVER_DIR)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $< -o $@ $(CFLAGS)
 

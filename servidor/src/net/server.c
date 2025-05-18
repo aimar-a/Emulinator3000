@@ -268,7 +268,7 @@ void clienteConocido(socket_t client_socket, char *username)
     case 0xE1: // Emular NES
     {
       printf("Emulando NES...\n");
-      char selectedRom[128];
+      /*char selectedRom[128];
       if (!receiveData(client_socket, selectedRom, sizeof(selectedRom), &bytes_received))
       {
         printf("Error al recibir ROM: %d\n", WSAGetLastError());
@@ -279,8 +279,8 @@ void clienteConocido(socket_t client_socket, char *username)
 #endif
         return;
       }
-      printf("ROM seleccionada: %s\n", selectedRom);
-      servirNES();
+      printf("ROM seleccionada: %s\n", selectedRom);*/
+      servirNES(client_socket);
       break;
     }
 
@@ -659,11 +659,9 @@ void servirChip8(socket_t sock, char *selectedRom)
   chip8terminate(chip8);
 }
 
-void servirNES()
+void servirNES(socket_t sock)
 {
-  while (1)
-  {
-    // Lógica de emulación NES
-    sleep_ms(16); // ~60 FPS
-  }
+  nes_launch(sock);
+  printf("INFO: NES emulation finished\n");
+  return;
 }

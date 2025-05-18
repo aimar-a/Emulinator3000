@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 #include <SDL2/SDL.h>
-#include "nes_logger.h"
-#include "config_file.h"
+#include "config_file.hpp"
 
 void nes_display_init();
 void nes_display_draw(uint8_t *pantalla);

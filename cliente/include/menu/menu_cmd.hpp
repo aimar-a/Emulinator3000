@@ -10,6 +10,7 @@
 #include "menu_sdl.hpp"
 #include <stdbool.h>
 #include "network_util.hpp"
+#include "nes_client.hpp"
 
 #ifdef _WIN32
 #include <windows.h>

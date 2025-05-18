@@ -1,6 +1,6 @@
 #include "nes_cpu.h"
 
-void nes_launch()
+void nes_launch(socket_t sock)
 {
   nes_terminate = false;
 
@@ -52,7 +52,7 @@ void nes_launch()
   }
   nes_log_instant("INFO: PPU palette initialized\n");
 
-  nes_display_init();
+  // nes_display_init();
   nes_log_instant("INFO: Display initialized\n");
 
   // if (nes_load_rom(nes, "resources/nes-roms/Super_mario_brothers.nes"))
@@ -85,11 +85,11 @@ void nes_launch()
   printf("\n\n");
   */
 
-  nes_display_draw(nes->screen);
+  // nes_display_draw(nes->screen);
 
   nes_apu_init(nes->apu);
 
-  nes_run(nes);
+  nes_run(nes, sock);
 }
 
 void nes_reset(NES *nes)
@@ -165,7 +165,7 @@ void nes_reset(NES *nes)
   nes_log_instant("INFO: NES reset completed\n");
 }
 
-void nes_run(NES *nes)
+void nes_run(NES *nes, socket_t sock)
 {
   int cont = 0;
 
@@ -174,6 +174,10 @@ void nes_run(NES *nes)
   const float ppu_cycle_time_ms = 1000.0f / 5370000.0f; // 5.37 MHz
 
   nes_log_instant("INFO: Starting NES emulation\n");
+
+  // Variables for timing control
+  clock_t last_comm_time = clock();
+  const clock_t comm_interval = CLOCKS_PER_SEC / 10;
 
   // Main emulation loop with accurate cycle timing
   while (1)
@@ -206,22 +210,41 @@ void nes_run(NES *nes)
       nes->cycles++;
     }
 
-    // Update controllers
-    if (nes_controller_update(nes))
+    // Check if it's time to communicate (every 100ms)
+    clock_t current_time = clock();
+    if (current_time - last_comm_time >= comm_interval)
     {
-      break;
-    }
+      last_comm_time = current_time;
 
-    // Check for termination
-    if (nes_terminate)
-    {
-      break;
-    }
+      // Send exit signal to client
+      if (nes_terminate)
+      {
+        uint8_t exit_signal = 0x01;
+        sendData(sock, &exit_signal, sizeof(exit_signal));
+        break;
+      }
+      else
+      {
+        uint8_t exit_signal = 0x00;
+        sendData(sock, &exit_signal, sizeof(exit_signal));
+      }
 
-    // Optional: Add delay for speed control
-    // uint32_t elapsed = SDL_GetTicks() - last_time;
-    // if (elapsed < frame_time_ms) SDL_Delay(frame_time_ms - elapsed);
-    // last_time = SDL_GetTicks();
+      // Send nes screen to client
+      sendData(sock, nes->screen, SCREEN_WIDTH_NES * SCREEN_HEIGHT_NES * sizeof(uint32_t));
+
+      // Get exit signal from client
+      uint8_t exit_signal = 0;
+      receiveData(sock, &exit_signal, sizeof(exit_signal), NULL);
+      if (exit_signal == 0x01)
+      {
+        nes_log_instant("INFO: Exit signal received from client\n");
+        break;
+      }
+
+      // Get controller state
+      size_t received = 0;
+      receiveData(sock, nes->controller_state, sizeof(nes->controller_state), &received);
+    }
   }
 
   nes_log_instant("\nINFO: Traceback:\n");
@@ -231,7 +254,6 @@ void nes_run(NES *nes)
   nes_log_instant("INFO: NES emulation stopped\n");
   log_check_ppu_ram(nes);
 
-  nes_display_destroy();
   nes_apu_cleanup(nes->apu);
   free(nes->apu);
   free(nes->ppu);
