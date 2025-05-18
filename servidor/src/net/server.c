@@ -377,7 +377,7 @@ void clienteConocido(socket_t client_socket, char *username)
     case 0x02: // Enviar ROMs CHIP8
     {
       printf("Enviando ROMs CHIP8...\n");
-      char romOptions[128][128]; // Array para almacenar nombres de ROMs
+      char **romOptions; // Array para almacenar nombres de ROMs
       int romCount = 0;
       // loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount);
       romCount = getJuegosDisponibles(&romOptions);
@@ -395,7 +395,7 @@ void clienteConocido(socket_t client_socket, char *username)
       }
       for (int i = 0; i < romCount; i++)
       {
-        if (!sendData(client_socket, romOptions[i], sizeof(romOptions[i])))
+        if (!sendData(client_socket, romOptions[i], strlen(romOptions[i]) + 1))
         {
           printf("Error al enviar ROM: %d\n", WSAGetLastError());
           close_socket(client_socket);
