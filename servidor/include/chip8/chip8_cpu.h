@@ -8,6 +8,7 @@
 #include "chip8_display.h"
 #include "chip8_input.h"
 #include "chip8_timers.h"
+
 #include "chip8_opcodes.h"
 #include "chip8_structure.h"
 #include <SDL2/SDL.h>

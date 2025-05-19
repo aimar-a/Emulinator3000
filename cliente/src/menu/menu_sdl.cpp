@@ -289,6 +289,12 @@ int showSettingsWindow(socket_t sock)
 
   if (playGame)
   {
+    if (!chip8displayInitPantalla(NULL, false)) // Cambia a true si estás en modo SuperChip8
+    {
+      printf("ERROR: No se pudo inicializar la pantalla en el cliente.\n");
+      return 0;
+    }
+
     unsigned char option_socket = 0xE0;
 
     // Depuración: Verificar el contenido inicial de selectedRom
@@ -315,6 +321,39 @@ int showSettingsWindow(socket_t sock)
     // Enviar datos al servidor
     net::send_data(sock, &option_socket, sizeof(option_socket));
     net::send_data(sock, selectedRom, strlen(selectedRom) + 1); // Incluir el carácter nulo
+
+    if (playGame)
+    {
+      // Inicializar la pantalla en el cliente
+      if (!chip8displayInitPantalla(NULL, false)) // Cambia a true si estás en modo SuperChip8
+      {
+        printf("ERROR: No se pudo inicializar la pantalla en el cliente.\n");
+        return 0;
+      }
+
+      unsigned char option_socket = 0xE0; // Comando para iniciar la emulación
+
+      // Enviar comando para iniciar la emulación
+      net::send_data(sock, &option_socket, sizeof(option_socket));
+      net::send_data(sock, selectedRom, strlen(selectedRom) + 1); // Incluir el carácter nulo
+
+      // Bucle para recibir datos de la pantalla desde el servidor
+      uint8_t pantalla[SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8];
+      while (1)
+      {
+        if (!net::receive_data(sock, pantalla, sizeof(pantalla)))
+        {
+          printf("ERROR: No se pudieron recibir datos de la pantalla.\n");
+          break;
+        }
+
+        // Renderizar la pantalla en el cliente
+        chip8displayPrintPantalla(pantalla);
+      }
+
+      // Destruir la pantalla al finalizar
+      chip8displayDestroyPantalla();
+    }
   }
 
   return 1;
