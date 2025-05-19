@@ -341,11 +341,15 @@ int showSettingsWindow(socket_t sock)
       uint8_t pantalla[SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8];
       while (1)
       {
+        printf("Esperando datos de la pantalla...\n");
+
         if (!net::receive_data(sock, pantalla, sizeof(pantalla)))
         {
           printf("ERROR: No se pudieron recibir datos de la pantalla.\n");
           break;
         }
+
+        printf("Datos de pantalla recibidos. Renderizando...\n");
 
         // Renderizar la pantalla en el cliente
         chip8displayPrintPantalla(pantalla);

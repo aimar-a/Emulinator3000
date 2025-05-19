@@ -140,8 +140,10 @@ Chip8 *chip8init(char *rom_path)
   if (chip8->rom_path == NULL)
   {
     chip8_log("ERROR: No se pudo asignar memoria para rom_path\n");
-    free(chip8->memoria);
-    free(chip8->pantalla);
+    if (chip8->memoria != NULL)
+      free(chip8->memoria);
+    if (chip8->pantalla != NULL)
+      free(chip8->pantalla);
     free(chip8);
     return NULL;
   }
@@ -153,7 +155,12 @@ Chip8 *chip8init(char *rom_path)
   if (chip8->memoria == NULL || chip8->pantalla == NULL)
   {
     chip8_log("ERROR: No se pudo asignar memoria para Chip8\n");
-    free(chip8->rom_path);
+    if (chip8->rom_path != NULL)
+      free(chip8->rom_path);
+    if (chip8->memoria != NULL)
+      free(chip8->memoria);
+    if (chip8->pantalla != NULL)
+      free(chip8->pantalla);
     free(chip8);
     return NULL;
   }
