@@ -93,7 +93,7 @@ void showWarningWindow()
 
 int showSettingsWindow(socket_t sock)
 {
-  char selectedRom[128] = ""; // Inicializar la variable de la ROM seleccionada
+  char selectedRom[256] = ""; // Inicializar la variable de la ROM seleccionada
 
   SDL_Window *settingsWindow = SDL_CreateWindow("Settings", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_SHOWN);
   SDL_Renderer *settingsRenderer = SDL_CreateRenderer(settingsWindow, -1, SDL_RENDERER_ACCELERATED);
@@ -289,10 +289,32 @@ int showSettingsWindow(socket_t sock)
 
   if (playGame)
   {
-    char option_socket = 0xE0;
+    unsigned char option_socket = 0xE0;
+
+    // Depuración: Verificar el contenido inicial de selectedRom
+    printf("ROM seleccionada antes de agregar .ch8: %s (longitud: %zu)\n", selectedRom, strlen(selectedRom));
+
+    // Verificar si el nombre de la ROM ya tiene la extensión .ch8
+    if (strstr(selectedRom, ".ch8") == NULL)
+    {
+      // Asegurarse de no desbordar el buffer
+      if (strlen(selectedRom) + strlen(".ch8") < sizeof(selectedRom))
+      {
+        strcat(selectedRom, ".ch8");
+      }
+      else
+      {
+        printf("Error: El nombre de la ROM es demasiado largo para agregar la extensión .ch8\n");
+        return 0; // Salir si no se puede agregar la extensión
+      }
+    }
+
+    // Depuración: Verificar el contenido después de agregar .ch8
+    printf("ROM seleccionada después de agregar .ch8: %s (longitud: %zu)\n", selectedRom, strlen(selectedRom));
+
+    // Enviar datos al servidor
     net::send_data(sock, &option_socket, sizeof(option_socket));
-    net::send_data(sock, selectedRom, strlen(selectedRom) + 1);
-    // chip8cpuLaunch(fullRomPath);
+    net::send_data(sock, selectedRom, strlen(selectedRom) + 1); // Incluir el carácter nulo
   }
 
   return 1;

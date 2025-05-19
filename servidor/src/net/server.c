@@ -249,9 +249,10 @@ void clienteConocido(socket_t client_socket, char *username)
     case 0xE0: // Emular CHIP8
     {
       printf("Emulando CHIP8...\n");
-      char selectedRom[128];
+      char selectedRom[256];
       if (!receiveData(client_socket, selectedRom, sizeof(selectedRom), &bytes_received))
       {
+
         printf("Error al recibir ROM: %d\n", WSAGetLastError());
         close_socket(client_socket);
         close_socket(server_socket);
@@ -630,17 +631,37 @@ void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *rom
 
 void servirChip8(socket_t sock, char *selectedRom)
 {
-  char fullRomPath[256];
+  char fullRomPath[512];
+
   sprintf(fullRomPath, "resources/chip8-roms/games/%s", selectedRom);
+
+  // Verificar si el archivo ROM existe
+  FILE *file = fopen(fullRomPath, "rb");
+  if (file == NULL)
+  {
+    printf("Error: No se pudo abrir la ROM %s\n", fullRomPath);
+    return;
+  }
+  fclose(file);
+
+  printf("ROM recibida en el servidor: %s (longitud: %zu)\n", fullRomPath, strlen(fullRomPath));
   Chip8 *chip8 = chip8init(fullRomPath);
+  if (chip8 == NULL) // Validar si la inicialización falló
+  {
+    printf("Error: No se pudo inicializar el emulador CHIP8 con la ROM %s\n", fullRomPath);
+    return;
+  }
+
   while (1)
   {
     // Lógica de emulación CHIP8
+
     chip8step(chip8);
 
     // Enviar datos de pantalla al cliente
     if (!sendData(sock, chip8->pantalla, SCREEN_WIDTH * SCREEN_HEIGHT / 8))
     {
+
       printf("Error al enviar datos de pantalla: %d\n", WSAGetLastError());
       break;
     }
@@ -649,13 +670,13 @@ void servirChip8(socket_t sock, char *selectedRom)
     sleep_ms(16); // ~60 FPS
 
     // Verificar si el cliente sigue conectado
-    // Podrías implementar un heartbeat aquí
     if (chip8->esc)
     {
       printf("Cliente solicita salir...\n");
       break;
     }
   }
+
   chip8terminate(chip8);
 }
 

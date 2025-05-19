@@ -27,6 +27,7 @@ void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
 
   if (chip8->pantalla == NULL)
   {
+
     chip8_log("ERROR: No se pudo asignar memoria para pantalla\n");
   }
 }
@@ -38,6 +39,10 @@ void chip8step(Chip8 *chip8)
   uint16_t opcode = (chip8->memoria[chip8->pc] << 8) | chip8->memoria[chip8->pc + 1];
   chip8->pc += 2;
 
+  if (chip8->pantalla == NULL)
+  {
+    printf("NO PANTALLA");
+  }
   // chip8displayPrintPantalla();
   chip8timersDecrement();
   chip8inputCapturarTeclado();
@@ -70,6 +75,12 @@ void chip8terminate(Chip8 *chip8)
   // insertamos los datos de la partida
   // void insertarPartida(char *user, int idjuego, int puntmax, char* fecha,char*fecha)
 
+  if (chip8->rom_path != NULL)
+    free(chip8->rom_path);
+  if (chip8->memoria != NULL)
+    free(chip8->memoria);
+  if (chip8->pantalla != NULL)
+    free(chip8->pantalla);
   struct tm *currentTimeInicio;
   struct tm *currentTimeFin;
 
@@ -101,40 +112,97 @@ void chip8terminate(Chip8 *chip8)
 
 Chip8 *chip8init(char *rom_path)
 {
+
   chip8_log_clear();
   chip8_log("INFO: Inicializando CPU\n");
 
-  Chip8 chip8;
-  chip8.esc = 0;
-  memset(chip8.V, 0, sizeof(chip8.V));
-  chip8.pc = 0x200;
-  chip8.I = 0;
-  chip8.sp = 0;
+  // Asignar memoria dinámica para la estructura Chip8
+  Chip8 *chip8 = (Chip8 *)malloc(sizeof(Chip8));
 
-  chip8.rom_path = rom_path;
+  if (chip8 == NULL)
+  {
+    chip8_log("ERROR: No se pudo asignar memoria para la estructura Chip8\n");
+    return NULL;
+  }
 
-  time(&chip8.tiempoInicio); // guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio
+  if (chip8->pantalla == NULL)
+  {
+    printf("JODER PANTALLA");
+  }
+
+  chip8->esc = 0;
+  memset(chip8->V, 0, sizeof(chip8->V));
+  chip8->pc = 0x200;
+  chip8->I = 0;
+  chip8->sp = 0;
+
+  chip8->rom_path = strdup(rom_path);
+  if (chip8->rom_path == NULL)
+  {
+    chip8_log("ERROR: No se pudo asignar memoria para rom_path\n");
+    free(chip8->memoria);
+    free(chip8->pantalla);
+    free(chip8);
+    return NULL;
+  }
+
+  time(&chip8->tiempoInicio); // Guardar el tiempo actual (inicio del juego)
 
   chip8_log("INFO: Inicializando memoria y configuración de la pantalla\n");
-  inicializarMemoria(&chip8, modosuperchip8);
+  inicializarMemoria(chip8, modosuperchip8);
+  if (chip8->memoria == NULL || chip8->pantalla == NULL)
+  {
+    chip8_log("ERROR: No se pudo asignar memoria para Chip8\n");
+    free(chip8->rom_path);
+    free(chip8);
+    return NULL;
+  }
+
+  if (chip8->memoria == NULL || chip8->pantalla == NULL)
+  {
+    chip8_log("ERROR: No se pudo asignar memoria para Chip8\n");
+    free(chip8);
+    return NULL;
+  }
 
   chip8_log("INFO: Inicializando temporizadores\n");
-  chip8timersInit(&chip8.delay_timer, &chip8.sound_timer);
-  memset(chip8.stack, 0, sizeof(chip8.stack));
-  memset(chip8.memoria, 0, sizeof(chip8.memoria));
-  chip8inputInitTeclado(&chip8.teclado[0], &chip8.esc);
-  // chip8displayInitPantalla(&chip8.pantalla[0]);
-  chip8opcodesInit(&chip8);
+  chip8timersInit(&chip8->delay_timer, &chip8->sound_timer);
+  memset(chip8->stack, 0, sizeof(chip8->stack));
+  memset(chip8->memoria, 0, sizeof(chip8->memoria));
+  chip8inputInitTeclado(&chip8->teclado[0], &chip8->esc);
+  chip8opcodesInit(chip8);
+
+  chip8_log(rom_path);
 
   FILE *rom = fopen(rom_path, "rb");
-
   if (rom == NULL)
   {
     chip8_log("ERROR: No se pudo abrir el archivo ROM\n");
+    free(chip8->memoria);
+    free(chip8->pantalla);
+    free(chip8->rom_path);
+    free(chip8);
+    return NULL;
   }
+
   chip8_log("INFO: Cargando ROM en memoria\n");
-  fread(&chip8.memoria[0x200], 1, 4096 - 0x200, rom);
+  fseek(rom, 0, SEEK_END);
+  long rom_size = ftell(rom);
+  rewind(rom);
+
+  if (rom_size > (4096 - 0x200))
+  {
+    chip8_log("ERROR: La ROM es demasiado grande para la memoria Chip8 estándar\n");
+    fclose(rom);
+    free(chip8->memoria);
+    free(chip8->pantalla);
+    free(chip8);
+    return NULL;
+  }
+  fread(&chip8->memoria[0x200], 1, 4096 - 0x200, rom);
   fclose(rom);
 
   chip8_log("INFO: Iniciando ciclo de ejecución\n");
+
+  return chip8;
 }

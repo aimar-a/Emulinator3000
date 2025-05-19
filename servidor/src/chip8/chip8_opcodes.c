@@ -55,6 +55,13 @@ void chip8opcodesInit(Chip8 *chip8_)
 
 void chip8opcodesEvaluate(uint16_t opcode)
 {
+  if (chip8 == NULL)
+  {
+    printf("ERROR");
+    chip8_log("ERROR: El puntero chip8 no está inicializado\n");
+    return;
+  }
+
   chip8_log("INFO: Evaluating opcode: 0x%X\n", opcode);
 
   uint8_t x = (opcode & 0x0F00) >> 8;
@@ -66,6 +73,7 @@ void chip8opcodesEvaluate(uint16_t opcode)
   switch (opcode & 0xF000)
   {
   case 0x0000:
+    printf("Opcode ejecutado: 0x%04X\n", opcode);
     switch (opcode)
     {
     case 0x00E0:
@@ -74,6 +82,11 @@ void chip8opcodesEvaluate(uint16_t opcode)
       break;
     case 0x00EE:
       // Return from a subroutine
+      if (chip8->sp < 0 || chip8->sp >= 16)
+      {
+        chip8_log("ERROR: Stack pointer fuera de los límites\n");
+        return;
+      }
       chip8->pc = chip8->stack[chip8->sp];
       chip8->sp--;
       break;
@@ -316,6 +329,7 @@ void chip8opcodesEvaluate(uint16_t opcode)
       break;
     case 0x0033:
       // Store BCD representation of Vx in memory locations I, I+1, I+2
+
       chip8->memoria[chip8->I] = chip8->V[x] / 100;
       chip8->memoria[chip8->I + 1] = (chip8->V[x] / 10) % 10;
       chip8->memoria[chip8->I + 2] = chip8->V[x] % 10;
