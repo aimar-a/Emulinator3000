@@ -50,6 +50,7 @@ void nes_apu_init(APU *apu)
 {
   memset(apu, 0, sizeof(APU));
 
+  /*
   // Initialize SDL audio subsystem
   if (SDL_Init(SDL_INIT_AUDIO) != 0)
   {
@@ -73,6 +74,7 @@ void nes_apu_init(APU *apu)
   }
 
   SDL_PauseAudioDevice(apu->audio_device, 0);
+  */
 
   // Initialize noise shift register
   apu->noise.shift_register = 1;
@@ -341,7 +343,7 @@ void nes_apu_generate_samples(APU *apu, size_t sample_count)
     // Send buffer to audio device when full
     if (apu->audio_buffer_pos >= BUFFER_SIZE)
     {
-      SDL_QueueAudio(apu->audio_device, apu->audio_buffer, BUFFER_SIZE * sizeof(float));
+      // SDL_QueueAudio(apu->audio_device, apu->audio_buffer, BUFFER_SIZE * sizeof(float));
       apu->audio_buffer_pos = 0;
     }
   }
@@ -367,5 +369,5 @@ void nes_apu_clock(APU *apu)
 // Clean up the APU
 void nes_apu_cleanup(APU *apu)
 {
-  SDL_CloseAudioDevice(apu->audio_device);
+  // SDL_CloseAudioDevice(apu->audio_device);
 }

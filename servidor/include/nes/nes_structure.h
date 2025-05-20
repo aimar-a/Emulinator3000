@@ -166,7 +166,7 @@ typedef struct
   uint8_t frame_counter;
 
   // Audio output
-  SDL_AudioDeviceID audio_device;
+  // SDL_AudioDeviceID audio_device;
   float audio_buffer[1024]; // Buffer for audio output
   size_t audio_buffer_pos;
 } APU;

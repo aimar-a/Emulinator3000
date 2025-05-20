@@ -16,7 +16,9 @@ void emulate_chip8(socket_t sock)
     return;
   }
 
-  printf("INFO: Pantalla inicializada correctamente.\n");
+  // Inicializar el audio
+  chip8timersInitAudio();
+
   // Buffer para la pantalla
   uint8_t screen_buffer[SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8 * sizeof(uint32_t)];
 
@@ -55,13 +57,19 @@ void emulate_chip8(socket_t sock)
       exit_signal = 0x00;
       net::send_data(sock, &exit_signal, sizeof(exit_signal));
     }
-    //.
+
     // Enviar el estado del controlador al servidor
     net::send_data(sock, &keyboard_buffer, sizeof(uint8_t) * 16);
+
+    // Recibir el estado del audio timer
+    uint8_t sound_timer = 0;
+    net::receive_data(sock, &sound_timer, sizeof(sound_timer));
+    chip8timersSetSound(sound_timer);
 
     // Controlar la velocidad de la emulación
     // SDL_Delay(16); // Aproximadamente 60 FPS
   }
 
   chip8displayDestroyPantalla();
+  chip8audioDestroyAudio();
 }

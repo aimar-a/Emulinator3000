@@ -22,7 +22,7 @@ void server_run();
 void clienteAnonimo(socket_t client_socket);
 void clienteConocido(socket_t client_socket, char *username);
 void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *romCount);
-void servirChip8(socket_t sock, char *selectedRom);
+void servirChip8(socket_t sock, char *selectedRom, char *username);
 void servirNES(socket_t sock);
 
 #endif // SERVER_H

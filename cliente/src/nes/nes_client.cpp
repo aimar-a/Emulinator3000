@@ -46,6 +46,19 @@ void emulate_nes(socket_t sock)
     // Enviar el estado del controlador al servidor
     net::send_data(sock, controllers, sizeof(uint8_t) * 2);
 
+    /*
+    // Recibir si poner en cola audio
+    uint8_t queue_audio = 0;
+    net::receive_data(sock, &queue_audio, sizeof(queue_audio));
+    if (queue_audio)
+    {
+      // Recibir audio
+      float audio_buffer[BUFFER_SIZE];
+      net::receive_data(sock, audio_buffer, sizeof(audio_buffer));
+      nes_audio_queue(audio_buffer);
+    }
+    */
+
     // Controlar la velocidad de la emulación
     // SDL_Delay(16); // Aproximadamente 60 FPS
   }

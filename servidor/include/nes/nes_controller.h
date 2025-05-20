@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "nes_structure.h"
-#include <SDL2/SDL.h>
 #include "nes_logger.h"
 
 // Button bit positions (matches NES controller shift order)

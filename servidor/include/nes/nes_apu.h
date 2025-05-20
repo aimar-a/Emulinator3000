@@ -1,7 +1,6 @@
 #ifndef NES_APU_H
 #define NES_APU_H
 
-#include <SDL2/SDL.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>

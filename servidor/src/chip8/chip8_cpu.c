@@ -2,7 +2,6 @@
 #include <time.h>
 #include "bd.h"
 #include <stdio.h>
-#include "menu_cmd.h"
 #include <stdbool.h>
 
 void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
@@ -34,8 +33,6 @@ void inicializarMemoria(Chip8 *chip8, bool modosuperchip8)
 
 void chip8step(Chip8 *chip8)
 {
-  SDL_Delay(selectedDelay);
-
   uint16_t opcode = (chip8->memoria[chip8->pc] << 8) | chip8->memoria[chip8->pc + 1];
   chip8->pc += 2;
 
@@ -48,7 +45,7 @@ void chip8step(Chip8 *chip8)
   chip8opcodesEvaluate(opcode);
 }
 
-void chip8terminate(Chip8 *chip8)
+void chip8terminate(Chip8 *chip8, char *currentUser)
 {
   // BD INSERTAR PARTIDA
   time(&chip8->tiempoFin); // guardamos el tiempo actual (cuando se ha empezado a jugar) en tiempoInicio

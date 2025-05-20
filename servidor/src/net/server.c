@@ -261,7 +261,7 @@ void clienteConocido(socket_t client_socket, char *username)
         return;
       }
       printf("ROM seleccionada: %s\n", selectedRom);
-      servirChip8(client_socket, selectedRom);
+      servirChip8(client_socket, selectedRom, username);
       break;
     }
 
@@ -628,7 +628,7 @@ void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *rom
 #endif
 }
 
-void servirChip8(socket_t sock, char *selectedRom)
+void servirChip8(socket_t sock, char *selectedRom, char *username)
 {
   char fullRomPath[512];
 
@@ -664,7 +664,6 @@ void servirChip8(socket_t sock, char *selectedRom)
   if (!sendData(sock, &isSuperChip8, sizeof(isSuperChip8)))
   {
     printf("Error al enviar el modo SuperChip8: %d\n", WSAGetLastError());
-    chip8terminate(chip8);
     return;
   }
 
@@ -706,12 +705,19 @@ void servirChip8(socket_t sock, char *selectedRom)
       break;
     }
 
+    // Enviar audio timer al cliente
+    if (!sendData(sock, &chip8->sound_timer, sizeof(chip8->sound_timer)))
+    {
+      printf("Error al enviar audio timer: %d\n", WSAGetLastError());
+      break;
+    }
+
     // Lógica de emulación CHIP8
     // sleep_ms(16); // ~60 FPS
   }
 
   printf("INFO: CHIP8 emulation finished\n");
-  chip8terminate(chip8);
+  chip8terminate(chip8, username);
 }
 
 void servirNES(socket_t sock)

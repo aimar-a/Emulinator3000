@@ -13,11 +13,11 @@ ifeq ($(OS),Windows_NT)
     # Windows
     CFLAGS += -D_WIN32
     CXXFLAGS += -D_WIN32
-    SERVER_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32 -lsqlite3
+    SERVER_LDFLAGS = -lmingw32 -lws2_32
     CLIENT_LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lws2_32
 else
     # Linux/macOS
-    SERVER_LDFLAGS = -lSDL2 -lSDL2_ttf -lsqlite3
+    SERVER_LDFLAGS =
     CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf
 endif
 

@@ -1,14 +1,11 @@
-#define SDL_MAIN_HANDLED // Evita que SDL2 defina su propia función main
 #include <SDL2/SDL.h>
 #include "sqlite3.h"
-#include <SDL2/SDL_ttf.h> // Si usas texto en la UI
-#include "menu_sdl.h"
-#include "menu_cmd.h"
 #include "bd.h"
 #include "config_file.h"
 extern sqlite3 *db;
 #include "nes_cpu.h"
 #include "server.h"
+#include "directories.h"
 
 /*
 
@@ -49,7 +46,7 @@ int main(int argc, char *argv[])
     // no se hace la mejor gestion de memoria ya que en lugar de usar memoria dinamica (porq no sabemos el tamano exacto)
     // usamos memoria estatica por lo que estaremos usando mas memoria de la necesaria
     // mejorar esto para futuras entregas
-    char romsCP8[200][256];
+    char romsCP8[200][MAX_ROM_PATH_LENGTH];
     int count = 0;
     listarROMsRecursivo("resources/chip8-roms", romsCP8, &count);
 
@@ -69,7 +66,7 @@ int main(int argc, char *argv[])
     }
 
     // lo mismo pero para insertar los roms de la NES
-    char romsNES[200][256];
+    char romsNES[200][MAX_ROM_PATH_LENGTH];
     int count2 = 0;
 
     listarROMsRecursivoNES("resources/nes-roms", romsNES, &count2);

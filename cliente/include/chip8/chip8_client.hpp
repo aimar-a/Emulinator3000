@@ -2,6 +2,7 @@
 #define CHIP8_CLIENT_HPP
 #include "chip8_display.hpp"
 #include "chip8_input.hpp"
+#include "chip8_audio.hpp"
 #include "network_util.hpp"
 
 void emulate_chip8(socket_t sock);

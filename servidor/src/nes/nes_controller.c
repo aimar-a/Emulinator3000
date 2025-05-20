@@ -1,6 +1,5 @@
 // nes_controller.c
 #include "nes_controller.h"
-#include <SDL2/SDL.h>
 
 void nes_set_button(NES *nes, uint8_t player, uint8_t button, bool pressed)
 {
@@ -74,83 +73,4 @@ void nes_write_controller(NES *nes, uint16_t address, uint8_t value)
   {
     nes_log_error("ERROR: Invalid controller write at 0x%04X\n", address);
   }
-}
-
-int nes_controller_update(NES *nes)
-{
-  SDL_Event event;
-  while (SDL_PollEvent(&event))
-  {
-    if (event.type == SDL_QUIT)
-    {
-      return 1; // Exit signal
-    }
-
-    if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
-    {
-      bool pressed = (event.type == SDL_KEYDOWN);
-
-      // Player 1 controls
-      switch (event.key.keysym.sym)
-      {
-      case SDLK_z:
-        nes_set_button(nes, 0, BUTTON_A, pressed);
-        break;
-      case SDLK_x:
-        nes_set_button(nes, 0, BUTTON_B, pressed);
-        break;
-      case SDLK_RSHIFT:
-        nes_set_button(nes, 0, BUTTON_SELECT, pressed);
-        break;
-      case SDLK_RETURN:
-        nes_set_button(nes, 0, BUTTON_START, pressed);
-        break;
-      case SDLK_UP:
-        nes_set_button(nes, 0, BUTTON_UP, pressed);
-        break;
-      case SDLK_DOWN:
-        nes_set_button(nes, 0, BUTTON_DOWN, pressed);
-        break;
-      case SDLK_LEFT:
-        nes_set_button(nes, 0, BUTTON_LEFT, pressed);
-        break;
-      case SDLK_RIGHT:
-        nes_set_button(nes, 0, BUTTON_RIGHT, pressed);
-        break;
-
-      // Player 2 controls
-      case SDLK_v:
-        nes_set_button(nes, 1, BUTTON_A, pressed);
-        break;
-      case SDLK_b:
-        nes_set_button(nes, 1, BUTTON_B, pressed);
-        break;
-      case SDLK_n:
-        nes_set_button(nes, 1, BUTTON_SELECT, pressed);
-        break;
-      case SDLK_m:
-        nes_set_button(nes, 1, BUTTON_START, pressed);
-        break;
-      case SDLK_i:
-        nes_set_button(nes, 1, BUTTON_UP, pressed);
-        break;
-      case SDLK_k:
-        nes_set_button(nes, 1, BUTTON_DOWN, pressed);
-        break;
-      case SDLK_j:
-        nes_set_button(nes, 1, BUTTON_LEFT, pressed);
-        break;
-      case SDLK_l:
-        nes_set_button(nes, 1, BUTTON_RIGHT, pressed);
-        break;
-
-      case SDLK_ESCAPE:
-        return 1; // Exit on ESC
-
-      default:
-        break;
-      }
-    }
-  }
-  return 0;
 }
