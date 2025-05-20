@@ -45,7 +45,6 @@ void chip8step(Chip8 *chip8)
   }
   // chip8displayPrintPantalla();
   chip8timersDecrement();
-  chip8inputCapturarTeclado();
   chip8opcodesEvaluate(opcode);
 }
 

@@ -21,7 +21,7 @@ void emulate_chip8(socket_t sock)
   uint8_t screen_buffer[SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8 * sizeof(uint32_t)];
 
   // Buffer para el input
-  uint16_t keyboard = 0;
+  uint8_t keyboard_buffer[16];
 
   // Bucle principal de emulación
   while (1)
@@ -42,7 +42,7 @@ void emulate_chip8(socket_t sock)
     chip8displayPrintPantalla(screen_buffer);
 
     // Leer eventos de entrada
-    if (chip8inputCapturarTeclado(&keyboard))
+    if (chip8inputCapturarTeclado(keyboard_buffer))
     {
       // Enviar señal de salida al servidor
       exit_signal = 0x01;
@@ -57,7 +57,7 @@ void emulate_chip8(socket_t sock)
     }
 
     // Enviar el estado del controlador al servidor
-    net::send_data(sock, &keyboard, sizeof(keyboard));
+    net::send_data(sock, &keyboard_buffer, sizeof(uint8_t) * 16);
 
     // Controlar la velocidad de la emulación
     // SDL_Delay(16); // Aproximadamente 60 FPS

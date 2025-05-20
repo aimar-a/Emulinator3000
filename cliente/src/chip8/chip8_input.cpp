@@ -13,7 +13,7 @@ SDL_KeyCode teclado_equivalente[NUM_KEYS] = {
 };
 
 // Mapea las teclas del teclado de la máquina
-bool chip8inputCapturarTeclado(uint16_t *teclado)
+bool chip8inputCapturarTeclado(uint8_t *teclado)
 {
   bool esc = false;
 
@@ -37,7 +37,7 @@ bool chip8inputCapturarTeclado(uint16_t *teclado)
       {
         if (evento.key.keysym.sym == teclado_equivalente[i])
         {
-          *teclado |= (1 << i);
+          teclado[i] = 1;
           printf("INFO: Tecla mapeada presionada: %d\n", i);
         }
       }
@@ -49,7 +49,7 @@ bool chip8inputCapturarTeclado(uint16_t *teclado)
       {
         if (evento.key.keysym.sym == teclado_equivalente[i])
         {
-          *teclado &= ~(1 << i);
+          teclado[i] = 0;
           printf("INFO: Tecla mapeada liberada: %d\n", i);
         }
       }

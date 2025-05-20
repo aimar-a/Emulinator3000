@@ -5,6 +5,6 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
-bool chip8inputCapturarTeclado(uint16_t *teclado);
+bool chip8inputCapturarTeclado(uint8_t *teclado);
 
 #endif // !INPUT_H

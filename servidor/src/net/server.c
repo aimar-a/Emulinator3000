@@ -682,7 +682,7 @@ void servirChip8(socket_t sock, char *selectedRom)
     }
 
     // Enviar datos de pantalla al cliente
-    if (!sendData(sock, chip8->pantalla, sizeof(chip8->pantalla)))
+    if (!sendData(sock, chip8->pantalla, sizeof(uint8_t) * SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8))
     {
       printf("Error al enviar datos de pantalla: %d\n", WSAGetLastError());
       break;
@@ -700,14 +700,14 @@ void servirChip8(socket_t sock, char *selectedRom)
       break;
     }
 
-    if (!receiveData(sock, chip8->teclado, sizeof(chip8->teclado), &bytes_received))
+    if (!receiveData(sock, chip8->teclado, sizeof(uint8_t) * 16, &bytes_received))
     {
       printf("Error al recibir datos del teclado: %d\n", WSAGetLastError());
       break;
     }
 
     // Lógica de emulación CHIP8
-    sleep_ms(16); // ~60 FPS
+    // sleep_ms(16); // ~60 FPS
   }
 
   printf("INFO: CHIP8 emulation finished\n");

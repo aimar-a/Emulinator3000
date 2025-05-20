@@ -78,5 +78,4 @@ void chip8displayPrintPantalla(uint8_t *pantalla)
     }
   }
   SDL_RenderPresent(renderer);
-  printf("INFO: Pantalla renderizada.\n");
 }
