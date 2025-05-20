@@ -13,6 +13,7 @@
 #include "chip8_structure.h"
 #include <SDL2/SDL.h>
 #include "chip8_logger.h"
+#include "chip8_display.h"
 
 extern int selectedDelay;
 Chip8 *chip8init(char *rom_path);

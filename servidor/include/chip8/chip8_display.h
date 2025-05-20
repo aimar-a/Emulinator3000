@@ -10,6 +10,7 @@
 #include <string.h>
 #include "config_file.h"
 
+void chip8displaySetPantalla(uint8_t *pantalla_);
 void chip8displayLimpiarPantalla();
 uint8_t chip8displayDrawSprite(int x, int y, uint8_t *sprite, int height);
 

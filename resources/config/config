@@ -20,6 +20,6 @@ createbbdd=false
 deletebbdd=false
 
 [Logger]
-log_chip8=false
+log_chip8=true
 log_nes=true
 

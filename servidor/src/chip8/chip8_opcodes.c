@@ -101,14 +101,14 @@ void chip8opcodesEvaluate(uint16_t opcode)
       modosuperchip8 = false;
       // SCREEN_WIDTH=64;
       // SCREEN_HEIGHT=32;
-      chip8displayLimpiarPantalla();
+      // chip8displayLimpiarPantalla();
       break;
 
     case 0x00FF: // Activar modo super chip8
       modosuperchip8 = true;
       // SCREEN_WIDTH=128;
       // SCREEN_HEIGHT=64;
-      chip8displayLimpiarPantalla();
+      // chip8displayLimpiarPantalla();
       break;
     default:
       // Call RCA 1802 program at address NNN

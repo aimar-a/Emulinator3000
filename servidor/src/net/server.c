@@ -652,29 +652,63 @@ void servirChip8(socket_t sock, char *selectedRom)
     return;
   }
 
+  // Enviar si es SuperChip8 o no
+  uint8_t isSuperChip8 = 0;
+  if (strstr(selectedRom, ".ch8") != NULL)
+  {
+    isSuperChip8 = 0;
+  }
+  else if (strstr(selectedRom, ".s8") != NULL) // nose si esta bien
+  {
+    isSuperChip8 = 1;
+  }
+  if (!sendData(sock, &isSuperChip8, sizeof(isSuperChip8)))
+  {
+    printf("Error al enviar el modo SuperChip8: %d\n", WSAGetLastError());
+    chip8terminate(chip8);
+    return;
+  }
+
   while (1)
   {
     // Lógica de emulación CHIP8
 
     chip8step(chip8);
 
+    uint8_t exit_signal = 0; // TODO: hacer que se ponga 1 cuando el server lo pida (crash)
+    if (!sendData(sock, &exit_signal, sizeof(exit_signal)))
+    {
+      printf("Error al enviar señal de salida: %d\n", WSAGetLastError());
+      break;
+    }
+
     // Enviar datos de pantalla al cliente
     if (!sendData(sock, chip8->pantalla, SCREEN_WIDTH * SCREEN_HEIGHT / 8))
     {
-
       printf("Error al enviar datos de pantalla: %d\n", WSAGetLastError());
+      break;
+    }
+
+    if (!receiveData(sock, &exit_signal, sizeof(exit_signal), &bytes_received))
+    {
+      printf("Error al recibir señal de salida: %d\n", WSAGetLastError());
+      break;
+    }
+
+    if (exit_signal == 0x01)
+    {
+      printf("Señal de salida recibida del cliente\n");
+      break;
+    }
+
+    if (!receiveData(sock, chip8->teclado, sizeof(chip8->teclado), &bytes_received))
+    {
+      printf("Error al recibir datos del teclado: %d\n", WSAGetLastError());
       break;
     }
 
     // Lógica de emulación CHIP8
     sleep_ms(16); // ~60 FPS
-
-    // Verificar si el cliente sigue conectado
-    if (chip8->esc)
-    {
-      printf("Cliente solicita salir...\n");
-      break;
-    }
   }
 
   chip8terminate(chip8);

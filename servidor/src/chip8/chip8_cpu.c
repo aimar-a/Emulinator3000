@@ -112,7 +112,6 @@ void chip8terminate(Chip8 *chip8)
 
 Chip8 *chip8init(char *rom_path)
 {
-
   chip8_log_clear();
   chip8_log("INFO: Inicializando CPU\n");
 
@@ -125,11 +124,6 @@ Chip8 *chip8init(char *rom_path)
     return NULL;
   }
 
-  if (chip8->pantalla == NULL)
-  {
-    printf("JODER PANTALLA");
-  }
-
   chip8->esc = 0;
   memset(chip8->V, 0, sizeof(chip8->V));
   chip8->pc = 0x200;
@@ -137,40 +131,13 @@ Chip8 *chip8init(char *rom_path)
   chip8->sp = 0;
 
   chip8->rom_path = strdup(rom_path);
-  if (chip8->rom_path == NULL)
-  {
-    chip8_log("ERROR: No se pudo asignar memoria para rom_path\n");
-    if (chip8->memoria != NULL)
-      free(chip8->memoria);
-    if (chip8->pantalla != NULL)
-      free(chip8->pantalla);
-    free(chip8);
-    return NULL;
-  }
 
   time(&chip8->tiempoInicio); // Guardar el tiempo actual (inicio del juego)
 
   chip8_log("INFO: Inicializando memoria y configuración de la pantalla\n");
   inicializarMemoria(chip8, modosuperchip8);
-  if (chip8->memoria == NULL || chip8->pantalla == NULL)
-  {
-    chip8_log("ERROR: No se pudo asignar memoria para Chip8\n");
-    if (chip8->rom_path != NULL)
-      free(chip8->rom_path);
-    if (chip8->memoria != NULL)
-      free(chip8->memoria);
-    if (chip8->pantalla != NULL)
-      free(chip8->pantalla);
-    free(chip8);
-    return NULL;
-  }
 
-  if (chip8->memoria == NULL || chip8->pantalla == NULL)
-  {
-    chip8_log("ERROR: No se pudo asignar memoria para Chip8\n");
-    free(chip8);
-    return NULL;
-  }
+  chip8displaySetPantalla(chip8->pantalla);
 
   chip8_log("INFO: Inicializando temporizadores\n");
   chip8timersInit(&chip8->delay_timer, &chip8->sound_timer);

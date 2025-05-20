@@ -2,14 +2,18 @@
 
 uint8_t *pantalla;
 
+// Inicializa la pantalla
+void chip8displaySetPantalla(uint8_t *pantalla_)
+{
+  pantalla = pantalla_;
+}
+
 // Limpia la pantalla
 void chip8displayLimpiarPantalla()
 {
-
   chip8_log("INFO: Limpiando pantalla...\n");
   for (int i = 0; i < SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8; i++)
   {
-
     pantalla[i] = 0;
   }
   // chip8displayPrintPantalla();

@@ -95,11 +95,27 @@ int showSettingsWindow(socket_t sock)
 {
   char selectedRom[256] = ""; // Inicializar la variable de la ROM seleccionada
 
+  if (SDL_Init(SDL_INIT_VIDEO) < 0)
+  {
+    fprintf(stderr, "SDL could not initialize! Error: %s\n", SDL_GetError());
+    return 0;
+  }
+
   SDL_Window *settingsWindow = SDL_CreateWindow("Settings", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_SHOWN);
-  SDL_Renderer *settingsRenderer = SDL_CreateRenderer(settingsWindow, -1, SDL_RENDERER_ACCELERATED);
+  SDL_Renderer *settingsRenderer = SDL_CreateRenderer(settingsWindow, -1, SDL_RENDERER_SOFTWARE);
+  if (!settingsWindow || !settingsRenderer)
+  {
+    fprintf(stderr, "SDL initialization failed: %s\n", SDL_GetError());
+    return 0;
+  }
 
   TTF_Init();
   TTF_Font *font = TTF_OpenFont("resources/fonts/Arial.ttf", 24); // Tamaño de fuente
+  if (!font)
+  {
+    fprintf(stderr, "Failed to load font: %s\n", TTF_GetError());
+    return 0;
+  }
 
   SDL_Event event;
   int running = 1;
@@ -109,6 +125,12 @@ int showSettingsWindow(socket_t sock)
   int romCount = 0;
 
   net::receive_data(sock, &romCount, sizeof(romCount));
+  if (romCount <= 0 || romCount > 256)
+  {
+    fprintf(stderr, "Invalid romCount: %d\n", romCount);
+    return 0;
+  }
+
   for (int i = 0; i < romCount; i++)
   {
     net::receive_data(sock, romOptions[i], sizeof(romOptions[i]));
@@ -289,14 +311,6 @@ int showSettingsWindow(socket_t sock)
 
   if (playGame)
   {
-    if (!chip8displayInitPantalla(NULL, false)) // Cambia a true si estás en modo SuperChip8
-    {
-      printf("ERROR: No se pudo inicializar la pantalla en el cliente.\n");
-      return 0;
-    }
-
-    unsigned char option_socket = 0xE0;
-
     // Depuración: Verificar el contenido inicial de selectedRom
     printf("ROM seleccionada antes de agregar .ch8: %s (longitud: %zu)\n", selectedRom, strlen(selectedRom));
 
@@ -318,46 +332,13 @@ int showSettingsWindow(socket_t sock)
     // Depuración: Verificar el contenido después de agregar .ch8
     printf("ROM seleccionada después de agregar .ch8: %s (longitud: %zu)\n", selectedRom, strlen(selectedRom));
 
+    unsigned char option_socket = 0xE0;
+
     // Enviar datos al servidor
     net::send_data(sock, &option_socket, sizeof(option_socket));
     net::send_data(sock, selectedRom, strlen(selectedRom) + 1); // Incluir el carácter nulo
 
-    if (playGame)
-    {
-      // Inicializar la pantalla en el cliente
-      if (!chip8displayInitPantalla(NULL, false)) // Cambia a true si estás en modo SuperChip8
-      {
-        printf("ERROR: No se pudo inicializar la pantalla en el cliente.\n");
-        return 0;
-      }
-
-      unsigned char option_socket = 0xE0; // Comando para iniciar la emulación
-
-      // Enviar comando para iniciar la emulación
-      net::send_data(sock, &option_socket, sizeof(option_socket));
-      net::send_data(sock, selectedRom, strlen(selectedRom) + 1); // Incluir el carácter nulo
-
-      // Bucle para recibir datos de la pantalla desde el servidor
-      uint8_t pantalla[SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8];
-      while (1)
-      {
-        printf("Esperando datos de la pantalla...\n");
-
-        if (!net::receive_data(sock, pantalla, sizeof(pantalla)))
-        {
-          printf("ERROR: No se pudieron recibir datos de la pantalla.\n");
-          break;
-        }
-
-        printf("Datos de pantalla recibidos. Renderizando...\n");
-
-        // Renderizar la pantalla en el cliente
-        chip8displayPrintPantalla(pantalla);
-      }
-
-      // Destruir la pantalla al finalizar
-      chip8displayDestroyPantalla();
-    }
+    emulate_chip8(sock); // Llamar a la función de emulación de CHIP8
   }
 
   return 1;

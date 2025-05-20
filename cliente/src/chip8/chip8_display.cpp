@@ -5,9 +5,8 @@ Screen screenSDL;
 // valores por defecto (display chip8: 64x32)
 
 // Inicializa SDL y crea la ventana y el renderer
-int chip8displayInitPantalla(uint8_t *pantalla_, bool modosuperchip8)
+int chip8displayInitPantalla(bool modosuperchip8)
 {
-
   cargarConfiguracion("resources/config/config"); // Especificar la ruta de tu archivo de configuración
 
   // si estamos en modosuperchip8 cambiamos los valores del display

@@ -1,5 +1,5 @@
-#ifndef DISPLAY_HPP
-#define DISPLAY_HPP
+#ifndef CHIP8_DISPLAY_HPP
+#define CHIP8_DISPLAY_HPP
 
 #include <SDL2/SDL.h>
 // #include "superchip8bool.h"
@@ -19,7 +19,7 @@ typedef struct
   int running;
 } Screen;
 void cargarConfiguracion(const char *archivo);
-int chip8displayInitPantalla(uint8_t *pantalla_, bool modosuperchip8);
+int chip8displayInitPantalla(bool modosuperchip8);
 void chip8displayDestroyPantalla();
 void chip8displayPrintPantalla(uint8_t *pantalla);
 

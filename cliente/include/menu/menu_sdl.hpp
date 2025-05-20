@@ -13,7 +13,7 @@
 // #include "chip8_input.h"
 // #include "chip8_timers.h"
 // #include "chip8_opcodes.h"
-#include "chip8_display.hpp"
+#include "chip8_client.hpp"
 #include "network_util.hpp"
 
 int showSettingsWindow();
