@@ -55,7 +55,7 @@ void emulate_chip8(socket_t sock)
       exit_signal = 0x00;
       net::send_data(sock, &exit_signal, sizeof(exit_signal));
     }
-
+    //.
     // Enviar el estado del controlador al servidor
     net::send_data(sock, &keyboard_buffer, sizeof(uint8_t) * 16);
 
