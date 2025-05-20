@@ -44,7 +44,7 @@ void emulate_nes(socket_t sock)
     }
 
     // Enviar el estado del controlador al servidor
-    net::send_data(sock, controllers, sizeof(controllers));
+    net::send_data(sock, controllers, sizeof(uint8_t) * 2);
 
     // Controlar la velocidad de la emulación
     // SDL_Delay(16); // Aproximadamente 60 FPS
