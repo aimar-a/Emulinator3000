@@ -1,6 +1,6 @@
 #include "chip8_audio.hpp"
 
-uint8_t *sound_timer;
+uint8_t sound_timer = 0;
 
 // Configuración del audio (solo se necesita una vez)
 void chip8timersInitAudio()
@@ -30,7 +30,7 @@ void chip8timersInitAudio()
 // Función de audio callback para generar el sonido (onda cuadrada)
 void chip8timersAudioCallback(void *userdata, uint8_t *stream, int len)
 {
-  if (*sound_timer > 0)
+  if (sound_timer > 0)
   {
     for (int i = 0; i < len; i++)
     {
@@ -46,7 +46,7 @@ void chip8timersAudioCallback(void *userdata, uint8_t *stream, int len)
 
 void chip8timersSetSound(uint8_t value)
 {
-  *sound_timer = value;
+  sound_timer = value;
 }
 
 void chip8audioDestroyAudio()
