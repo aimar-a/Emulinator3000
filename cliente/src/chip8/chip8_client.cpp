@@ -8,11 +8,11 @@ void emulate_chip8(socket_t sock)
 
   if (chip8displayInitPantalla(isSuperChip8))
   {
-    printf("INFO: Pantalla inicializada correctamente.\n");
+    printf("INFO: SIUUUUU LA PANTALLA VA JODER.\n");
   }
   else
   {
-    printf("ERROR: No se pudo inicializar la pantalla.\n");
+    printf("ERROR: LA PUTA PANTALLA SIGUE SIN IR\n");
     return;
   }
 
