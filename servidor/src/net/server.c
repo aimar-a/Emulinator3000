@@ -24,7 +24,6 @@ void server_run()
 #else
   socklen_t c;
 #endif
-  uint8_t pixels[SCREEN_WIDTH * SCREEN_HEIGHT / 8]; // Buffer CHIP8 (1 bit por pixel)
 
   // Crear socket
   if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET_VALUE)
@@ -683,7 +682,7 @@ void servirChip8(socket_t sock, char *selectedRom)
     }
 
     // Enviar datos de pantalla al cliente
-    if (!sendData(sock, chip8->pantalla, SCREEN_WIDTH * SCREEN_HEIGHT / 8))
+    if (!sendData(sock, chip8->pantalla, sizeof(chip8->pantalla)))
     {
       printf("Error al enviar datos de pantalla: %d\n", WSAGetLastError());
       break;
@@ -711,6 +710,7 @@ void servirChip8(socket_t sock, char *selectedRom)
     sleep_ms(16); // ~60 FPS
   }
 
+  printf("INFO: CHIP8 emulation finished\n");
   chip8terminate(chip8);
 }
 

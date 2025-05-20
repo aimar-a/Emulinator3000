@@ -73,7 +73,6 @@ void chip8opcodesEvaluate(uint16_t opcode)
   switch (opcode & 0xF000)
   {
   case 0x0000:
-    printf("Opcode ejecutado: 0x%04X\n", opcode);
     switch (opcode)
     {
     case 0x00E0:

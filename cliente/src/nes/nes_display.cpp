@@ -2,7 +2,6 @@
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
-static SDL_Texture *texture;
 
 void nes_display_init()
 {
@@ -31,17 +30,6 @@ void nes_display_init()
     return;
   }
   printf("INFO: SDL_CreateRenderer successful\n");
-
-  texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH_NES, SCREEN_HEIGHT_NES);
-  if (!texture)
-  {
-    printf("ERROR: SDL_CreateTexture failed: %s\n", SDL_GetError());
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-    return;
-  }
-  printf("INFO: SDL_CreateTexture successful\n");
 }
 
 void nes_display_draw(uint8_t *screen_buffer)
@@ -97,7 +85,6 @@ void nes_display_draw(uint8_t *screen_buffer)
 
 void nes_display_destroy()
 {
-  SDL_DestroyTexture(texture);
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();

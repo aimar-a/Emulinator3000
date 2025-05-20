@@ -17,8 +17,6 @@
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 8080
-#define SCREEN_WIDTH 64
-#define SCREEN_HEIGHT 32
 
 void server_run();
 void clienteAnonimo(socket_t client_socket);

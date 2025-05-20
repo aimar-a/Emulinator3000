@@ -2,12 +2,19 @@
 
 void emulate_chip8(socket_t sock)
 {
-  printf("INFO: Emulando CHIP8...\n");
   uint8_t isSuperChip8 = 0;
   net::receive_data(sock, &isSuperChip8, sizeof(isSuperChip8));
   printf("INFO: Modo SuperChip8: %d\n", isSuperChip8);
 
-  chip8displayInitPantalla(isSuperChip8);
+  if (chip8displayInitPantalla(isSuperChip8))
+  {
+    printf("INFO: Pantalla inicializada correctamente.\n");
+  }
+  else
+  {
+    printf("ERROR: No se pudo inicializar la pantalla.\n");
+    return;
+  }
 
   printf("INFO: Pantalla inicializada correctamente.\n");
   // Buffer para la pantalla
@@ -15,8 +22,6 @@ void emulate_chip8(socket_t sock)
 
   // Buffer para el input
   uint16_t keyboard = 0;
-
-  printf("INFO: Emulando CHIP8...\n");
 
   // Bucle principal de emulación
   while (1)
