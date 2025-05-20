@@ -5,7 +5,7 @@ void emulate_nes(socket_t sock)
   nes_display_init();
 
   // Buffer para la pantalla
-  uint8_t *screen_buffer = (uint8_t *)malloc(SCREEN_WIDTH_NES * SCREEN_HEIGHT_NES * sizeof(uint32_t));
+  uint8_t screen_buffer[SCREEN_WIDTH_NES * SCREEN_HEIGHT_NES * sizeof(uint8_t)];
 
   // Buffer para el controller
   uint8_t controllers[2];
@@ -23,7 +23,7 @@ void emulate_nes(socket_t sock)
     }
 
     // Recibir datos de la pantalla
-    net::receive_data(sock, screen_buffer, SCREEN_WIDTH_NES * SCREEN_HEIGHT_NES * sizeof(uint32_t));
+    net::receive_data(sock, screen_buffer, SCREEN_WIDTH_NES * SCREEN_HEIGHT_NES * sizeof(uint8_t));
 
     // Dibujar en la pantalla
     nes_display_draw(screen_buffer);

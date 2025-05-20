@@ -230,7 +230,7 @@ void nes_run(NES *nes, socket_t sock)
       }
 
       // Send nes screen to client
-      sendData(sock, nes->screen, SCREEN_WIDTH_NES * SCREEN_HEIGHT_NES * sizeof(uint32_t));
+      sendData(sock, nes->screen, SCREEN_WIDTH_NES * SCREEN_HEIGHT_NES * sizeof(uint8_t));
 
       // Get exit signal from client
       uint8_t exit_signal = 0;
