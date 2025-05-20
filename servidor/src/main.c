@@ -1,4 +1,3 @@
-#include <SDL2/SDL.h>
 #include "sqlite3.h"
 #include "bd.h"
 #include "config_file.h"

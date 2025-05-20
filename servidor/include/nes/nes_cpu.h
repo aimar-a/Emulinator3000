@@ -11,7 +11,6 @@
 #include "nes_ppu.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL2/SDL.h>
 #include "nes_logger.h"
 #include "nes_apu.h"
 #include "network_util.h"

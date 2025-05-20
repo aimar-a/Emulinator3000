@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <SDL2/SDL.h>
+#include <stddef.h>
 
 #define NMI_VECTOR 0xFFFA
 #define RESET_VECTOR 0xFFFC

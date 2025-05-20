@@ -3,15 +3,6 @@
 #define NUM_KEYS 16
 
 uint8_t *teclado;
-SDL_KeyCode teclado_equivalente[NUM_KEYS] = {
-    SDLK_x,                 // 0
-    SDLK_1, SDLK_2, SDLK_3, // 1, 2, 3
-    SDLK_q, SDLK_w, SDLK_e, // 4, 5, 6
-    SDLK_a, SDLK_s, SDLK_d, // 7, 8, 9
-    SDLK_z, SDLK_c,         // A, B
-    SDLK_4, SDLK_r,         // C, D
-    SDLK_f, SDLK_v          // E, F
-};
 
 // Inicializa el teclado
 void chip8inputInitTeclado(uint8_t *teclado_, bool *esc_)
