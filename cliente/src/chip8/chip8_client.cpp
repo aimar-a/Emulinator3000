@@ -20,10 +20,10 @@ void emulate_chip8(socket_t sock)
   chip8timersInitAudio();
 
   // Buffer para la pantalla
-  uint8_t screen_buffer[SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8 * sizeof(uint32_t)];
+  uint8_t screen_buffer[SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8 * sizeof(uint32_t)] = {0};
 
   // Buffer para el input
-  uint8_t keyboard_buffer[16];
+  uint8_t keyboard_buffer[16] = {0};
 
   // Bucle principal de emulación
   while (1)
