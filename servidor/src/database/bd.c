@@ -117,9 +117,7 @@ void crearBD()
     char sql5[] = "CREATE TABLE IF NOT EXISTS LOGROS ("
                   "id_logro INTEGER PRIMARY KEY AUTOINCREMENT,"
                   "nombre VARCHAR(20) NOT NULL,"
-                  "descripcion TEXT NOT NULL,"
-                  "id_juego INTEGER NOT NULL,"
-                  "FOREIGN KEY (id_juego) REFERENCES JUEGO(id_juego));";
+                  "descripcion TEXT NOT NULL);";
 
     sqlite3_prepare_v2(db, sql5, -1, &stmt, NULL);
     sqlite3_step(stmt);
@@ -289,10 +287,10 @@ void cargarLogrosDeCSV(char *nombreArchivo)
     while (fgets(linea, sizeof(linea), archivo))
     {
         char nombre[50], descripcion[200];
-        int idjuego;
+        int idlogro;
 
-        sscanf(linea, "%[^,],%[^,],%d", nombre, descripcion, &idjuego);
-        insertarLogros(nombre, descripcion, idjuego);
+        sscanf(linea, "%d,%[^,],%[^,]", &idlogro, nombre, descripcion);
+        insertarLogros(idlogro, nombre, descripcion);
     }
 
     fclose(archivo);
@@ -513,9 +511,8 @@ void insertarTiempoJugado(int tiempojugado, char *user, int idjuego)
     sqlite3_close(db);
 }
 
-void insertarLogros(char *nombre, char *descripcion, int idjuego)
+void insertarLogros(int idlogro, char *nombre, char *descripcion)
 {
-
     // Abrimos la base de datos
     if (abrirBaseDeDatos(&db))
     {
@@ -524,13 +521,13 @@ void insertarLogros(char *nombre, char *descripcion, int idjuego)
 
     sqlite3_stmt *stmt;
 
-    char sql[] = "INSERT INTO LOGROS (nombre, descripcion, id_juego) VALUES (?, ?, ?);";
+    char sql[] = "INSERT INTO LOGROS (id_logro, nombre, descripcion) VALUES (?, ?, ?);";
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
-    sqlite3_bind_text(stmt, 1, nombre, strlen(nombre), SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, descripcion, strlen(descripcion), SQLITE_STATIC);
-    sqlite3_bind_int(stmt, 3, idjuego);
+    sqlite3_bind_int(stmt, 1, idlogro);
+    sqlite3_bind_text(stmt, 2, nombre, strlen(nombre), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, descripcion, strlen(descripcion), SQLITE_STATIC);
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -541,8 +538,7 @@ void insertarLogros(char *nombre, char *descripcion, int idjuego)
 }
 
 void insertarLogrosUsuarios(char *user, int idlogro, char *fecha)
-{ // en principio guardamos la FECHA como texto ya veremos mas adelante si hay que cambiarlo o no
-
+{
     // Abrimos la base de datos
     if (abrirBaseDeDatos(&db))
     {
@@ -550,9 +546,31 @@ void insertarLogrosUsuarios(char *user, int idlogro, char *fecha)
     }
 
     sqlite3_stmt *stmt;
+    int existe = 0;
 
+    // Verificar si el usuario ya tiene el logro
+    char checkSql[] = "SELECT 1 FROM LOGROS_USUARIO WHERE user = ? AND id_logro = ?";
+    if (sqlite3_prepare_v2(db, checkSql, -1, &stmt, NULL) == SQLITE_OK)
+    {
+        sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);
+        sqlite3_bind_int(stmt, 2, idlogro);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW)
+        {
+            existe = 1;
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    if (existe)
+    {
+        printf("⚠️ El usuario '%s' ya tiene el logro '%i'. No se insertó de nuevo.\n", user, idlogro);
+        sqlite3_close(db);
+        return;
+    }
+
+    // Insertar el logro si no existe
     char sql[] = "INSERT INTO LOGROS_USUARIO (user, id_logro, fecha) VALUES (?, ?, ?);";
-
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     sqlite3_bind_text(stmt, 1, user, strlen(user), SQLITE_STATIC);

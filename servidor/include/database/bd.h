@@ -23,7 +23,7 @@ void cargarJuegos();
 
 void insertarJuego(char *titulo, char *rom);
 void insertarTiempoJugado(int tiempojugado, char *user, int idjuego);
-void insertarLogros(char *nombre, char *descripcion, int idjuego);
+void insertarLogros(int idlogro, char *nombre, char *descripcion);
 void insertarLogrosUsuarios(char *user, int idlogro, char *fecha);
 void insertarAmigos(char *user1, char *user2, char *estado);
 

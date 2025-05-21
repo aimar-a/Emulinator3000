@@ -831,7 +831,7 @@ void menuLogros(socket_t sock)
     {
       while (1)
       {
-        // Mostrar detalles del logro
+        clearScreen();
         printf("Detalles del logro %d:\n", seleccion);
         printf("Nombre: %s\n", nombreLogros[seleccion - 1]);
         printf("Descripcion: %s\n", descripcionLogros[seleccion - 1]);

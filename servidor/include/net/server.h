@@ -10,6 +10,7 @@
 #include <dirent.h>
 
 #include "bd.h"
+#include "logros.h"
 #include "chip8_cpu.h"
 #include "nes_cpu.h"
 

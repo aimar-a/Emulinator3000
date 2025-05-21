@@ -162,6 +162,7 @@ void clienteAnonimo(socket_t client_socket)
       if (!existeUsuario(username))
       {
         insertarUsuarios(username, password);
+        logroBienvenido(username);
         printf("Usuario registrado: %s\n", username);
         if (!sendData(client_socket, "ACK", 4))
         {
@@ -462,7 +463,7 @@ void clienteConocido(socket_t client_socket, char *username)
       // Enviar lista de logros obtenidos
       for (int i = 0; i < cantidadLogros; i++)
       {
-        if (!sendData(client_socket, &fechaObtencion[i], strlen(fechaObtencion[i]) + 1))
+        if (!sendData(client_socket, fechaObtencion[i], strlen(fechaObtencion[i]) + 1))
         {
           printf("Error al enviar FechaObtencion: %d\n", WSAGetLastError());
           close_socket(client_socket);
@@ -734,6 +735,21 @@ void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *rom
 
 void servirChip8(socket_t sock, char *selectedRom, char *username)
 {
+  logroChip8tester(username);
+
+  if (strstr(selectedRom, "Pong") != NULL)
+  {
+    logroPingPong(username);
+  }
+  else if (strstr(selectedRom, "Cave") != NULL)
+  {
+    logroBuscandoLaSalida(username);
+  }
+  else if (strstr(selectedRom, "Tetris") != NULL)
+  {
+    logroTetris(username);
+  }
+
   char fullRomPath[512];
 
   sprintf(fullRomPath, "resources/chip8-roms/games/%s", selectedRom);
