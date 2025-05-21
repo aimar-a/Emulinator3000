@@ -417,7 +417,42 @@ void clienteConocido(socket_t client_socket, char *username)
       break;
 
     case 0x12: // Ver Amigos
-      printf("Ver Amigos..\n");
+      printf("Ver Amigos...\n");
+      int cantidadAmig = 0;
+      char **nombreAmigos = NULL;
+      int *cantidadAmigos = &cantidadAmig;
+
+      // Obtenemos la cantidad de amigos y resto de datos
+      nombreAmigos = getNombreAmigos(username, cantidadAmigos);
+
+      if (!sendData(client_socket, &cantidadAmigos, sizeof(cantidadAmigos)))
+      {
+        printf("Error al enviar CantidadAmigos: %d \n", WSAGetLastError());
+        close_socket(client_socket);
+        close_socket(server_socket);
+
+#ifdef _WIN32
+        WSACleanup();
+#endif
+        return;
+      }
+
+      // Enviar la lista de Amigos
+
+      for (int i = 0; i < cantidadAmigos; i++)
+      {
+        if (!sendData(client_socket, nombreAmigos[i], sizeof(nombreAmigos[i])))
+        {
+          printf("Error al enviar nombreAmigos: %d\n", WSAGetLastError());
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
+          WSACleanup();
+#endif
+          return;
+        }
+      }
+      
       break;
 
     case 0x13: // Ver Tiempo Jugado

@@ -728,6 +728,7 @@ void menuPerfil(socket_t sock)
     case '2':
       opcion_socket = 0x12; // Ver Amigos
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
+      // menuVerAmigos(sock); // Da un segmentation fault lo corrijo mañana
       printf("Ver Amigos no implementado\n");
       Sleep(1000);
       printf("Volviendo al menu....\n");
@@ -934,3 +935,87 @@ void mostrarPartidasJugadas(socket_t sock, char *nombreJuego)
   free(tiemposJugados);
   free(puntuacionesMaximas);
 }
+
+void menuVerAmigos(socket_t sock) // cambiar el metodo para que coja sock
+{
+  char **nombreAmigos = NULL;
+  int *cantidadAmigos = 0;
+
+  // recibimos la cantidad del servidor
+  net::receive_data(sock, &cantidadAmigos, sizeof(cantidadAmigos));
+
+  // recibimos la lista de nombres de juegos
+  nombreAmigos = (char **)malloc(*cantidadAmigos * sizeof(char *));
+  for (int i = 0; i < *cantidadAmigos; i++)
+  {
+    nombreAmigos[i] = (char *)malloc(MAX_STRING_LENGTH);
+    net::receive_data(sock, nombreAmigos[i], MAX_STRING_LENGTH);
+  }
+
+  while (1)
+  {
+    clearScreen();
+    printf("--- Amigos ---\n");
+    printf("Cantidad de Amigos: %i\n", cantidadAmigos);
+
+    if (*cantidadAmigos == -1)
+    {
+      printf("Error al obtener los amigos\n");
+      return;
+    }
+    if (*cantidadAmigos == 0)
+    {
+      printf("No tienes amigos\n");
+      return;
+    }
+    printf("Amigos de %s:\n", currentUser);
+    for (int i = 0; i < *cantidadAmigos; i++)
+    {
+      
+      printf("%d. - %s \n", i + 1, nombreAmigos[i]);
+
+    }
+
+    // printf("\nNumero del amigo para ver sus datos\n");
+
+    printf("0. Volver\n");
+    printf("Seleccione una opcion: ");
+    char opcion[MAX_STRING_LENGTH];
+    getString(opcion, MAX_STRING_LENGTH);
+    if (strcmp(opcion, "0") == 0)
+    {
+      printf("Volviendo...\n");
+      Sleep(1000);
+      // Liberar memoria
+      for (int i = 0; i < *cantidadAmigos; i++)
+      {
+        free(nombreAmigos[i]);
+      }
+      free(nombreAmigos);
+      return;
+    }
+
+    // Si se ingreso un numero valido, mostrar las partidas jugadas
+    /* int seleccion = atoi(opcion);
+    if (seleccion >= 1 && seleccion <= cantidadJuegos)
+    {
+      char *nombreJuego = nombreJuegos[seleccion - 1];
+      mostrarPartidasJugadas(sock, nombreJuego);
+    }
+    else
+    {
+      printf("Opcion invalida\n");
+      Sleep(1000);
+    }
+    printf("Volviendo al menu....\n");
+    Sleep(1000);
+  }
+  // Liberar memoria
+  for (int i = 0; i < cantidadJuegos; i++)
+  {
+    free(nombreJuegos[i]);
+  }
+  free(nombreJuegos);
+    free(tiemposSegundos); */
+  }
+} 

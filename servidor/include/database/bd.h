@@ -47,5 +47,6 @@ int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **ti
 int getNombreJuegos(char *user, char ***nombreJuegos);
 
 int getJuegosDisponibles(char ***nombreJuegos);
+char** getNombreAmigos(char *user,int *cantidad);
 
 #endif

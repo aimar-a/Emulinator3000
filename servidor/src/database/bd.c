@@ -1115,3 +1115,60 @@ int getJuegosDisponibles(char ***nombreJuegos)
     sqlite3_finalize(stmt);
     return count;
 }
+
+
+char** getNombreAmigos(char* user, int *cantidad) {
+    *cantidad = 0;
+    char ** nombreAmigos;
+
+    // Abrimos la base de datos
+    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    {
+        printf("Error al abrir la base de datos\n");
+    }
+
+    sqlite3_stmt *stmt;
+
+    const char *sql = "SELECT user1 FROM AMIGOS WHERE user2 = ? AND estado = 'aceptado'";
+    
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al preparar consulta: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return NULL;
+    }
+
+    sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
+
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        char* nombre = sqlite3_column_text(stmt, 0);
+
+        // realloc para añadir más espacio
+        char **temp = realloc(nombreAmigos, (*cantidad + 1) * sizeof(char *));
+
+        nombreAmigos[*cantidad] = strdup(nombre);
+
+        if (nombreAmigos[*cantidad] == NULL)
+        {
+            printf("Error al asignar memoria para el nombre del juego\n");
+            for (int i = 0; i < *cantidad; i++)
+            {
+                free (nombreAmigos[i]);
+            }
+            free(nombreAmigos);
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return NULL;            
+        }
+        
+
+        // (*nombreJuegos)[i] = strdup(titulo); // Copiamos el nombre del juego
+
+        // (*tiempos)[i] = tiempoJugado;
+        *cantidad++;
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return nombreAmigos;
+}
