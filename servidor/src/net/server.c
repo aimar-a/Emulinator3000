@@ -414,6 +414,76 @@ void clienteConocido(socket_t client_socket, char *username)
       break;
     case 0x11: // Ver Logros
       printf("Ver Logros..\n");
+      char **nombreLogros = NULL;
+      char **descripcionLogros = NULL;
+      char **fechaObtencion = NULL;
+      int cantidadLogros = 0;
+      // Obtenemos la cantidad de logros y resto de datos
+      cantidadLogros = getLogros(username, &nombreLogros, &descripcionLogros, &fechaObtencion);
+      // enviar cantidad de logros
+      if (!sendData(client_socket, &cantidadLogros, sizeof(cantidadLogros)))
+      {
+        printf("Error al enviar CantidadLogros: %d\n", WSAGetLastError());
+        close_socket(client_socket);
+        close_socket(server_socket);
+#ifdef _WIN32
+        WSACleanup();
+#endif
+        return;
+      }
+      // Enviar lista de nombres de logros
+      for (int i = 0; i < cantidadLogros; i++)
+      {
+        if (!sendData(client_socket, nombreLogros[i], strlen(nombreLogros[i]) + 1))
+        {
+          printf("Error al enviar NombreLogro: %d\n", WSAGetLastError());
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
+          WSACleanup();
+#endif
+          return;
+        }
+      }
+      // Enviar lista de descripciones de logros
+      for (int i = 0; i < cantidadLogros; i++)
+      {
+        if (!sendData(client_socket, descripcionLogros[i], strlen(descripcionLogros[i]) + 1))
+        {
+          printf("Error al enviar DescripcionLogro: %d\n", WSAGetLastError());
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
+          WSACleanup();
+#endif
+          return;
+        }
+      }
+      // Enviar lista de logros obtenidos
+      for (int i = 0; i < cantidadLogros; i++)
+      {
+        if (!sendData(client_socket, &fechaObtencion[i], strlen(fechaObtencion[i]) + 1))
+        {
+          printf("Error al enviar FechaObtencion: %d\n", WSAGetLastError());
+          close_socket(client_socket);
+          close_socket(server_socket);
+#ifdef _WIN32
+          WSACleanup();
+#endif
+          return;
+        }
+      }
+      // Liberar memoria
+      for (int i = 0; i < cantidadLogros; i++)
+      {
+        free(nombreLogros[i]);
+        free(descripcionLogros[i]);
+        free(fechaObtencion[i]);
+      }
+      free(nombreLogros);
+      free(descripcionLogros);
+      free(fechaObtencion);
+      printf("Datos de logros enviados\n");
       break;
 
     case 0x12: // Ver Amigos
@@ -430,7 +500,6 @@ void clienteConocido(socket_t client_socket, char *username)
         printf("Error al enviar CantidadAmigos: %d \n", WSAGetLastError());
         close_socket(client_socket);
         close_socket(server_socket);
-
 #ifdef _WIN32
         WSACleanup();
 #endif
@@ -452,7 +521,7 @@ void clienteConocido(socket_t client_socket, char *username)
           return;
         }
       }
-      
+
       break;
 
     case 0x13: // Ver Tiempo Jugado

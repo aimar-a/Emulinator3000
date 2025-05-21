@@ -18,10 +18,7 @@ extern int SCREEN_WIDTH_NES;
 extern int SCREEN_HEIGHT_NES;
 extern int SCREEN_SCALE_NES;
 
-extern bool log_chip8_enabled;
-extern bool log_nes_enabled;
-
-void cargarConfiguracion(const char *archivoConfig);
+void cargarConfiguracion();
 int cambiarEscalaChip8(int nuevaEscala);
 int cambiarEscalaSuperChip(int nuevaEscala);
 int cambiarEscalaNes(int nuevaEscala);

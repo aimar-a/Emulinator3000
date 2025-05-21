@@ -7,8 +7,6 @@ void nes_launch(socket_t sock)
   nes_log_clear();
   nes_log_instant("INFO: Launching NES\n");
 
-  cargarConfiguracion("resources/config/config");
-
   NES *nes = (NES *)malloc(sizeof(NES));
   if (!nes)
   {

@@ -320,7 +320,7 @@ void menuEscalaChip8()
   {
     clearScreen();
     printf("--- Cambiar Escala de Pantalla Chip8 ---\n");
-    // printf("Escala actual: x%d\n", SCREEN_SCALE_CHIP8);
+    printf("Escala actual: x%d\n", SCREEN_SCALE_CHIP8);
     printf("0. Volver\n");
     printf("Nueva escala: ");
 
@@ -338,7 +338,7 @@ void menuEscalaChip8()
     int nuevaEscala = atoi(input);
     if (nuevaEscala > 0)
     {
-      if (1) // cambiarEscalaChip8(nuevaEscala) == 1)
+      if (cambiarEscalaChip8(nuevaEscala) == 1)
       {
         printf("ERROR: No se pudo cambiar la escala de pantalla Chip8\n");
         Sleep(1000);
@@ -362,7 +362,7 @@ void menuEscalaSuperChip8()
   {
     clearScreen();
     printf("--- Cambiar Escala de Pantalla SuperChip8 ---\n");
-    // printf("Escala actual: x%d\n", SCREEN_SCALE_SUPERCHIP);
+    printf("Escala actual: x%d\n", SCREEN_SCALE_SUPERCHIP);
     printf("0. Volver\n");
     printf("Nueva escala: ");
 
@@ -380,7 +380,7 @@ void menuEscalaSuperChip8()
     int nuevaEscala = atoi(input);
     if (nuevaEscala > 0)
     {
-      if (1) // cambiarEscalaSuperChip(nuevaEscala) == 1)
+      if (cambiarEscalaSuperChip(nuevaEscala) == 1)
       {
         printf("ERROR: No se pudo cambiar la escala de pantalla SuperChip8\n");
         Sleep(1000);
@@ -404,7 +404,7 @@ void menuEscalaNes()
   {
     clearScreen();
     printf("--- Cambiar Escala de Pantalla NES ---\n");
-    // printf("Escala actual: x%d\n", SCREEN_SCALE_NES);
+    printf("Escala actual: x%d\n", SCREEN_SCALE_NES);
     printf("0. Volver\n");
     printf("Nueva escala: ");
 
@@ -422,7 +422,7 @@ void menuEscalaNes()
     int nuevaEscala = atoi(input);
     if (nuevaEscala > 0)
     {
-      if (1) // cambiarEscalaNes(nuevaEscala) == 1)
+      if (cambiarEscalaNes(nuevaEscala) == 1)
       {
         printf("ERROR: No se pudo cambiar la escala de pantalla NES\n");
         Sleep(1000);
@@ -720,10 +720,7 @@ void menuPerfil(socket_t sock)
     case '1':
       opcion_socket = 0x11; // Ver logros
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
-      printf("Ver Logros no implementado\n");
-      Sleep(1000);
-      printf("Volviendo al menu....\n");
-      Sleep(1000);
+      menuLogros(sock);
       break;
     case '2':
       opcion_socket = 0x12; // Ver Amigos
@@ -747,6 +744,127 @@ void menuPerfil(socket_t sock)
       break;
     }
   }
+}
+
+void menuLogros(socket_t sock)
+{
+  char **nombreLogros = NULL;
+  char **descripcionLogros = NULL;
+  char **fechaObtencion = NULL;
+  int cantidadLogros = 0;
+
+  // recibimos la cantidad del servidor
+  net::receive_data(sock, &cantidadLogros, sizeof(cantidadLogros));
+
+  // recibimos la lista de nombres de logros
+  nombreLogros = (char **)malloc(cantidadLogros * sizeof(char *));
+  for (int i = 0; i < cantidadLogros; i++)
+  {
+    nombreLogros[i] = (char *)malloc(MAX_STRING_LENGTH);
+    net::receive_data(sock, nombreLogros[i], MAX_STRING_LENGTH);
+  }
+
+  // recibimos la lista de descripciones de logros
+  descripcionLogros = (char **)malloc(cantidadLogros * sizeof(char *));
+  for (int i = 0; i < cantidadLogros; i++)
+  {
+    descripcionLogros[i] = (char *)malloc(MAX_STRING_LENGTH);
+    net::receive_data(sock, descripcionLogros[i], MAX_STRING_LENGTH);
+  }
+
+  // recibimos la lista de fechas de obtencion
+  fechaObtencion = (char **)malloc(cantidadLogros * sizeof(char *));
+  for (int i = 0; i < cantidadLogros; i++)
+  {
+    fechaObtencion[i] = (char *)malloc(MAX_STRING_LENGTH);
+    net::receive_data(sock, fechaObtencion[i], MAX_STRING_LENGTH);
+  }
+
+  while (1)
+  {
+    clearScreen();
+    printf("--- Logros ---\n");
+    printf("CantidadLogros: %i\n", cantidadLogros);
+
+    if (cantidadLogros == -1)
+    {
+      printf("Error al obtener los logros\n");
+      Sleep(1000);
+      return;
+    }
+    if (cantidadLogros == 0)
+    {
+      printf("No hay logros\n");
+      Sleep(1000);
+      return;
+    }
+    printf("Logros conseguidos por %s:\n", currentUser);
+    for (int i = 0; i < cantidadLogros; i++)
+    {
+      printf("%d. - %s", i + 1, nombreLogros[i]);
+      int espacios = 50 - strlen(nombreLogros[i]);
+      if (espacios < 0)
+        espacios = 0;
+      for (int j = 0; j < espacios; j++)
+      {
+        printf(" ");
+      }
+      printf("Fecha de obtencion: %s\n", fechaObtencion[i]);
+    }
+
+    printf("\nNumero del logro para ver detalles\n");
+
+    printf("0. Volver\n");
+    printf("Seleccione una opcion: ");
+    char opcion[MAX_STRING_LENGTH];
+    getString(opcion, MAX_STRING_LENGTH);
+    if (strcmp(opcion, "0") == 0)
+    {
+      printf("Volviendo...\n");
+      Sleep(1000);
+      break; // Salir del bucle de logros
+    }
+
+    // Si se ingreso un numero valido, mostrar los detalles del logro
+    int seleccion = atoi(opcion);
+    if (seleccion >= 1 && seleccion <= cantidadLogros)
+    {
+      while (1)
+      {
+        // Mostrar detalles del logro
+        printf("Detalles del logro %d:\n", seleccion);
+        printf("Nombre: %s\n", nombreLogros[seleccion - 1]);
+        printf("Descripcion: %s\n", descripcionLogros[seleccion - 1]);
+        printf("Fecha de obtencion: %s\n", fechaObtencion[seleccion - 1]);
+        printf("\n0. Volver\n");
+        printf("Seleccione una opcion: ");
+        char opcionDetalles;
+        opcionDetalles = getOption();
+        if (opcionDetalles == '0')
+        {
+          printf("Volviendo...\n");
+          Sleep(1000);
+          break; // Salir del bucle de detalles
+        }
+        else
+        {
+          printf("Opcion invalida\n");
+          Sleep(1000);
+        }
+      }
+    }
+  }
+  // Liberar memoria
+  for (int i = 0; i < cantidadLogros; i++)
+  {
+    free(nombreLogros[i]);
+    free(descripcionLogros[i]);
+    free(fechaObtencion[i]);
+  }
+  free(nombreLogros);
+  free(descripcionLogros);
+  free(fechaObtencion);
+  return;
 }
 
 void menuVerTiempoJugado(socket_t sock) // cambiar el metodo para que coja sock
@@ -971,9 +1089,8 @@ void menuVerAmigos(socket_t sock) // cambiar el metodo para que coja sock
     printf("Amigos de %s:\n", currentUser);
     for (int i = 0; i < *cantidadAmigos; i++)
     {
-      
-      printf("%d. - %s \n", i + 1, nombreAmigos[i]);
 
+      printf("%d. - %s \n", i + 1, nombreAmigos[i]);
     }
 
     // printf("\nNumero del amigo para ver sus datos\n");
@@ -1018,4 +1135,4 @@ void menuVerAmigos(socket_t sock) // cambiar el metodo para que coja sock
   free(nombreJuegos);
     free(tiemposSegundos); */
   }
-} 
+}

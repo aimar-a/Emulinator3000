@@ -30,7 +30,6 @@ void menuCambioContraseña(socket_t sock);
 void menuChip8(socket_t sock);
 void menuListaROMs(socket_t sock);
 void menuAdvertenciaNES();
-void menuConfiguracion();
 void menuEscalaChip8();
 void menuEscalaSuperChip8();
 void menuEscalaNes();
@@ -41,5 +40,6 @@ void menuPerfil(socket_t sock);
 void menuVerTiempoJugado(socket_t sock);
 void mostrarPartidasJugadas(socket_t sock, char *nombreJuego);
 void menuVerAmigos(socket_t sock);
+void menuLogros(socket_t sock);
 
 #endif // !MENU_H

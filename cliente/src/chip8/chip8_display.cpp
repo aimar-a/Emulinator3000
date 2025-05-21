@@ -6,10 +6,6 @@ static SDL_Renderer *renderer;
 // Inicializa SDL y crea la ventana y el renderer
 int chip8displayInitPantalla(bool modosuperchip8)
 {
-  printf("INFO: Cargando configuracion...\n");
-  cargarConfiguracion("resources/config/config"); // Especificar la ruta de tu archivo de configuración
-  printf("INFO: Configuracion cargada.\n");
-
   // si estamos en modosuperchip8 cambiamos los valores del display
   if (modosuperchip8 == true)
   {

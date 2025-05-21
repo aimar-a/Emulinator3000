@@ -6,25 +6,60 @@
 sqlite3 *db;
 const char *db_filename = "resources/database/emulatorBD.sqlite";
 
+const char *DIR_JUEGOS_CSV = "resources/sampleData/juegos.csv";
+const char *DIR_USUARIOS_CSV = "resources/sampleData/usuarios.csv";
+const char *DIR_AMIGOS_CSV = "resources/sampleData/amigos.csv";
+const char *DIR_LOGROS_CSV = "resources/sampleData/logros.csv";
+const char *DIR_PARTIDAS_CSV = "resources/sampleData/partidas.csv";
+const char *DIR_TIEMPO_JUGADO_CSV = "resources/sampleData/tiempo_jugado.csv";
+const char *DIR_LOGROS_USUARIO_CSV = "resources/sampleData/logros_usuario.csv";
+
+int iniciarBaseDeDatos()
+{
+    // Ejecutar acciones según la configuración
+    if (deletebbdd)
+    {
+        eliminarBaseDeDatos();
+    }
+
+    if (createbbdd)
+    {
+        crearBD();
+    }
+    if (cleanbbdd)
+    {
+        limpiarBaseDeDatos();
+    }
+    if (loadGames)
+    {
+        cargarJuegos();
+    }
+    if (loadSampleData)
+    {
+        cargarSampleData();
+    }
+}
+
 int abrirBaseDeDatos(sqlite3 **db)
 {
+    // Abrimos la base de datos
     int rc = sqlite3_open(db_filename, db);
-    if (rc)
+    if (rc != SQLITE_OK)
     {
-        fprintf(stderr, "No se pudo abrir la base de datos: %s\n", sqlite3_errmsg(*db));
+        fprintf(stderr, "Error al abrir la base de datos: %s\n", sqlite3_errmsg(*db));
         return rc;
     }
     return SQLITE_OK;
 }
+
 // Función para crear la BD y su estructura
 void crearBD()
 {
     sqlite3_stmt *stmt;
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -183,14 +218,198 @@ void eliminarBaseDeDatos()
         perror("Error al eliminar la base de datos");
     }
 }
+
+void cargarJuegos()
+{ // Al crear la bbdd aparte de crearla en si añadimos todos los juegos de nes y chip8 a la tabla "Juego"
+    // no se hace la mejor gestion de memoria ya que en lugar de usar memoria dinamica (porq no sabemos el tamano exacto)
+    // usamos memoria estatica por lo que estaremos usando mas memoria de la necesaria
+    // mejorar esto para futuras entregas
+    char romsCP8[200][MAX_ROM_PATH_LENGTH];
+    int count = 0;
+    listarROMsRecursivo("resources/chip8-roms", romsCP8, &count);
+
+    // recorrer roms CHIP8 y en cada iteracion insertar en la BD
+    for (int i = 0; i < count; i++)
+    {
+        // printf("%d. %s\n", i + 1, romsCP8[i]);
+
+        char nombre[256];
+
+        // Extraer el nombre
+        extraerNombreROM(romsCP8[i], nombre); // esto guarda en nombre el "titulo" del juego
+
+        // printf("%s\n", nombre);
+
+        insertarJuego(nombre, romsCP8[i]); // por defecto al crear la Bd la puntuacion record y el usuario record sera 0;
+    }
+
+    // lo mismo pero para insertar los roms de la NES
+    char romsNES[200][MAX_ROM_PATH_LENGTH];
+    int count2 = 0;
+
+    listarROMsRecursivoNES("resources/nes-roms", romsNES, &count2);
+
+    // recorrer roms CHIP8 y en cada iteracion insertar en la BD
+    for (int i = 0; i < count2; i++)
+    {
+        // printf("%d. %s\n", i + 1, romsNES[i]);
+
+        char nombre2[256];
+
+        // Extraer el nombre
+        extraerNombreROM(romsNES[i], nombre2); // esto guarda en nombre el "titulo" del juego
+
+        // printf("%s\n", nombre2);
+
+        insertarJuego(nombre2, romsNES[i]); // por defecto al crear la Bd la puntuacion record y el usuario record sera 0;
+    }
+}
+
+void cargarSampleData()
+{
+    // Cargar datos de los CSV
+    cargarLogrosDeCSV(DIR_LOGROS_CSV);
+    cargarUsuariosDeCSV(DIR_USUARIOS_CSV);
+    cargarPartidasDeCSV(DIR_PARTIDAS_CSV);
+    cargarTiempoJugadoDeCSV(DIR_TIEMPO_JUGADO_CSV);
+    cargarLogrosUsuarioDeCSV(DIR_LOGROS_USUARIO_CSV);
+    cargarAmigosDeCSV(DIR_AMIGOS_CSV);
+}
+
+void cargarLogrosDeCSV(char *nombreArchivo)
+{
+    FILE *archivo = fopen(nombreArchivo, "r");
+    if (archivo == NULL)
+    {
+        printf("Error al abrir el archivo %s\n", nombreArchivo);
+        return;
+    }
+
+    char linea[256];
+    while (fgets(linea, sizeof(linea), archivo))
+    {
+        char nombre[50], descripcion[200];
+        int idjuego;
+
+        sscanf(linea, "%[^,],%[^,],%d", nombre, descripcion, &idjuego);
+        insertarLogros(nombre, descripcion, idjuego);
+    }
+
+    fclose(archivo);
+}
+
+void cargarUsuariosDeCSV(char *nombreArchivo)
+{
+    FILE *archivo = fopen(nombreArchivo, "r");
+    if (archivo == NULL)
+    {
+        printf("Error al abrir el archivo %s\n", nombreArchivo);
+        return;
+    }
+
+    char linea[256];
+    while (fgets(linea, sizeof(linea), archivo))
+    {
+        char user[20], contraseña[20];
+        sscanf(linea, "%[^,],%[^,]", user, contraseña);
+        insertarUsuarios(user, contraseña);
+    }
+
+    fclose(archivo);
+}
+
+void cargarPartidasDeCSV(char *nombreArchivo)
+{
+    FILE *archivo = fopen(nombreArchivo, "r");
+    if (archivo == NULL)
+    {
+        printf("Error al abrir el archivo %s\n", nombreArchivo);
+        return;
+    }
+
+    char linea[256];
+    while (fgets(linea, sizeof(linea), archivo))
+    {
+        char user[20], fechaInicio[20], fechaFin[20];
+        int idjuego, puntmax;
+
+        sscanf(linea, "%[^,],%[^,],%[^,],%d,%d", user, fechaInicio, fechaFin, &idjuego, &puntmax);
+        insertarPartida(user, idjuego, puntmax, fechaInicio, fechaFin);
+    }
+
+    fclose(archivo);
+}
+
+void cargarTiempoJugadoDeCSV(char *nombreArchivo)
+{
+    FILE *archivo = fopen(nombreArchivo, "r");
+    if (archivo == NULL)
+    {
+        printf("Error al abrir el archivo %s\n", nombreArchivo);
+        return;
+    }
+
+    char linea[256];
+    while (fgets(linea, sizeof(linea), archivo))
+    {
+        char user[20];
+        int idjuego, tiempojugado;
+
+        sscanf(linea, "%[^,],%d,%d", user, &tiempojugado, &idjuego);
+        insertarTiempoJugado(tiempojugado, user, idjuego);
+    }
+
+    fclose(archivo);
+}
+
+void cargarLogrosUsuarioDeCSV(char *nombreArchivo)
+{
+    FILE *archivo = fopen(nombreArchivo, "r");
+    if (archivo == NULL)
+    {
+        printf("Error al abrir el archivo %s\n", nombreArchivo);
+        return;
+    }
+
+    char linea[256];
+    while (fgets(linea, sizeof(linea), archivo))
+    {
+        char user[20], fecha[20];
+        int idlogro;
+
+        sscanf(linea, "%[^,],%d,%[^,]", user, &idlogro, fecha);
+        insertarLogrosUsuarios(user, idlogro, fecha);
+    }
+
+    fclose(archivo);
+}
+
+void cargarAmigosDeCSV(char *nombreArchivo)
+{
+    FILE *archivo = fopen(nombreArchivo, "r");
+    if (archivo == NULL)
+    {
+        printf("Error al abrir el archivo %s\n", nombreArchivo);
+        return;
+    }
+
+    char linea[256];
+    while (fgets(linea, sizeof(linea), archivo))
+    {
+        char user1[20], user2[20], estado[20];
+        sscanf(linea, "%[^,],%[^,],%[^,]", user1, user2, estado);
+        insertarAmigos(user1, user2, estado);
+    }
+
+    fclose(archivo);
+}
+
 // creamos las funciones para insertar datos en las tablas
 void insertarUsuarios(char *user, char *contraseña)
 {
-
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -214,9 +433,8 @@ void insertarPartida(char *user, int idjuego, int puntmax, char *fechaInicio, ch
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -246,9 +464,8 @@ void insertarJuego(char *titulo, char *rom)
   // ya que estos los meteremos con update
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -273,9 +490,8 @@ void insertarTiempoJugado(int tiempojugado, char *user, int idjuego)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -301,9 +517,8 @@ void insertarLogros(char *nombre, char *descripcion, int idjuego)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -329,9 +544,8 @@ void insertarLogrosUsuarios(char *user, int idlogro, char *fecha)
 { // en principio guardamos la FECHA como texto ya veremos mas adelante si hay que cambiarlo o no
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -357,9 +571,8 @@ void insertarAmigos(char *user1, char *user2, char *estado)
 { // en principio guardamos ESTADO como texto ya veremos mas adelante si hay que cambiarlo o no
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -389,9 +602,8 @@ void updateTiempoJugado(int tiempoJugado, char *user, int id_juego)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -419,9 +631,8 @@ void updateEstado_Amigos(char *user1, char *user2, char *estado)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -450,9 +661,8 @@ bool updateContrasena(char *newcontrasena, char *user)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return false;
     }
 
@@ -495,9 +705,8 @@ void updateUsuarioPuntuacionRecord(char *usuario, int newPunt, int idjuego)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return;
     }
 
@@ -523,9 +732,9 @@ int getPuntuacionRecord(int idJuego)
 {
     int puntuacionRecord = 0;
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
+        return -1;
     }
 
     sqlite3_stmt *stmt;
@@ -554,9 +763,9 @@ bool existeUsuarioYPas(char *name, char *pass)
 
     bool existe = false;
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
+        return false;
     }
 
     sqlite3_stmt *stmt;
@@ -587,9 +796,9 @@ bool existeUsuario(char *name)
 
     bool existe = false;
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
+        return false;
     }
 
     sqlite3_stmt *stmt;
@@ -617,9 +826,9 @@ bool comprobarContraseña(char *user, char *password)
 {
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
+        return false;
     }
 
     sqlite3_stmt *stmt;
@@ -647,9 +856,9 @@ int getIdJuego(char *romjuego)
 
     int idJuego = 0;
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
+        return -1;
     }
 
     sqlite3_stmt *stmt;
@@ -676,9 +885,9 @@ bool hajugado(char *user, int id_juego)
 
     bool hajugado = false;
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
+        return hajugado;
     }
 
     sqlite3_stmt *stmt;
@@ -716,9 +925,9 @@ int getTiempoJugado(char *user, int idJuego)
 
     int tiempoJugado = 0;
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
+        return 0;
     }
 
     sqlite3_stmt *stmt;
@@ -761,9 +970,8 @@ int getTiempoJugadoTodosLosJuegos(char *user, char ***nombreJuegos, int **tiempo
     int cantidadJuegos = 0;
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return -1;
     }
 
@@ -862,9 +1070,8 @@ int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **ti
     int cantidadPartidas = 0;
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return -1;
     }
 
@@ -1048,9 +1255,8 @@ int getNombreJuegos(char *user, char ***nombreJuegos)
 int getJuegosDisponibles(char ***nombreJuegos)
 {
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
         return -1;
     }
 
@@ -1116,22 +1322,23 @@ int getJuegosDisponibles(char ***nombreJuegos)
     return count;
 }
 
-
-char** getNombreAmigos(char* user, int *cantidad) {
+char **getNombreAmigos(char *user, int *cantidad)
+{
     *cantidad = 0;
-    char ** nombreAmigos;
+    char **nombreAmigos;
 
     // Abrimos la base de datos
-    if (sqlite3_open(db_filename, &db) != SQLITE_OK)
+    if (abrirBaseDeDatos(&db))
     {
-        printf("Error al abrir la base de datos\n");
+        return NULL;
     }
 
     sqlite3_stmt *stmt;
 
     const char *sql = "SELECT user1 FROM AMIGOS WHERE user2 = ? AND estado = 'aceptado'";
-    
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
         printf("Error al preparar consulta: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
         return NULL;
@@ -1141,7 +1348,7 @@ char** getNombreAmigos(char* user, int *cantidad) {
 
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-        char* nombre = sqlite3_column_text(stmt, 0);
+        char *nombre = sqlite3_column_text(stmt, 0);
 
         // realloc para añadir más espacio
         char **temp = realloc(nombreAmigos, (*cantidad + 1) * sizeof(char *));
@@ -1153,14 +1360,13 @@ char** getNombreAmigos(char* user, int *cantidad) {
             printf("Error al asignar memoria para el nombre del juego\n");
             for (int i = 0; i < *cantidad; i++)
             {
-                free (nombreAmigos[i]);
+                free(nombreAmigos[i]);
             }
             free(nombreAmigos);
             sqlite3_finalize(stmt);
             sqlite3_close(db);
-            return NULL;            
+            return NULL;
         }
-        
 
         // (*nombreJuegos)[i] = strdup(titulo); // Copiamos el nombre del juego
 
@@ -1171,4 +1377,146 @@ char** getNombreAmigos(char* user, int *cantidad) {
     sqlite3_finalize(stmt);
     sqlite3_close(db);
     return nombreAmigos;
+}
+
+int getLogros(char *user, char ***nombreLogros, char ***descripcionLogros, char ***fechaObtencion)
+{
+    int cantidadLogros = 0;
+
+    // Abrimos la base de datos
+    if (abrirBaseDeDatos(&db))
+    {
+        return -1;
+    }
+
+    sqlite3_stmt *stmt;
+
+    // Contamos la cantidad de logros obtenidos por el usuario
+    char countSql[] = "SELECT COUNT(*) FROM LOGROS_USUARIO WHERE user = ?";
+    if (sqlite3_prepare_v2(db, countSql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return -1;
+    }
+
+    sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        cantidadLogros = sqlite3_column_int(stmt, 0);
+    }
+    else
+    {
+        printf("Error al ejecutar la consulta: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        return -1;
+    }
+    sqlite3_finalize(stmt);
+
+    // Reservamos memoria para los nombres de los logros y las fechas
+    *nombreLogros = (char **)malloc(cantidadLogros * sizeof(char *));
+    if (*nombreLogros == NULL)
+    {
+        printf("Error al asignar memoria para los nombres de los logros\n");
+        sqlite3_close(db);
+        return -1;
+    }
+
+    *descripcionLogros = (char **)malloc(cantidadLogros * sizeof(char *));
+    if (*descripcionLogros == NULL)
+    {
+        printf("Error al asignar memoria para las descripciones de los logros\n");
+        free(*nombreLogros);
+        sqlite3_close(db);
+        return -1;
+    }
+
+    *fechaObtencion = (char **)malloc(cantidadLogros * sizeof(char *));
+    if (*fechaObtencion == NULL)
+    {
+        printf("Error al asignar memoria para las fechas de obtención de los logros\n");
+        free(*nombreLogros);
+        free(*descripcionLogros);
+        sqlite3_close(db);
+        return -1;
+    }
+
+    // Obtenemos los nombres de los logros y las fechas
+    char sql[] = "SELECT LOGROS.nombre, LOGROS.descripcion, LOGROS_USUARIO.fecha FROM LOGROS_USUARIO "
+                 "INNER JOIN LOGROS ON LOGROS_USUARIO.id_logro = LOGROS.id_logro WHERE LOGROS_USUARIO.user = ?";
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
+        free(*nombreLogros);
+        free(*descripcionLogros);
+        free(*fechaObtencion);
+        sqlite3_close(db);
+        return -1;
+    }
+    sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
+    int i = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const char *nombre = (const char *)sqlite3_column_text(stmt, 0);
+        const char *descripcion = (const char *)sqlite3_column_text(stmt, 1);
+        const char *fecha = (const char *)sqlite3_column_text(stmt, 2);
+
+        (*nombreLogros)[i] = strdup(nombre); // Copiamos el nombre del logro
+        if ((*nombreLogros)[i] == NULL)
+        {
+            printf("Error al asignar memoria para el nombre del logro\n");
+            for (int j = 0; j < i; j++)
+            {
+                free((*nombreLogros)[j]);
+            }
+            free(*nombreLogros);
+            free(*descripcionLogros);
+            free(*fechaObtencion);
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return -1;
+        }
+
+        (*descripcionLogros)[i] = strdup(descripcion); // Copiamos la descripcion del logro
+        if ((*descripcionLogros)[i] == NULL)
+        {
+            printf("Error al asignar memoria para la descripcion del logro\n");
+            for (int j = 0; j < i; j++)
+            {
+                free((*nombreLogros)[j]);
+                free((*descripcionLogros)[j]);
+            }
+            free(*nombreLogros);
+            free(*descripcionLogros);
+            free(*fechaObtencion);
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return -1;
+        }
+
+        (*fechaObtencion)[i] = strdup(fecha); // Copiamos la fecha de obtencion del logro
+        if ((*fechaObtencion)[i] == NULL)
+        {
+            printf("Error al asignar memoria para la fecha de obtencion del logro\n");
+            for (int j = 0; j < i; j++)
+            {
+                free((*nombreLogros)[j]);
+                free((*descripcionLogros)[j]);
+                free((*fechaObtencion)[j]);
+            }
+            free(*nombreLogros);
+            free(*descripcionLogros);
+            free(*fechaObtencion);
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return -1;
+        }
+
+        i++;
+    }
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return cantidadLogros;
 }

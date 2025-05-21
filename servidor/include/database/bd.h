@@ -6,13 +6,12 @@
 #include <string.h>
 #include <sqlite3.h>
 #include <stdbool.h>
-
-extern bool load;
-extern bool cleanbbdd;
-extern bool createbbdd;
-extern bool deletebbdd;
+#include "config_file.h"
+#include "directories.h"
 
 void crearBD();
+
+int iniciarBaseDeDatos();
 
 // Funciones para insertar datos en las tablas
 int abrirBaseDeDatos(sqlite3 **db);
@@ -20,6 +19,7 @@ void limpiarBaseDeDatos();
 void eliminarBaseDeDatos();
 void insertarUsuarios(char *user, char *contraseña);
 void insertarPartida(char *user, int idjuego, int puntmax, char *fechaInicio, char *fechaFin);
+void cargarJuegos();
 
 void insertarJuego(char *titulo, char *rom);
 void insertarTiempoJugado(int tiempojugado, char *user, int idjuego);
@@ -47,6 +47,17 @@ int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **ti
 int getNombreJuegos(char *user, char ***nombreJuegos);
 
 int getJuegosDisponibles(char ***nombreJuegos);
-char** getNombreAmigos(char *user,int *cantidad);
+char **getNombreAmigos(char *user, int *cantidad);
+
+int getLogros(char *user, char ***nombreLogros, char ***descripcionLogros, char ***fechaObtencion);
+
+// Datos de prueba de CSV
+void cargarSampleData();
+void cargarPartidasDeCSV(char *nombreArchivo);
+void cargarLogrosUsuarioDeCSV(char *nombreArchivo);
+void cargarAmigosDeCSV(char *nombreArchivo);
+void cargarTiempoJugadoDeCSV(char *nombreArchivo);
+void cargarLogrosDeCSV(char *nombreArchivo);
+void cargarUsuariosDeCSV(char *nombreArchivo);
 
 #endif

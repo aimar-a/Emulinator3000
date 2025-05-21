@@ -12,25 +12,17 @@ int SCREEN_WIDTH_NES = 256;
 int SCREEN_HEIGHT_NES = 240;
 int SCREEN_SCALE_NES = 4;
 
-bool load = false;
-bool cleanbbdd = false;
-bool createbbdd = false;
-bool deletebbdd = true;
-
-bool log_chip8_enabled = true; // Variable para habilitar/deshabilitar el log de Chip8
-bool log_nes_enabled = true;   // Variable para habilitar/deshabilitar el log de NES
-
-// Variable para almacenar la ruta de la base de datos
+char *CONFIG_FILE = "resources/config/client.conf";
 
 // Función para cargar la configuración desde el archivo .txt
-void cargarConfiguracion(const char *archivoConfig)
+void cargarConfiguracion()
 {
-  // printf("Intentando abrir el archivo: %s\n", archivoConfig);
+  // printf("Intentando abrir el archivo: %s\n", CONFIG_FILE);
 
-  FILE *archivo = fopen(archivoConfig, "r");
+  FILE *archivo = fopen(CONFIG_FILE, "r");
   if (archivo == NULL)
   {
-    printf("ERROR: No se pudo abrir el archivo de configuración: %s\n", archivoConfig);
+    printf("ERROR: No se pudo abrir el archivo de configuración: %s\n", CONFIG_FILE);
     return;
   }
 
@@ -85,90 +77,17 @@ void cargarConfiguracion(const char *archivoConfig)
     {
       sscanf(linea, "SCREEN_SCALE_NES=%d", &SCREEN_SCALE_NES);
     }
-
-    // Leer las configuraciones booleanas
-    else if (strstr(linea, "load") != NULL)
-    {
-      if (strstr(linea, "true") != NULL)
-      {
-        load = true;
-      }
-      else
-      {
-        load = false;
-      }
-    }
-    else if (strstr(linea, "cleanbbdd") != NULL)
-    {
-      if (strstr(linea, "true") != NULL)
-      {
-        cleanbbdd = true;
-      }
-      else
-      {
-        cleanbbdd = false;
-      }
-    }
-    else if (strstr(linea, "createbbdd") != NULL)
-    {
-      if (strstr(linea, "true") != NULL)
-      {
-        createbbdd = true;
-      }
-      else
-      {
-        createbbdd = false;
-      }
-    }
-    else if (strstr(linea, "deletebbdd") != NULL)
-    {
-      if (strstr(linea, "true") != NULL)
-      {
-        deletebbdd = true;
-      }
-      else
-      {
-        deletebbdd = false;
-      }
-    }
-    else if (strstr(linea, "log_chip8") != NULL)
-    {
-      if (strstr(linea, "true") != NULL)
-      {
-        log_chip8_enabled = true;
-      }
-      else
-      {
-        log_chip8_enabled = false;
-      }
-    }
-    else if (strstr(linea, "log_nes") != NULL)
-    {
-      if (strstr(linea, "true") != NULL)
-      {
-        log_nes_enabled = true;
-      }
-      else
-      {
-        log_nes_enabled = false;
-      }
-    }
   }
 
   fclose(archivo);
 }
 
-#include <stdio.h>
-#include <string.h>
-
 int cambiarEscalaChip8(int nuevaEscala)
 {
-  const char *rutaConfig = "resources/config/config";
-
-  FILE *archivo = fopen(rutaConfig, "r");
+  FILE *archivo = fopen(CONFIG_FILE, "r");
   if (archivo == NULL)
   {
-    printf("ERROR: No se pudo abrir el archivo de configuración para leer: %s\n", rutaConfig);
+    printf("ERROR: No se pudo abrir el archivo de configuración para leer: %s\n", CONFIG_FILE);
     return 1;
   }
 
@@ -195,10 +114,10 @@ int cambiarEscalaChip8(int nuevaEscala)
   }
 
   // Reescribir el archivo con las modificaciones
-  archivo = fopen(rutaConfig, "w");
+  archivo = fopen(CONFIG_FILE, "w");
   if (archivo == NULL)
   {
-    printf("ERROR: No se pudo abrir el archivo de configuración para escribir: %s\n", rutaConfig);
+    printf("ERROR: No se pudo abrir el archivo de configuración para escribir: %s\n", CONFIG_FILE);
     return 1;
   }
 
@@ -214,12 +133,10 @@ int cambiarEscalaChip8(int nuevaEscala)
 
 int cambiarEscalaSuperChip(int nuevaEscala)
 {
-  const char *rutaConfig = "resources/config/config";
-
-  FILE *archivo = fopen(rutaConfig, "r");
+  FILE *archivo = fopen(CONFIG_FILE, "r");
   if (archivo == NULL)
   {
-    printf("ERROR: No se pudo abrir el archivo de configuración para leer: %s\n", rutaConfig);
+    printf("ERROR: No se pudo abrir el archivo de configuración para leer: %s\n", CONFIG_FILE);
     return 1;
   }
 
@@ -246,10 +163,10 @@ int cambiarEscalaSuperChip(int nuevaEscala)
   }
 
   // Reescribir el archivo con las modificaciones
-  archivo = fopen(rutaConfig, "w");
+  archivo = fopen(CONFIG_FILE, "w");
   if (archivo == NULL)
   {
-    printf("ERROR: No se pudo abrir el archivo de configuración para escribir: %s\n", rutaConfig);
+    printf("ERROR: No se pudo abrir el archivo de configuración para escribir: %s\n", CONFIG_FILE);
     return 1;
   }
   for (int i = 0; i < numLineas; i++)
@@ -263,12 +180,10 @@ int cambiarEscalaSuperChip(int nuevaEscala)
 
 int cambiarEscalaNes(int nuevaEscala)
 {
-  const char *rutaConfig = "resources/config/config";
-
-  FILE *archivo = fopen(rutaConfig, "r");
+  FILE *archivo = fopen(CONFIG_FILE, "r");
   if (archivo == NULL)
   {
-    printf("ERROR: No se pudo abrir el archivo de configuración para leer: %s\n", rutaConfig);
+    printf("ERROR: No se pudo abrir el archivo de configuración para leer: %s\n", CONFIG_FILE);
     return 1;
   }
 
@@ -295,10 +210,10 @@ int cambiarEscalaNes(int nuevaEscala)
   }
 
   // Reescribir el archivo con las modificaciones
-  archivo = fopen(rutaConfig, "w");
+  archivo = fopen(CONFIG_FILE, "w");
   if (archivo == NULL)
   {
-    printf("ERROR: No se pudo abrir el archivo de configuración para escribir: %s\n", rutaConfig);
+    printf("ERROR: No se pudo abrir el archivo de configuración para escribir: %s\n", CONFIG_FILE);
     return 1;
   }
   for (int i = 0; i < numLineas; i++)
