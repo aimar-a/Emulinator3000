@@ -2,14 +2,31 @@
 #define NES_AUDIO_HPP
 
 #include <SDL2/SDL.h>
-#include "network_util.hpp"
+#include <memory>
+#include <array>
+#include <cstdint>
 
-// Audio settings
-#define SAMPLE_RATE 44100
-#define BUFFER_SIZE 1024 // en nes_structure.h se define como 1024 manualmente (no bonito)
+class NesAudio
+{
+public:
+  static constexpr int SAMPLE_RATE = 44100;
+  static constexpr int BUFFER_SIZE = 1024;
 
-void nes_audio_init();
-void nes_audio_cleanup();
-void nes_audio_queue(float *audio_buffer);
+  NesAudio();
+  ~NesAudio();
 
-#endif
+  // Delete copy constructor and assignment operator
+  NesAudio(const NesAudio &) = delete;
+  NesAudio &operator=(const NesAudio &) = delete;
+
+  void queueAudio(const std::array<float, BUFFER_SIZE> &audioBuffer);
+
+private:
+  SDL_AudioDeviceID audioDevice;
+  bool initialized;
+
+  void logError(const std::string &message) const;
+  void logInfo(const std::string &message) const;
+};
+
+#endif // NES_AUDIO_HPP

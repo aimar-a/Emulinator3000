@@ -1,17 +1,39 @@
 #ifndef NES_CONTROLLER_HPP
 #define NES_CONTROLLER_HPP
+
 #include <SDL2/SDL.h>
+#include <array>
+#include <cstdint>
 
-#define BUTTON_A 0
-#define BUTTON_B 1
-#define BUTTON_SELECT 2
-#define BUTTON_START 3
-#define BUTTON_UP 4
-#define BUTTON_DOWN 5
-#define BUTTON_LEFT 6
-#define BUTTON_RIGHT 7
+class NesController
+{
+public:
+  enum Button
+  {
+    A = 0,
+    B = 1,
+    SELECT = 2,
+    START = 3,
+    UP = 4,
+    DOWN = 5,
+    LEFT = 6,
+    RIGHT = 7
+  };
 
-void nes_set_button(uint8_t *controller_state, uint8_t player, uint8_t button, bool pressed);
-int nes_controller_update(uint8_t *controllers);
+  enum Player
+  {
+    PLAYER1 = 0,
+    PLAYER2 = 1
+  };
 
-#endif
+  NesController();
+
+  // Update controller state and check for quit events
+  bool update(std::array<uint8_t, 2> &controllers);
+
+private:
+  void setButton(uint8_t &controllerState, Button button, bool pressed);
+  void handleKeyEvent(const SDL_KeyboardEvent &key, std::array<uint8_t, 2> &controllers);
+};
+
+#endif // NES_CONTROLLER_HPP

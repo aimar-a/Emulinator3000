@@ -1,95 +1,108 @@
 #include "nes_controller.hpp"
+#include <iostream>
 
-void nes_set_button(uint8_t *controller_state, uint8_t player, uint8_t button, bool pressed)
+NesController::NesController()
 {
-  if (player > 1)
-    return;
-
-  if (pressed)
-  {
-    controller_state[player] |= (1 << button);
-  }
-  else
-  {
-    controller_state[player] &= ~(1 << button);
-  }
+  // Constructor can initialize any required resources
 }
 
-int nes_controller_update(uint8_t *controllers)
+bool NesController::update(std::array<uint8_t, 2> &controllers)
 {
   SDL_Event event;
   while (SDL_PollEvent(&event))
   {
-    if (event.type == SDL_QUIT)
+    switch (event.type)
     {
-      return 1; // Exit signal
-    }
+    case SDL_QUIT:
+      return true; // Exit signal
 
-    if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
-    {
-      bool pressed = (event.type == SDL_KEYDOWN);
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+      handleKeyEvent(event.key, controllers);
+      break;
 
-      // Player 1 controls
-      switch (event.key.keysym.sym)
-      {
-      case SDLK_z:
-        nes_set_button(controllers, 0, BUTTON_A, pressed);
-        break;
-      case SDLK_x:
-        nes_set_button(controllers, 0, BUTTON_B, pressed);
-        break;
-      case SDLK_RSHIFT:
-        nes_set_button(controllers, 0, BUTTON_SELECT, pressed);
-        break;
-      case SDLK_RETURN:
-        nes_set_button(controllers, 0, BUTTON_START, pressed);
-        break;
-      case SDLK_UP:
-        nes_set_button(controllers, 0, BUTTON_UP, pressed);
-        break;
-      case SDLK_DOWN:
-        nes_set_button(controllers, 0, BUTTON_DOWN, pressed);
-        break;
-      case SDLK_LEFT:
-        nes_set_button(controllers, 0, BUTTON_LEFT, pressed);
-        break;
-      case SDLK_RIGHT:
-        nes_set_button(controllers, 0, BUTTON_RIGHT, pressed);
-        break;
-
-      // Player 2 controls
-      case SDLK_v:
-        nes_set_button(controllers, 1, BUTTON_A, pressed);
-        break;
-      case SDLK_b:
-        nes_set_button(controllers, 1, BUTTON_B, pressed);
-        break;
-      case SDLK_n:
-        nes_set_button(controllers, 1, BUTTON_SELECT, pressed);
-        break;
-      case SDLK_m:
-        nes_set_button(controllers, 1, BUTTON_START, pressed);
-        break;
-      case SDLK_i:
-        nes_set_button(controllers, 1, BUTTON_UP, pressed);
-        break;
-      case SDLK_k:
-        nes_set_button(controllers, 1, BUTTON_DOWN, pressed);
-        break;
-      case SDLK_j:
-        nes_set_button(controllers, 1, BUTTON_LEFT, pressed);
-        break;
-      case SDLK_l:
-        nes_set_button(controllers, 1, BUTTON_RIGHT, pressed);
-        break;
-
-      case SDLK_ESCAPE:
-        return 1; // Exit on ESC
-
-      default:
-        break;
-      }
+    default:
+      break;
     }
   }
-  return 0;
+  return false;
+}
+
+void NesController::setButton(uint8_t &controllerState, Button button, bool pressed)
+{
+  if (pressed)
+  {
+    controllerState |= (1 << button);
+  }
+  else
+  {
+    controllerState &= ~(1 << button);
+  }
+}
+
+void NesController::handleKeyEvent(const SDL_KeyboardEvent &key, std::array<uint8_t, 2> &controllers)
+{
+  const bool pressed = (key.type == SDL_KEYDOWN);
+
+  switch (key.keysym.sym)
+  {
+  // Player 1 controls
+  case SDLK_z:
+    setButton(controllers[PLAYER1], A, pressed);
+    break;
+  case SDLK_x:
+    setButton(controllers[PLAYER1], B, pressed);
+    break;
+  case SDLK_RSHIFT:
+    setButton(controllers[PLAYER1], SELECT, pressed);
+    break;
+  case SDLK_RETURN:
+    setButton(controllers[PLAYER1], START, pressed);
+    break;
+  case SDLK_UP:
+    setButton(controllers[PLAYER1], UP, pressed);
+    break;
+  case SDLK_DOWN:
+    setButton(controllers[PLAYER1], DOWN, pressed);
+    break;
+  case SDLK_LEFT:
+    setButton(controllers[PLAYER1], LEFT, pressed);
+    break;
+  case SDLK_RIGHT:
+    setButton(controllers[PLAYER1], RIGHT, pressed);
+    break;
+
+  // Player 2 controls
+  case SDLK_v:
+    setButton(controllers[PLAYER2], A, pressed);
+    break;
+  case SDLK_b:
+    setButton(controllers[PLAYER2], B, pressed);
+    break;
+  case SDLK_n:
+    setButton(controllers[PLAYER2], SELECT, pressed);
+    break;
+  case SDLK_m:
+    setButton(controllers[PLAYER2], START, pressed);
+    break;
+  case SDLK_i:
+    setButton(controllers[PLAYER2], UP, pressed);
+    break;
+  case SDLK_k:
+    setButton(controllers[PLAYER2], DOWN, pressed);
+    break;
+  case SDLK_j:
+    setButton(controllers[PLAYER2], LEFT, pressed);
+    break;
+  case SDLK_l:
+    setButton(controllers[PLAYER2], RIGHT, pressed);
+    break;
+
+  case SDLK_ESCAPE:
+    // ESC is handled in update() through the return value
+    break;
+
+  default:
+    break;
+  }
 }

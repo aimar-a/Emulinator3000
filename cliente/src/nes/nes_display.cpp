@@ -1,91 +1,97 @@
 #include "nes_display.hpp"
+#include <stdexcept>
+#include <iostream>
 
-static SDL_Window *window;
-static SDL_Renderer *renderer;
+NesDisplay::NesDisplay()
+    : window(nullptr, SDL_DestroyWindow),
+      renderer(nullptr, SDL_DestroyRenderer)
+{
+}
 
-void nes_display_init()
+NesDisplay::~NesDisplay()
+{
+  // Resources are automatically cleaned up by unique_ptr
+}
+
+bool NesDisplay::initialize()
 {
   if (SDL_Init(SDL_INIT_VIDEO) != 0)
   {
-    printf("ERROR: SDL_Init failed: %s\n", SDL_GetError());
-    return;
+    logError("SDL_Init failed: " + std::string(SDL_GetError()));
+    return false;
   }
-  printf("INFO: SDL_Init successful\n");
+  logInfo("SDL initialized successfully");
 
-  window = SDL_CreateWindow("NES", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH_NES * SCREEN_SCALE_NES, SCREEN_HEIGHT_NES * SCREEN_SCALE_NES, 0);
+  window.reset(SDL_CreateWindow(
+      "NES Emulator",
+      SDL_WINDOWPOS_UNDEFINED,
+      SDL_WINDOWPOS_UNDEFINED,
+      SCREEN_WIDTH_NES * SCREEN_SCALE_NES,
+      SCREEN_HEIGHT_NES * SCREEN_SCALE_NES,
+      SDL_WINDOW_SHOWN));
+
   if (!window)
   {
-    printf("ERROR: SDL_CreateWindow failed: %s\n", SDL_GetError());
+    logError("SDL_CreateWindow failed: " + std::string(SDL_GetError()));
     SDL_Quit();
-    return;
+    return false;
   }
-  printf("INFO: SDL_CreateWindow successful\n");
+  logInfo("Window created successfully");
 
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED));
   if (!renderer)
   {
-    printf("ERROR: SDL_CreateRenderer failed: %s\n", SDL_GetError());
-    SDL_DestroyWindow(window);
+    logError("SDL_CreateRenderer failed: " + std::string(SDL_GetError()));
+    window.reset();
     SDL_Quit();
-    return;
+    return false;
   }
-  printf("INFO: SDL_CreateRenderer successful\n");
+  logInfo("Renderer created successfully");
+
+  return true;
 }
 
-void nes_display_draw(uint8_t *screen_buffer)
+void NesDisplay::render(const uint8_t *screenBuffer)
 {
-  // NES color palette
-  static const uint32_t nes_palette[64] = {
-      // Row 0 (Grays/dark colors)
-      0x666666, 0x002A88, 0x1412A7, 0x3B00A4, 0x5C007E, 0x6E0040, 0x6C0600, 0x561D00,
-      0x333800, 0x0B4800, 0x005200, 0x004F08, 0x00404D, 0x000000, 0x000000, 0x000000,
+  // Clear screen
+  SDL_SetRenderDrawColor(renderer.get(), 0, 0, 0, 255);
+  SDL_RenderClear(renderer.get());
 
-      // Row 1 (Medium colors)
-      0xADADAD, 0x155FD9, 0x4240FF, 0x7527FE, 0xA01ACC, 0xB71E7B, 0xB53120, 0x994E00,
-      0x6B6D00, 0x388700, 0x0C9300, 0x008F32, 0x007C8D, 0x000000, 0x000000, 0x000000,
-
-      // Row 2 (Light colors)
-      0xFFFFFF, 0x64B0FF, 0x9290FF, 0xC676FF, 0xF36AFF, 0xFE6ECC, 0xFE8170, 0xEA9E22,
-      0xBCBE00, 0x88D800, 0x5CE430, 0x45E082, 0x48CDDE, 0x4F4F4F, 0x000000, 0x000000,
-
-      // Row 3 (Duplicate light colors with slight variations)
-      0xFFFFFF, 0x64B0FF, 0x9290FF, 0xC676FF, 0xF36AFF, 0xFE6ECC, 0xFE8170, 0xEA9E22,
-      0xBCBE00, 0x88D800, 0x5CE430, 0x45E082, 0x48CDDE, 0x4F4F4F, 0x000000, 0x000000};
-
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-  SDL_RenderClear(renderer);
-
-  for (int y = 0; y < SCREEN_HEIGHT_NES; y++)
+  // Draw pixels
+  for (int y = 0; y < SCREEN_HEIGHT_NES; ++y)
   {
-    for (int x = 0; x < SCREEN_WIDTH_NES; x++)
+    for (int x = 0; x < SCREEN_WIDTH_NES; ++x)
     {
-      // Get the color index from the screen buffer
-      uint8_t palette_index = screen_buffer[x + y * SCREEN_WIDTH_NES] & 0x3F;
+      const uint8_t paletteIndex = screenBuffer[x + y * SCREEN_WIDTH_NES] & 0x3F;
+      const uint32_t nesColor = nesPalette[paletteIndex];
 
-      // Get actual NES color (from palette RAM in a real emulator)
-      uint32_t nes_color = nes_palette[palette_index];
+      SDL_SetRenderDrawColor(
+          renderer.get(),
+          (nesColor >> 16) & 0xFF, // R
+          (nesColor >> 8) & 0xFF,  // G
+          nesColor & 0xFF,         // B
+          255                      // A
+      );
 
-      // Extract RGB components
-      uint8_t r = (nes_color >> 16) & 0xFF;
-      uint8_t g = (nes_color >> 8) & 0xFF;
-      uint8_t b = nes_color & 0xFF;
-
-      SDL_SetRenderDrawColor(renderer, r, g, b, 255);
-      SDL_Rect pixel = {
+      const SDL_Rect pixel = {
           x * SCREEN_SCALE_NES,
           y * SCREEN_SCALE_NES,
           SCREEN_SCALE_NES,
           SCREEN_SCALE_NES};
-      SDL_RenderFillRect(renderer, &pixel);
+      SDL_RenderFillRect(renderer.get(), &pixel);
     }
   }
 
-  SDL_RenderPresent(renderer);
+  // Update screen
+  SDL_RenderPresent(renderer.get());
 }
 
-void nes_display_destroy()
+void NesDisplay::logError(const std::string &message) const
 {
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(window);
-  SDL_Quit();
+  std::cerr << "ERROR [NES Display]: " << message << std::endl;
+}
+
+void NesDisplay::logInfo(const std::string &message) const
+{
+  std::cout << "INFO [NES Display]: " << message << std::endl;
 }

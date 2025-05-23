@@ -1,44 +1,61 @@
 #include "nes_audio.hpp"
+#include <stdexcept>
+#include <iostream>
 
-SDL_AudioDeviceID audio_device;
-
-void nes_audio_init()
+NesAudio::NesAudio() : audioDevice(0), initialized(false)
 {
-  // Initialize SDL audio
   if (SDL_Init(SDL_INIT_AUDIO) < 0)
   {
-    printf("ERROR: SDL could not initialize audio! SDL_Error: %s\n", SDL_GetError());
-    return;
+    logError("SDL could not initialize audio: " + std::string(SDL_GetError()));
+    throw std::runtime_error("SDL audio initialization failed");
   }
 
-  // Set up audio format
-  SDL_AudioSpec desired_spec;
-  desired_spec.freq = SAMPLE_RATE;
-  desired_spec.format = AUDIO_F32SYS;
-  desired_spec.channels = 1;
-  desired_spec.samples = BUFFER_SIZE;
-  desired_spec.callback = NULL;
+  SDL_AudioSpec desiredSpec{};
+  desiredSpec.freq = SAMPLE_RATE;
+  desiredSpec.format = AUDIO_F32SYS;
+  desiredSpec.channels = 1;
+  desiredSpec.samples = static_cast<Uint16>(BUFFER_SIZE);
+  desiredSpec.callback = nullptr;
 
-  // Open audio device
-  audio_device = SDL_OpenAudioDevice(NULL, 0, &desired_spec, NULL, 0);
-  if (audio_device == 0)
+  audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desiredSpec, nullptr, 0);
+  if (audioDevice == 0)
   {
-    printf("ERROR: SDL could not open audio device! SDL_Error: %s\n", SDL_GetError());
-    return;
+    logError("SDL could not open audio device: " + std::string(SDL_GetError()));
+    throw std::runtime_error("Audio device opening failed");
   }
 
-  // Start playing audio
-  SDL_PauseAudio(0);
+  SDL_PauseAudioDevice(audioDevice, 0); // Start playing audio
+  initialized = true;
+  logInfo("NES Audio initialized successfully");
 }
 
-// Clean up the APU
-void nes_audio_cleanup()
+NesAudio::~NesAudio()
 {
-  SDL_CloseAudioDevice(audio_device);
+  if (initialized)
+  {
+    SDL_CloseAudioDevice(audioDevice);
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+    logInfo("NES Audio resources cleaned up");
+  }
 }
 
-void nes_audio_queue(float *audio_buffer)
+void NesAudio::queueAudio(const std::array<float, BUFFER_SIZE> &audioBuffer)
 {
-  // Queue audio samples
-  SDL_QueueAudio(audio_device, audio_buffer, BUFFER_SIZE * sizeof(float));
+  if (!initialized)
+    return;
+
+  if (SDL_QueueAudio(audioDevice, audioBuffer.data(), BUFFER_SIZE * sizeof(float)) != 0)
+  {
+    logError("Failed to queue audio: " + std::string(SDL_GetError()));
+  }
+}
+
+void NesAudio::logError(const std::string &message) const
+{
+  std::cerr << "ERROR [NES Audio]: " << message << std::endl;
+}
+
+void NesAudio::logInfo(const std::string &message) const
+{
+  std::cout << "INFO [NES Audio]: " << message << std::endl;
 }
