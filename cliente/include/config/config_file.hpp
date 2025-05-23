@@ -1,10 +1,10 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
 
 extern int SCREEN_WIDTH_CHIP8;
 extern int SCREEN_HEIGHT_CHIP8;
@@ -23,4 +23,4 @@ int cambiarEscalaChip8(int nuevaEscala);
 int cambiarEscalaSuperChip(int nuevaEscala);
 int cambiarEscalaNes(int nuevaEscala);
 
-#endif // CONFIG_H
+#endif // CONFIG_HPP

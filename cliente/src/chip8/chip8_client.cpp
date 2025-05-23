@@ -1,75 +1,85 @@
 #include "chip8_client.hpp"
+#include "chip8_display.hpp"
+#include "chip8_input.hpp"
+#include "chip8_audio.hpp"
+#include <vector>
+#include <iostream>
+#include <array>
+#include <memory>
 
 void emulate_chip8(socket_t sock)
 {
+  // Receive operation mode (CHIP8 or SuperCHIP8)
   uint8_t isSuperChip8 = 0;
   net::receive_data(sock, &isSuperChip8, sizeof(isSuperChip8));
-  printf("INFO: Modo SuperChip8: %d\n", isSuperChip8);
+  std::cout << "INFO: SuperChip8 mode: " << static_cast<int>(isSuperChip8) << std::endl;
 
-  if (chip8displayInitPantalla(isSuperChip8))
+  // Initialize display
+  Chip8Display display;
+  if (!display.initialize(isSuperChip8))
   {
-    printf("INFO: SIUUUUU LA PANTALLA VA JODER.\n");
-  }
-  else
-  {
-    printf("ERROR: LA PUTA PANTALLA SIGUE SIN IR\n");
+    std::cerr << "ERROR: Failed to initialize display" << std::endl;
     return;
   }
+  std::cout << "INFO: Display initialized successfully" << std::endl;
 
-  // Inicializar el audio
-  chip8timersInitAudio();
+  // Initialize input handler
+  Chip8Input inputHandler;
 
-  // Buffer para la pantalla
-  uint8_t screen_buffer[SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8 * sizeof(uint32_t)] = {0};
+  // Initialize audio
+  Chip8Audio audio;
+  std::cout << "INFO: Audio initialized successfully" << std::endl;
 
-  // Buffer para el input
-  uint8_t keyboard_buffer[16] = {0};
+  // Screen buffer
+  std::vector<uint8_t> screen_buffer(SCREEN_WIDTH_CHIP8 * SCREEN_HEIGHT_CHIP8 * sizeof(uint32_t), 0);
 
-  // Bucle principal de emulación
-  while (1)
+  // Input buffer
+  std::array<uint8_t, 16> keyboard_buffer{};
+
+  // Main emulation loop
+  bool running = true;
+  while (running)
   {
-    // Recibir señal de salida del servidor
+    // Receive exit signal from server
     uint8_t exit_signal = 0;
     net::receive_data(sock, &exit_signal, sizeof(exit_signal));
+
     if (exit_signal == 0x01)
     {
-      printf("INFO: Exit signal received from server\n");
+      std::cout << "INFO: Exit signal received from server" << std::endl;
       break;
     }
 
-    // Recibir datos de la pantalla
-    net::receive_data(sock, screen_buffer, sizeof(screen_buffer));
+    // Receive screen data
+    net::receive_data(sock, screen_buffer.data(), screen_buffer.size());
 
-    // Dibujar en la pantalla
-    chip8displayPrintPantalla(screen_buffer);
+    // Render screen
+    display.render(screen_buffer.data());
 
-    // Leer eventos de entrada
-    if (chip8inputCapturarTeclado(keyboard_buffer))
+    // Handle user input
+    if (inputHandler.captureKeyboard(keyboard_buffer))
     {
-      // Enviar señal de salida al servidor
+      // Send exit signal to server
       exit_signal = 0x01;
       net::send_data(sock, &exit_signal, sizeof(exit_signal));
-      break;
+      running = false;
     }
     else
     {
-      // Enviar señal de continuar al servidor
+      // Send continue signal
       exit_signal = 0x00;
       net::send_data(sock, &exit_signal, sizeof(exit_signal));
     }
 
-    // Enviar el estado del controlador al servidor
-    net::send_data(sock, &keyboard_buffer, sizeof(uint8_t) * 16);
+    // Send keyboard state
+    net::send_data(sock, keyboard_buffer.data(), keyboard_buffer.size());
 
-    // Recibir el estado del audio timer
+    // Receive and update audio state
     uint8_t sound_timer = 0;
     net::receive_data(sock, &sound_timer, sizeof(sound_timer));
-    chip8timersSetSound(sound_timer);
-
-    // Controlar la velocidad de la emulación
-    // SDL_Delay(16); // Aproximadamente 60 FPS
+    audio.setSound(sound_timer);
   }
 
-  chip8displayDestroyPantalla();
-  chip8audioDestroyAudio();
+  // All cleanup is handled automatically by RAII
+  std::cout << "INFO: Emulation loop ended, cleaning up resources..." << std::endl;
 }

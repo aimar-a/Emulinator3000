@@ -1,42 +1,55 @@
 #include "chip8_audio.hpp"
+#include <stdexcept>
+#include <array>
 
-uint8_t sound_timer = 0;
-
-// Configuración del audio (solo se necesita una vez)
-void chip8timersInitAudio()
+Chip8Audio::Chip8Audio() : soundTimer(0), audioDevice(0)
 {
-  SDL_Init(SDL_INIT_AUDIO);
+  if (SDL_Init(SDL_INIT_AUDIO) < 0)
+  {
+    logError("Failed to initialize SDL audio: " + std::string(SDL_GetError()));
+    throw std::runtime_error("SDL audio initialization failed");
+  }
 
-  SDL_AudioSpec want, have;
-  SDL_memset(&want, 0, sizeof(want));
-  want.freq = 44100; // Frecuencia de 44.1 kHz (común para audio)
+  SDL_AudioSpec want{};
+  want.freq = 44100; // 44.1 kHz sample rate
   want.format = AUDIO_U8;
   want.channels = 1;
   want.samples = 512;
-  want.callback = chip8timersAudioCallback;
+  want.callback = &Chip8Audio::audioCallback;
+  want.userdata = this;
 
-  if (SDL_OpenAudio(&want, &have) < 0)
+  audioDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &audioSpec, 0);
+  if (audioDevice == 0)
   {
-    printf("ERROR: No se pudo abrir el audio: %s\n", SDL_GetError());
-    exit(1);
+    logError("Failed to open audio device: " + std::string(SDL_GetError()));
+    throw std::runtime_error("Audio device opening failed");
   }
-  else
-  {
-    SDL_PauseAudio(0); // Iniciar el audio
-    printf("INFO: Audio initialized successfully.\n");
-  }
+
+  SDL_PauseAudioDevice(audioDevice, 0); // Start audio playback
+  logInfo("Audio initialized successfully");
 }
 
-// Función de audio callback para generar el sonido (onda cuadrada)
-void chip8timersAudioCallback(void *userdata, uint8_t *stream, int len)
+Chip8Audio::~Chip8Audio()
 {
-  if (sound_timer > 0)
+  if (audioDevice != 0)
   {
-    for (int i = 0; i < len; i++)
-    {
-      // BEEP (onda cuadrada)
-      stream[i] = (i % 100 < 50) ? 255 : 0;
-    }
+    SDL_CloseAudioDevice(audioDevice);
+  }
+  SDL_QuitSubSystem(SDL_INIT_AUDIO);
+  logInfo("Audio resources cleaned up");
+}
+
+void Chip8Audio::setSound(uint8_t value)
+{
+  soundTimer.store(value, std::memory_order_relaxed);
+}
+
+void Chip8Audio::audioCallback(void *userdata, Uint8 *stream, int len)
+{
+  auto *audio = static_cast<Chip8Audio *>(userdata);
+  if (audio->soundTimer.load(std::memory_order_relaxed) > 0)
+  {
+    audio->generateSquareWave(stream, len);
   }
   else
   {
@@ -44,13 +57,22 @@ void chip8timersAudioCallback(void *userdata, uint8_t *stream, int len)
   }
 }
 
-void chip8timersSetSound(uint8_t value)
+void Chip8Audio::generateSquareWave(Uint8 *stream, int len)
 {
-  sound_timer = value;
+  constexpr int wavePeriod = 100; // Controls the beep frequency
+  for (int i = 0; i < len; ++i)
+  {
+    // Generate square wave (50% duty cycle)
+    stream[i] = (i % wavePeriod < wavePeriod / 2) ? 255 : 0;
+  }
 }
 
-void chip8audioDestroyAudio()
+void Chip8Audio::logError(const std::string &message) const
 {
-  SDL_CloseAudio();
-  SDL_Quit();
+  std::cerr << "ERROR [Audio]: " << message << std::endl;
+}
+
+void Chip8Audio::logInfo(const std::string &message) const
+{
+  std::cout << "INFO [Audio]: " << message << std::endl;
 }

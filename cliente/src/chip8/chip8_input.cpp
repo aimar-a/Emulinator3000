@@ -1,60 +1,67 @@
 #include "chip8_input.hpp"
+#include <iostream>
 
-#define NUM_KEYS 16
-
-SDL_KeyCode teclado_equivalente[NUM_KEYS] = {
-    SDLK_x,                 // 0
-    SDLK_1, SDLK_2, SDLK_3, // 1, 2, 3
-    SDLK_q, SDLK_w, SDLK_e, // 4, 5, 6
-    SDLK_a, SDLK_s, SDLK_d, // 7, 8, 9
-    SDLK_z, SDLK_c,         // A, B
-    SDLK_4, SDLK_r,         // C, D
-    SDLK_f, SDLK_v          // E, F
-};
-
-// Mapea las teclas del teclado de la máquina
-bool chip8inputCapturarTeclado(uint8_t *teclado)
+Chip8Input::Chip8Input()
 {
-  bool esc = false;
+  // Constructor can initialize any required resources
+}
 
-  SDL_Event evento;
-  while (SDL_PollEvent(&evento))
+bool Chip8Input::captureKeyboard(std::array<uint8_t, 16> &keyboard)
+{
+  SDL_Event event;
+  bool quitRequested = false;
+
+  while (SDL_PollEvent(&event))
   {
-    if (evento.type == SDL_QUIT)
+    switch (event.type)
     {
-      printf("INFO: Evento SDL_QUIT recibido, saliendo...\n");
+    case SDL_QUIT:
+      std::cout << "INFO: SDL_QUIT event received, exiting..." << std::endl;
       exit(0);
-    }
-    else if (evento.type == SDL_KEYDOWN)
-    {
-      printf("INFO: Tecla presionada: %s\n", SDL_GetKeyName(evento.key.keysym.sym));
-      if (evento.key.keysym.sym == SDLK_ESCAPE)
+      break;
+
+    case SDL_KEYDOWN:
+      if (event.key.keysym.sym == SDLK_ESCAPE)
       {
-        printf("INFO: Tecla ESC presionada\n");
-        esc = true;
+        std::cout << "INFO: ESC key pressed" << std::endl;
+        quitRequested = true;
       }
-      for (int i = 0; i < NUM_KEYS; i++)
-      {
-        if (evento.key.keysym.sym == teclado_equivalente[i])
-        {
-          teclado[i] = 1;
-          printf("INFO: Tecla mapeada presionada: %d\n", i);
-        }
-      }
-    }
-    else if (evento.type == SDL_KEYUP)
-    {
-      printf("INFO: Tecla liberada: %s\n", SDL_GetKeyName(evento.key.keysym.sym));
-      for (int i = 0; i < NUM_KEYS; i++)
-      {
-        if (evento.key.keysym.sym == teclado_equivalente[i])
-        {
-          teclado[i] = 0;
-          printf("INFO: Tecla mapeada liberada: %d\n", i);
-        }
-      }
+      handleKeyDown(event.key, keyboard);
+      break;
+
+    case SDL_KEYUP:
+      handleKeyUp(event.key, keyboard);
+      break;
     }
   }
 
-  return esc;
+  return quitRequested;
+}
+
+void Chip8Input::handleKeyDown(const SDL_KeyboardEvent &key, std::array<uint8_t, 16> &keyboard)
+{
+  std::cout << "INFO: Key pressed: " << SDL_GetKeyName(key.keysym.sym) << std::endl;
+
+  for (size_t i = 0; i < NUM_KEYS; ++i)
+  {
+    if (key.keysym.sym == key_mappings[i])
+    {
+      keyboard[i] = 1;
+      std::cout << "INFO: Mapped key pressed: " << i << std::endl;
+    }
+  }
+}
+
+void Chip8Input::handleKeyUp(const SDL_KeyboardEvent &key, std::array<uint8_t, 16> &keyboard)
+{
+  std::cout << "INFO: Key released: " << SDL_GetKeyName(key.keysym.sym) << std::endl;
+
+  for (size_t i = 0; i < NUM_KEYS; ++i)
+  {
+    if (key.keysym.sym == key_mappings[i])
+    {
+      keyboard[i] = 0;
+      std::cout << "INFO: Mapped key released: " << i << std::endl;
+    }
+  }
 }

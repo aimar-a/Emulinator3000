@@ -1,77 +1,116 @@
 #include "chip8_display.hpp"
+#include <stdexcept>
 
-static SDL_Window *window;
-static SDL_Renderer *renderer;
-
-// Inicializa SDL y crea la ventana y el renderer
-int chip8displayInitPantalla(bool modosuperchip8)
+Chip8Display::Chip8Display()
+    : window(nullptr, SDL_DestroyWindow),
+      renderer(nullptr, SDL_DestroyRenderer)
 {
-  // si estamos en modosuperchip8 cambiamos los valores del display
-  if (modosuperchip8 == true)
+}
+
+Chip8Display::~Chip8Display()
+{
+  destroy();
+}
+
+bool Chip8Display::initialize(bool superChipMode)
+{
+  if (superChipMode)
   {
     SCREEN_WIDTH_CHIP8 = SCREEN_WIDTH_SUPERCHIP;
     SCREEN_HEIGHT_CHIP8 = SCREEN_HEIGHT_SUPERCHIP;
     SCREEN_SCALE_CHIP8 = SCREEN_SCALE_SUPERCHIP;
-    printf("INFO: Modo SuperChip8 activado. Resolución: %dx%d\n", SCREEN_WIDTH_CHIP8, SCREEN_HEIGHT_CHIP8);
+    logInfo("SuperChip8 mode activated. Resolution: " +
+            std::to_string(SCREEN_WIDTH_CHIP8) + "x" +
+            std::to_string(SCREEN_HEIGHT_CHIP8));
   }
 
-  // chip8displayLimpiarPantalla();
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
   {
-    printf("ERROR: No se pudo inicializar SDL: %s\n", SDL_GetError());
-    return 0;
+    logError("Failed to initialize SDL: " + std::string(SDL_GetError()));
+    return false;
   }
-  window = SDL_CreateWindow("Pantalla", SDL_WINDOWPOS_CENTERED,
-                            SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH_CHIP8 * SCREEN_SCALE_CHIP8,
-                            SCREEN_HEIGHT_CHIP8 * SCREEN_SCALE_CHIP8, SDL_WINDOW_SHOWN);
+
+  window.reset(SDL_CreateWindow(
+      "CHIP-8 Emulator",
+      SDL_WINDOWPOS_CENTERED,
+      SDL_WINDOWPOS_CENTERED,
+      SCREEN_WIDTH_CHIP8 * SCREEN_SCALE_CHIP8,
+      SCREEN_HEIGHT_CHIP8 * SCREEN_SCALE_CHIP8,
+      SDL_WINDOW_SHOWN));
+
   if (!window)
   {
-    printf("ERROR: Error al crear la ventana: %s\n", SDL_GetError());
+    logError("Failed to create window: " + std::string(SDL_GetError()));
     SDL_Quit();
-    return 0;
+    return false;
   }
-  printf("INFO: Ventana creada correctamente.\n");
+  logInfo("Window created successfully");
 
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED));
   if (!renderer)
   {
-    printf("ERROR: Error al crear el renderer: %s\n", SDL_GetError());
-    SDL_DestroyWindow(window);
+    logError("Failed to create renderer: " + std::string(SDL_GetError()));
+    window.reset();
     SDL_Quit();
-    return 0;
+    return false;
   }
-  printf("INFO: Renderer creado correctamente.\n");
+  logInfo("Renderer created successfully");
 
-  return 1;
+  return true;
 }
 
-// Destruye la ventana y el renderer
-void chip8displayDestroyPantalla()
+void Chip8Display::destroy()
 {
-  printf("INFO: Destruyendo pantalla...\n");
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(window);
-  SDL_Quit();
-  printf("INFO: Pantalla destruida.\n");
-}
-
-// Dibuja la pantalla en la ventana
-void chip8displayPrintPantalla(uint8_t *pantalla)
-{
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-  SDL_RenderClear(renderer);
-
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-  for (int i = 0; i < SCREEN_WIDTH_CHIP8; i++)
+  if (renderer)
   {
-    for (int j = 0; j < SCREEN_HEIGHT_CHIP8; j++)
+    renderer.reset();
+    logInfo("Renderer destroyed");
+  }
+
+  if (window)
+  {
+    window.reset();
+    logInfo("Window destroyed");
+  }
+
+  SDL_Quit();
+  logInfo("SDL quit");
+}
+
+void Chip8Display::render(const uint8_t *screenBuffer)
+{
+  // Clear screen
+  SDL_SetRenderDrawColor(renderer.get(), 0, 0, 0, 255);
+  SDL_RenderClear(renderer.get());
+
+  // Draw pixels
+  SDL_SetRenderDrawColor(renderer.get(), 255, 255, 255, 255);
+  for (int y = 0; y < SCREEN_HEIGHT_CHIP8; ++y)
+  {
+    for (int x = 0; x < SCREEN_WIDTH_CHIP8; ++x)
     {
-      if (pantalla[i + j * SCREEN_WIDTH_CHIP8] == 1)
+      if (screenBuffer[x + y * SCREEN_WIDTH_CHIP8])
       {
-        SDL_Rect pixel = {i * SCREEN_SCALE_CHIP8, j * SCREEN_SCALE_CHIP8, SCREEN_SCALE_CHIP8, SCREEN_SCALE_CHIP8};
-        SDL_RenderFillRect(renderer, &pixel);
+        SDL_Rect pixel = {
+            x * SCREEN_SCALE_CHIP8,
+            y * SCREEN_SCALE_CHIP8,
+            SCREEN_SCALE_CHIP8,
+            SCREEN_SCALE_CHIP8};
+        SDL_RenderFillRect(renderer.get(), &pixel);
       }
     }
   }
-  SDL_RenderPresent(renderer);
+
+  // Update screen
+  SDL_RenderPresent(renderer.get());
+}
+
+void Chip8Display::logError(const std::string &message) const
+{
+  std::cerr << "ERROR: " << message << std::endl;
+}
+
+void Chip8Display::logInfo(const std::string &message) const
+{
+  std::cout << "INFO: " << message << std::endl;
 }

@@ -1,4 +1,7 @@
 #include "config_file.hpp"
+#include <fstream>
+#include <vector>
+#include <algorithm>
 
 int SCREEN_WIDTH_CHIP8 = 64;
 int SCREEN_HEIGHT_CHIP8 = 32;
@@ -12,215 +15,133 @@ int SCREEN_WIDTH_NES = 256;
 int SCREEN_HEIGHT_NES = 240;
 int SCREEN_SCALE_NES = 4;
 
-char *CONFIG_FILE = "resources/config/client.conf";
+const std::string CONFIG_FILE = "resources/config/client.conf";
 
 // Función para cargar la configuración desde el archivo .txt
 void cargarConfiguracion()
 {
-  // printf("Intentando abrir el archivo: %s\n", CONFIG_FILE);
-
-  FILE *archivo = fopen(CONFIG_FILE, "r");
-  if (archivo == NULL)
+  std::ifstream archivo(CONFIG_FILE);
+  if (!archivo.is_open())
   {
-    printf("ERROR: No se pudo abrir el archivo de configuración: %s\n", CONFIG_FILE);
+    printf("ERROR: No se pudo abrir el archivo de configuración: %s\n", CONFIG_FILE.c_str());
     return;
   }
 
-  char linea[256];
-  while (fgets(linea, sizeof(linea), archivo))
+  std::string linea;
+  while (std::getline(archivo, linea))
   {
-    // Comentar líneas con #
-    if (linea[0] == '#')
-      continue;
+    // Eliminar espacios en blanco al inicio y final
+    linea.erase(0, linea.find_first_not_of(" \t"));
+    linea.erase(linea.find_last_not_of(" \t") + 1);
 
-    // Eliminar salto de línea al final de la línea
-    linea[strcspn(linea, "\n")] = 0;
+    // Ignorar líneas vacías o comentarios
+    if (linea.empty() || linea[0] == '#')
+    {
+      continue;
+    }
 
     // Leer configuraciones para Chip8
-    if (strstr(linea, "SCREEN_WIDTH_CHIP") != NULL)
+    if (linea.find("SCREEN_WIDTH_CHIP") != std::string::npos)
     {
-      sscanf(linea, "SCREEN_WIDTH_CHIP=%d", &SCREEN_WIDTH_CHIP8);
+      sscanf(linea.c_str(), "SCREEN_WIDTH_CHIP=%d", &SCREEN_WIDTH_CHIP8);
     }
-    else if (strstr(linea, "SCREEN_HEIGHT_CHIP") != NULL)
+    else if (linea.find("SCREEN_HEIGHT_CHIP") != std::string::npos)
     {
-      sscanf(linea, "SCREEN_HEIGHT_CHIP=%d", &SCREEN_HEIGHT_CHIP8);
+      sscanf(linea.c_str(), "SCREEN_HEIGHT_CHIP=%d", &SCREEN_HEIGHT_CHIP8);
     }
-    else if (strstr(linea, "SCREEN_SCALE_CHIP") != NULL)
+    else if (linea.find("SCREEN_SCALE_CHIP") != std::string::npos)
     {
-      sscanf(linea, "SCREEN_SCALE_CHIP=%d", &SCREEN_SCALE_CHIP8);
+      sscanf(linea.c_str(), "SCREEN_SCALE_CHIP=%d", &SCREEN_SCALE_CHIP8);
     }
 
     // Leer configuraciones para SuperChip8
-    else if (strstr(linea, "SCREEN_WIDTH_SUPERCHIP") != NULL)
+    else if (linea.find("SCREEN_WIDTH_SUPERCHIP") != std::string::npos)
     {
-      sscanf(linea, "SCREEN_WIDTH_SUPERCHIP=%d", &SCREEN_WIDTH_SUPERCHIP);
+      sscanf(linea.c_str(), "SCREEN_WIDTH_SUPERCHIP=%d", &SCREEN_WIDTH_SUPERCHIP);
     }
-    else if (strstr(linea, "SCREEN_HEIGHT_SUPERCHIP") != NULL)
+    else if (linea.find("SCREEN_HEIGHT_SUPERCHIP") != std::string::npos)
     {
-      sscanf(linea, "SCREEN_HEIGHT_SUPERCHIP=%d", &SCREEN_HEIGHT_SUPERCHIP);
+      sscanf(linea.c_str(), "SCREEN_HEIGHT_SUPERCHIP=%d", &SCREEN_HEIGHT_SUPERCHIP);
     }
-    else if (strstr(linea, "SCREEN_SCALE_SUPERCHIP") != NULL)
+    else if (linea.find("SCREEN_SCALE_SUPERCHIP") != std::string::npos)
     {
-      sscanf(linea, "SCREEN_SCALE_SUPERCHIP=%d", &SCREEN_SCALE_SUPERCHIP);
+      sscanf(linea.c_str(), "SCREEN_SCALE_SUPERCHIP=%d", &SCREEN_SCALE_SUPERCHIP);
     }
 
     // Leer configuraciones para NES
-    else if (strstr(linea, "SCREEN_WIDTH_NES") != NULL)
+    else if (linea.find("SCREEN_WIDTH_NES") != std::string::npos)
     {
-      sscanf(linea, "SCREEN_WIDTH_NES=%d", &SCREEN_WIDTH_NES);
+      sscanf(linea.c_str(), "SCREEN_WIDTH_NES=%d", &SCREEN_WIDTH_NES);
     }
-    else if (strstr(linea, "SCREEN_HEIGHT_NES") != NULL)
+    else if (linea.find("SCREEN_HEIGHT_NES") != std::string::npos)
     {
-      sscanf(linea, "SCREEN_HEIGHT_NES=%d", &SCREEN_HEIGHT_NES);
+      sscanf(linea.c_str(), "SCREEN_HEIGHT_NES=%d", &SCREEN_HEIGHT_NES);
     }
-    else if (strstr(linea, "SCREEN_SCALE_NES") != NULL)
+    else if (linea.find("SCREEN_SCALE_NES") != std::string::npos)
     {
-      sscanf(linea, "SCREEN_SCALE_NES=%d", &SCREEN_SCALE_NES);
+      sscanf(linea.c_str(), "SCREEN_SCALE_NES=%d", &SCREEN_SCALE_NES);
     }
   }
+}
 
-  fclose(archivo);
+int cambiarEscala(int &variableEscala, const std::string &configBuscar, int nuevaEscala)
+{
+  std::ifstream archivoEntrada(CONFIG_FILE);
+  if (!archivoEntrada.is_open())
+  {
+    printf("ERROR: No se pudo abrir el archivo de configuración para leer: %s\n", CONFIG_FILE.c_str());
+    return 1;
+  }
+
+  std::vector<std::string> lineas;
+  std::string linea;
+  bool encontrado = false;
+
+  while (std::getline(archivoEntrada, linea))
+  {
+    if (linea.find(configBuscar) != std::string::npos)
+    {
+      linea = configBuscar + "=" + std::to_string(nuevaEscala);
+      encontrado = true;
+    }
+    lineas.push_back(linea);
+  }
+  archivoEntrada.close();
+
+  if (!encontrado)
+  {
+    printf("ERROR: No se encontró la línea %s en el archivo de configuración.\n", configBuscar.c_str());
+    return 1;
+  }
+
+  std::ofstream archivoSalida(CONFIG_FILE);
+  if (!archivoSalida.is_open())
+  {
+    printf("ERROR: No se pudo abrir el archivo de configuración para escribir: %s\n", CONFIG_FILE.c_str());
+    return 1;
+  }
+
+  for (const auto &l : lineas)
+  {
+    archivoSalida << l << "\n";
+  }
+  archivoSalida.close();
+
+  variableEscala = nuevaEscala;
+  return 0;
 }
 
 int cambiarEscalaChip8(int nuevaEscala)
 {
-  FILE *archivo = fopen(CONFIG_FILE, "r");
-  if (archivo == NULL)
-  {
-    printf("ERROR: No se pudo abrir el archivo de configuración para leer: %s\n", CONFIG_FILE);
-    return 1;
-  }
-
-  // Leer todo el archivo en memoria
-  char lineas[1024][256]; // Suponemos un máximo de 1024 líneas
-  int numLineas = 0;
-  int encontrado = 0;
-
-  while (fgets(lineas[numLineas], sizeof(lineas[numLineas]), archivo))
-  {
-    if (strstr(lineas[numLineas], "SCREEN_SCALE_CHIP") != NULL)
-    {
-      sprintf(lineas[numLineas], "SCREEN_SCALE_CHIP=%d\n", nuevaEscala);
-      encontrado = 1;
-    }
-    numLineas++;
-  }
-  fclose(archivo);
-
-  if (!encontrado)
-  {
-    printf("ERROR: No se encontró la línea SCREEN_SCALE_CHIP en el archivo de configuración.\n");
-    return 1;
-  }
-
-  // Reescribir el archivo con las modificaciones
-  archivo = fopen(CONFIG_FILE, "w");
-  if (archivo == NULL)
-  {
-    printf("ERROR: No se pudo abrir el archivo de configuración para escribir: %s\n", CONFIG_FILE);
-    return 1;
-  }
-
-  for (int i = 0; i < numLineas; i++)
-  {
-    fputs(lineas[i], archivo);
-  }
-
-  fclose(archivo);
-  SCREEN_SCALE_CHIP8 = nuevaEscala; // Actualizar la variable global
-  return 0;
+  return cambiarEscala(SCREEN_SCALE_CHIP8, "SCREEN_SCALE_CHIP", nuevaEscala);
 }
 
 int cambiarEscalaSuperChip(int nuevaEscala)
 {
-  FILE *archivo = fopen(CONFIG_FILE, "r");
-  if (archivo == NULL)
-  {
-    printf("ERROR: No se pudo abrir el archivo de configuración para leer: %s\n", CONFIG_FILE);
-    return 1;
-  }
-
-  // Leer todo el archivo en memoria
-  char lineas[1024][256]; // Suponemos un máximo de 1024 líneas
-  int numLineas = 0;
-  int encontrado = 0;
-
-  while (fgets(lineas[numLineas], sizeof(lineas[numLineas]), archivo))
-  {
-    if (strstr(lineas[numLineas], "SCREEN_SCALE_SUPERCHIP") != NULL)
-    {
-      sprintf(lineas[numLineas], "SCREEN_SCALE_SUPERCHIP=%d\n", nuevaEscala);
-      encontrado = 1;
-    }
-    numLineas++;
-  }
-  fclose(archivo);
-
-  if (!encontrado)
-  {
-    printf("ERROR: No se encontró la línea SCREEN_SCALE_SUPERCHIP en el archivo de configuración.\n");
-    return 1;
-  }
-
-  // Reescribir el archivo con las modificaciones
-  archivo = fopen(CONFIG_FILE, "w");
-  if (archivo == NULL)
-  {
-    printf("ERROR: No se pudo abrir el archivo de configuración para escribir: %s\n", CONFIG_FILE);
-    return 1;
-  }
-  for (int i = 0; i < numLineas; i++)
-  {
-    fputs(lineas[i], archivo);
-  }
-  fclose(archivo);
-  SCREEN_SCALE_SUPERCHIP = nuevaEscala; // Actualizar la variable global
-  return 0;
+  return cambiarEscala(SCREEN_SCALE_SUPERCHIP, "SCREEN_SCALE_SUPERCHIP", nuevaEscala);
 }
 
 int cambiarEscalaNes(int nuevaEscala)
 {
-  FILE *archivo = fopen(CONFIG_FILE, "r");
-  if (archivo == NULL)
-  {
-    printf("ERROR: No se pudo abrir el archivo de configuración para leer: %s\n", CONFIG_FILE);
-    return 1;
-  }
-
-  // Leer todo el archivo en memoria
-  char lineas[1024][256]; // Suponemos un máximo de 1024 líneas
-  int numLineas = 0;
-  int encontrado = 0;
-
-  while (fgets(lineas[numLineas], sizeof(lineas[numLineas]), archivo))
-  {
-    if (strstr(lineas[numLineas], "SCREEN_SCALE_NES") != NULL)
-    {
-      sprintf(lineas[numLineas], "SCREEN_SCALE_NES=%d\n", nuevaEscala);
-      encontrado = 1;
-    }
-    numLineas++;
-  }
-  fclose(archivo);
-
-  if (!encontrado)
-  {
-    printf("ERROR: No se encontró la línea SCREEN_SCALE_NES en el archivo de configuración.\n");
-    return 1;
-  }
-
-  // Reescribir el archivo con las modificaciones
-  archivo = fopen(CONFIG_FILE, "w");
-  if (archivo == NULL)
-  {
-    printf("ERROR: No se pudo abrir el archivo de configuración para escribir: %s\n", CONFIG_FILE);
-    return 1;
-  }
-  for (int i = 0; i < numLineas; i++)
-  {
-    fputs(lineas[i], archivo);
-  }
-  fclose(archivo);
-  SCREEN_SCALE_NES = nuevaEscala; // Actualizar la variable global
-  return 0;
+  return cambiarEscala(SCREEN_SCALE_NES, "SCREEN_SCALE_NES", nuevaEscala);
 }
