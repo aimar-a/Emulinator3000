@@ -1,8 +1,8 @@
 ![Emulinator Logo](./logo.png)
 
-# Emulinator
+# Emulinator 3000
 
-**Emulinator** es un emulador de consolas que soporta **CHIP-8**, **Super CHIP-8** y **NES**, desarrollado como proyecto de la asignatura *Programación IV* de la Universidad de Deusto. El sistema se basa en una arquitectura cliente-servidor, donde el servidor realiza toda la emulación y el cliente se encarga de enviar entradas del teclado y mostrar la imagen y sonido.
+**Emulinator 3000** es un emulador de consolas que soporta **CHIP-8**, **Super CHIP-8** y **NES**, desarrollado como proyecto de la asignatura *Programación IV* de la Universidad de Deusto. El sistema se basa en una arquitectura cliente-servidor, donde el servidor realiza toda la emulación y el cliente se encarga de enviar entradas del teclado y mostrar la imagen y sonido.
 
 ## Características
 
