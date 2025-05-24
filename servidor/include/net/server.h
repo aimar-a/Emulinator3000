@@ -20,6 +20,8 @@
 #define SERVER_PORT 8080
 
 void server_run();
+void server_listen();
+void disconnectClient(socket_t client_socket);
 void clienteAnonimo(socket_t client_socket);
 void clienteConocido(socket_t client_socket, char *username);
 void loadRomsFromDirectory(const char *dirPath, char romOptions[][128], int *romCount);

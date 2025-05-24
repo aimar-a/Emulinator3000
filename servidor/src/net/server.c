@@ -17,13 +17,7 @@ void server_run()
   }
 #endif
 
-  socket_t client_socket;
-  struct sockaddr_in server, client;
-#ifdef _WIN32
-  int c;
-#else
-  socklen_t c;
-#endif
+  struct sockaddr_in server;
 
   // Crear socket
   if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET_VALUE)
@@ -51,10 +45,24 @@ void server_run()
     return;
   }
 
+  // Escuchar conexiones entrantes
+  server_listen();
+}
+
+void server_listen()
+{
+  struct sockaddr_in client;
+  socket_t client_socket;
   while (1)
   {
     printf("Servidor iniciado. Esperando conexiones...\n");
     listen(server_socket, 1);
+
+#ifdef _WIN32
+    int c;
+#else
+    socklen_t c;
+#endif
 
     // Aceptar conexión entrante
     c = sizeof(struct sockaddr_in);
@@ -74,12 +82,14 @@ void server_run()
     clienteAnonimo(client_socket);
   }
 
-  // Limpieza
+  disconnectClient(client_socket);
+}
+
+void disconnectClient(socket_t client_socket)
+{
   close_socket(client_socket);
-  close_socket(server_socket);
-#ifdef _WIN32
-  WSACleanup();
-#endif
+  printf("Cliente desconectado\n");
+  server_listen();
 }
 
 void clienteAnonimo(socket_t client_socket)
@@ -95,48 +105,28 @@ void clienteAnonimo(socket_t client_socket)
     if (!receiveData(client_socket, &option, sizeof(option), &bytes_received))
     {
       printf("Error al recibir datos de autenticación: %d\n", WSAGetLastError());
-      close_socket(client_socket);
-      close_socket(server_socket);
-      {
-        printf("Error al recibir datos de autenticación: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
-      }
+      disconnectClient(client_socket);
     }
     printf("Opción seleccionada: %02X\n", option);
 
     if (option == 0x00) // Salir
     {
       printf("Cliente se desconecta...\n");
-      close_socket(client_socket);
+      disconnectClient(client_socket);
       return;
     }
 
     if (!receiveData(client_socket, username, sizeof(username), &bytes_received))
     {
       printf("Error al recibir nombre de usuario: %d\n", WSAGetLastError());
-      close_socket(client_socket);
-      close_socket(server_socket);
-#ifdef _WIN32
-      WSACleanup();
-#endif
-      return;
+      disconnectClient(client_socket);
     }
     printf("Nombre de usuario: %s\n", username);
 
     if (!receiveData(client_socket, password, sizeof(password), &bytes_received))
     {
       printf("Error al recibir contraseña: %d\n", WSAGetLastError());
-      close_socket(client_socket);
-      close_socket(server_socket);
-#ifdef _WIN32
-      WSACleanup();
-#endif
-      return;
+      disconnectClient(client_socket);
     }
     printf("Contraseña: %s\n", password);
 
@@ -147,12 +137,7 @@ void clienteAnonimo(socket_t client_socket)
       if (!sendData(client_socket, "ERR", 4))
       {
         printf("Error al enviar error: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
+        disconnectClient(client_socket);
       }
       continue;
     }
@@ -167,12 +152,7 @@ void clienteAnonimo(socket_t client_socket)
         if (!sendData(client_socket, "ACK", 4))
         {
           printf("Error al enviar confirmación: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
         clienteConocido(client_socket, username);
       }
@@ -182,12 +162,7 @@ void clienteAnonimo(socket_t client_socket)
         if (!sendData(client_socket, "ERR", 3))
         {
           printf("Error al enviar error1: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
     }
@@ -199,12 +174,7 @@ void clienteAnonimo(socket_t client_socket)
         if (!sendData(client_socket, "ACK", 4))
         {
           printf("Error al enviar confirmación: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
         clienteConocido(client_socket, username);
       }
@@ -214,12 +184,7 @@ void clienteAnonimo(socket_t client_socket)
         if (!sendData(client_socket, "ERR", 4))
         {
           printf("Error al enviar error: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
     }
@@ -234,12 +199,7 @@ void clienteConocido(socket_t client_socket, char *username)
     if (!receiveData(client_socket, &selection, sizeof(selection), &bytes_received))
     {
       printf("Error al recibir opción: %d\n", WSAGetLastError());
-      close_socket(client_socket);
-      close_socket(server_socket);
-#ifdef _WIN32
-      WSACleanup();
-#endif
-      return;
+      disconnectClient(client_socket);
     }
 
     printf("Opción seleccionada: %02X\n", selection);
@@ -254,30 +214,26 @@ void clienteConocido(socket_t client_socket, char *username)
       {
 
         printf("Error al recibir ROM: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
+        disconnectClient(client_socket);
       }
       printf("ROM seleccionada: %s\n", selectedRom);
       servirChip8(client_socket, selectedRom, username);
 
-      //checkear la puntuacion acumulada para Chip8
-     // estoy dando por hecho que se comprueba si tienes ya el logro o no
-       if(getPuntosTotalesUsuario(username, "CHIP8")>=1000){
+      // checkear la puntuacion acumulada para Chip8
+      // estoy dando por hecho que se comprueba si tienes ya el logro o no
+      if (getPuntosTotalesUsuario(username, "CHIP8") >= 1000)
+      {
 
-          logroChip8Fan(username);
-
-       }else if(getPuntosTotalesUsuario(username, "CHIP8")>=5000){
-          logroChip8Pro(username);
-
-       }else if(getPuntosTotalesUsuario(username, "CHIP8")>=10000){
-          logroChip8Master(username);
-
-       }
-
+        logroChip8Fan(username);
+      }
+      else if (getPuntosTotalesUsuario(username, "CHIP8") >= 5000)
+      {
+        logroChip8Pro(username);
+      }
+      else if (getPuntosTotalesUsuario(username, "CHIP8") >= 10000)
+      {
+        logroChip8Master(username);
+      }
 
       break;
     }
@@ -285,34 +241,30 @@ void clienteConocido(socket_t client_socket, char *username)
     case 0xE1: // Emular NES
     {
       printf("Emulando NES...\n");
-      logroNesTester(username); 
+      logroNesTester(username);
       /*char selectedRom[128];
       if (!receiveData(client_socket, selectedRom, sizeof(selectedRom), &bytes_received))
       {
         printf("Error al recibir ROM: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
-      }
+disconnectClient(client_socket);      }
       printf("ROM seleccionada: %s\n", selectedRom);*/
       servirNES(client_socket);
-      //checkear la puntuacion acumulada para NES
-            //checkear la puntuacion acumulada para Chip8
-     // estoy dando por hecho que se comprueba si tienes ya el logro o no
-       if(getPuntosTotalesUsuario(username, "NES")>=1000){
+      // checkear la puntuacion acumulada para NES
+      // checkear la puntuacion acumulada para Chip8
+      // estoy dando por hecho que se comprueba si tienes ya el logro o no
+      if (getPuntosTotalesUsuario(username, "NES") >= 1000)
+      {
 
-          logroNesFan(username);
-
-       }else if(getPuntosTotalesUsuario(username, "NES")>=5000){
-          logroNesPro(username);
-
-       }else if(getPuntosTotalesUsuario(username, "NES")>=10000){
-          logroNesMaster(username);
-
-       }
+        logroNesFan(username);
+      }
+      else if (getPuntosTotalesUsuario(username, "NES") >= 5000)
+      {
+        logroNesPro(username);
+      }
+      else if (getPuntosTotalesUsuario(username, "NES") >= 10000)
+      {
+        logroNesMaster(username);
+      }
       break;
     }
 
@@ -327,12 +279,7 @@ void clienteConocido(socket_t client_socket, char *username)
       if (!receiveData(client_socket, buffer, sizeof(buffer), &bytes_received))
       {
         printf("Error al recibir contraseña: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
+        disconnectClient(client_socket);
       }
       printf("Contraseña vieja: %s\n", buffer);
       if (!existeUsuarioYPas(username, buffer))
@@ -341,12 +288,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, "ERR", 4))
         {
           printf("Error al enviar error: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
         continue;
       }
@@ -356,24 +298,14 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, "ACK", 4))
         {
           printf("Error al enviar confirmación: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
       // Recibir nueva contraseña
       if (!receiveData(client_socket, buffer, sizeof(buffer), &bytes_received))
       {
         printf("Error al recibir nueva contraseña: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
+        disconnectClient(client_socket);
       }
       printf("Nueva contraseña: %s\n", buffer);
       if (!updateContrasena(buffer, username))
@@ -382,12 +314,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, "ERR", 4))
         {
           printf("Error al enviar error: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
       else
@@ -396,12 +323,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, "ACK", 4))
         {
           printf("Error al enviar confirmación: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
       break;
@@ -418,24 +340,14 @@ void clienteConocido(socket_t client_socket, char *username)
       if (!sendData(client_socket, (char *)&romCount, sizeof(romCount)))
       {
         printf("Error al enviar conteo ROMs: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
+        disconnectClient(client_socket);
       }
       for (int i = 0; i < romCount; i++)
       {
         if (!sendData(client_socket, romOptions[i], strlen(romOptions[i]) + 1))
         {
           printf("Error al enviar ROM: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
       break;
@@ -456,12 +368,7 @@ void clienteConocido(socket_t client_socket, char *username)
       if (!sendData(client_socket, &cantidadLogros, sizeof(cantidadLogros)))
       {
         printf("Error al enviar CantidadLogros: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
+        disconnectClient(client_socket);
       }
       // Enviar lista de nombres de logros
       for (int i = 0; i < cantidadLogros; i++)
@@ -469,12 +376,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, nombreLogros[i], strlen(nombreLogros[i]) + 1))
         {
           printf("Error al enviar NombreLogro: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
       // Enviar lista de descripciones de logros
@@ -483,12 +385,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, descripcionLogros[i], strlen(descripcionLogros[i]) + 1))
         {
           printf("Error al enviar DescripcionLogro: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
       // Enviar lista de logros obtenidos
@@ -497,12 +394,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, fechaObtencion[i], strlen(fechaObtencion[i]) + 1))
         {
           printf("Error al enviar FechaObtencion: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
       // Liberar memoria
@@ -530,12 +422,7 @@ void clienteConocido(socket_t client_socket, char *username)
       if (!sendData(client_socket, &cantidadAmigos, sizeof(cantidadAmigos)))
       {
         printf("Error al enviar CantidadAmigos: %d \n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
+        disconnectClient(client_socket);
       }
 
       // Enviar la lista de Amigos
@@ -545,12 +432,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, nombreAmigos[i], sizeof(nombreAmigos[i])))
         {
           printf("Error al enviar nombreAmigos: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
 
@@ -571,12 +453,7 @@ void clienteConocido(socket_t client_socket, char *username)
       if (!sendData(client_socket, &cantidadJuegos, sizeof(cantidadJuegos)))
       {
         printf("Error al enviar CantidadJuegos: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
+        disconnectClient(client_socket);
       }
 
       // Enviar lista de nombres de juegos
@@ -585,12 +462,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, nombreJuegos[i], sizeof(nombreJuegos[i])))
         {
           printf("Error al enviar NombreJuego: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
 
@@ -600,12 +472,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, &tiemposSegundos[i], sizeof(tiemposSegundos[i])))
         {
           printf("Error al enviar TiemposJuegos: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
       free(nombreJuegos);
@@ -621,12 +488,7 @@ void clienteConocido(socket_t client_socket, char *username)
       if (!receiveData(client_socket, nombreJuego, sizeof(nombreJuego), &bytes_received))
       {
         printf("Error al recibir NombreJuego: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
+        disconnectClient(client_socket);
       }
       printf("NombreJuego: %s\n", nombreJuego);
 
@@ -642,12 +504,7 @@ void clienteConocido(socket_t client_socket, char *username)
       if (!sendData(client_socket, &cantidadPartidas, sizeof(cantidadPartidas)))
       {
         printf("Error al enviar CantidadPartidas: %d\n", WSAGetLastError());
-        close_socket(client_socket);
-        close_socket(server_socket);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return;
+        disconnectClient(client_socket);
       }
 
       // Enviar lista de partidas
@@ -656,12 +513,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, partidas[i], sizeof(partidas[i])))
         {
           printf("Error al enviar Partida: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
 
@@ -671,12 +523,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, &tiemposJugados[i], sizeof(tiemposJugados[i])))
         {
           printf("Error al enviar TiemposJugados: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
 
@@ -686,12 +533,7 @@ void clienteConocido(socket_t client_socket, char *username)
         if (!sendData(client_socket, &puntuacionesMaximas[i], sizeof(puntuacionesMaximas[i])))
         {
           printf("Error al enviar PuntuacionesMaximas: %d\n", WSAGetLastError());
-          close_socket(client_socket);
-          close_socket(server_socket);
-#ifdef _WIN32
-          WSACleanup();
-#endif
-          return;
+          disconnectClient(client_socket);
         }
       }
 
@@ -710,12 +552,7 @@ void clienteConocido(socket_t client_socket, char *username)
     default:
     {
       printf("Opción no válida\n");
-      close_socket(client_socket);
-      close_socket(server_socket);
-#ifdef _WIN32
-      WSACleanup();
-#endif
-      return;
+      disconnectClient(client_socket);
     }
     }
   }
