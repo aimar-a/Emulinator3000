@@ -7,6 +7,9 @@
 
 class NesController
 {
+private:
+  bool quit = false;
+
 public:
   enum Button
   {

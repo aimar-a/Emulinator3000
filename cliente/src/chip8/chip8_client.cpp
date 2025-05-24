@@ -37,8 +37,7 @@ void emulate_chip8(socket_t sock)
   std::array<uint8_t, 16> keyboard_buffer{};
 
   // Main emulation loop
-  bool running = true;
-  while (running)
+  while (1)
   {
     // Receive exit signal from server
     uint8_t exit_signal = 0;
@@ -62,7 +61,7 @@ void emulate_chip8(socket_t sock)
       // Send exit signal to server
       exit_signal = 0x01;
       net::send_data(sock, &exit_signal, sizeof(exit_signal));
-      running = false;
+      break;
     }
     else
     {

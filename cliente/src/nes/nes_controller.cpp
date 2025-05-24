@@ -3,6 +3,7 @@
 
 NesController::NesController()
 {
+  quit = false; // Initialize quit state
   // Constructor can initialize any required resources
 }
 
@@ -24,6 +25,10 @@ bool NesController::update(std::array<uint8_t, 2> &controllers)
     default:
       break;
     }
+  }
+  if (quit)
+  {
+    return true; // Exit signal
   }
   return false;
 }
@@ -99,7 +104,7 @@ void NesController::handleKeyEvent(const SDL_KeyboardEvent &key, std::array<uint
     break;
 
   case SDLK_ESCAPE:
-    // ESC is handled in update() through the return value
+    quit = true; // Set quit state to true on Escape key
     break;
 
   default:
