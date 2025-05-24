@@ -18,7 +18,7 @@ int abrirBaseDeDatos(sqlite3 **db);
 void limpiarBaseDeDatos();
 void eliminarBaseDeDatos();
 void insertarUsuarios(char *user, char *contraseña);
-void insertarPartida(char *user, int idjuego, int puntmax, char *fechaInicio, char *fechaFin);
+void insertarPartida(char *user, int idjuego, int puntmax, char *fechaInicio, char *fechaFin, char *emulador);
 void cargarJuegos();
 
 void insertarJuego(char *titulo, char *rom);
@@ -48,6 +48,8 @@ int getNombreJuegos(char *user, char ***nombreJuegos);
 
 int getJuegosDisponibles(char ***nombreJuegos);
 char **getNombreAmigos(char *user, int *cantidad);
+int getPuntosTotalesUsuario(char* user, char* emulador);
+
 
 int getLogros(char *user, char ***nombreLogros, char ***descripcionLogros, char ***fechaObtencion);
 

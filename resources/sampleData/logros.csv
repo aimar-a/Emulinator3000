@@ -4,10 +4,10 @@
 4,Juntos,Anyade un amigo a tu lista de amigos, p
 5,Buscando la salida,Juega al juego de Cave,
 6,Tetris,Juega al juego de Tetris,
-7,NES tester,Prueba el emulador de NES, p
-8,Chip8 fan,Acumula 1000 puntos en juegos de Chip8, p
-9,Chip8 pro,Acumula 5000 puntos en juegos de Chip8, p
-10,Chip8 master,Acumula 10000 puntos en juegos de Chip8, p
-11,NES fan,Acumula 1000 puntos en juegos de NES, p
-12,NES pro,Acumula 5000 puntos en juegos de NES, p
-13,NES master,Acumula 10000 puntos en juegos de NES, p
+7,NES tester,Prueba el emulador de NES, 
+8,Chip8 fan,Acumula 1000 puntos en juegos de Chip8, p funcion implementada: comprobar que funcione
+9,Chip8 pro,Acumula 5000 puntos en juegos de Chip8, p funcion implementada: comprobar que funcione
+10,Chip8 master,Acumula 10000 puntos en juegos de Chip8, p funcion implementada: comprobar que funcione
+11,NES fan,Acumula 1000 puntos en juegos de NES, p funcion implementada: comprobar que funcione
+12,NES pro,Acumula 5000 puntos en juegos de NES, p funcion implementada: comprobar que funcione
+13,NES master,Acumula 10000 puntos en juegos de NES, p funcion implementada: comprobar que funcione

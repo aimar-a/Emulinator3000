@@ -263,12 +263,29 @@ void clienteConocido(socket_t client_socket, char *username)
       }
       printf("ROM seleccionada: %s\n", selectedRom);
       servirChip8(client_socket, selectedRom, username);
+
+      //checkear la puntuacion acumulada para Chip8
+     // estoy dando por hecho que se comprueba si tienes ya el logro o no
+       if(getPuntosTotalesUsuario(username, "CHIP8")>=1000){
+
+          logroChip8Fan(username);
+
+       }else if(getPuntosTotalesUsuario(username, "CHIP8")>=5000){
+          logroChip8Pro(username);
+
+       }else if(getPuntosTotalesUsuario(username, "CHIP8")>=10000){
+          logroChip8Master(username);
+
+       }
+
+
       break;
     }
 
     case 0xE1: // Emular NES
     {
       printf("Emulando NES...\n");
+      logroNesTester(username); 
       /*char selectedRom[128];
       if (!receiveData(client_socket, selectedRom, sizeof(selectedRom), &bytes_received))
       {
@@ -282,6 +299,20 @@ void clienteConocido(socket_t client_socket, char *username)
       }
       printf("ROM seleccionada: %s\n", selectedRom);*/
       servirNES(client_socket);
+      //checkear la puntuacion acumulada para NES
+            //checkear la puntuacion acumulada para Chip8
+     // estoy dando por hecho que se comprueba si tienes ya el logro o no
+       if(getPuntosTotalesUsuario(username, "NES")>=1000){
+
+          logroNesFan(username);
+
+       }else if(getPuntosTotalesUsuario(username, "NES")>=5000){
+          logroNesPro(username);
+
+       }else if(getPuntosTotalesUsuario(username, "NES")>=10000){
+          logroNesMaster(username);
+
+       }
       break;
     }
 
