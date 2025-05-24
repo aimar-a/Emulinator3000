@@ -94,7 +94,6 @@ void crearBD()
                   "fecha_fin TIMESTAMP NOT NULL,"
                   "id_juego INTEGER NOT NULL,"
                   "puntuacion_maxima INT NOT NULL,"
-                  "emulador VARCHAR(10) NOT NULL,"
                   "FOREIGN KEY (user) REFERENCES USUARIOS(user),"
                   "FOREIGN KEY (id_juego) REFERENCES JUEGO(id_juego));";
 
@@ -330,14 +329,14 @@ void cargarPartidasDeCSV(char *nombreArchivo)
     char linea[256];
     while (fgets(linea, sizeof(linea), archivo))
     {
-        char user[20], fechaInicio[30], fechaFin[30], emulador[10];
+        char user[20], fechaInicio[30], fechaFin[30];
         int idjuego, puntmax;
 
-        int camposLeidos = sscanf(linea, "%[^,],%[^,],%[^,],%d,%d,%[^,\n]", user, fechaInicio, fechaFin, &idjuego, &puntmax, emulador);
+        int camposLeidos = sscanf(linea, "%[^,],%[^,],%[^,],%d,%d", user, fechaInicio, fechaFin, &idjuego, &puntmax);
         if (camposLeidos == 6)
         {
 
-            insertarPartida(user, idjuego, puntmax, fechaInicio, fechaFin, emulador);
+            insertarPartida(user, idjuego, puntmax, fechaInicio, fechaFin);
         }
         else
         {
@@ -437,7 +436,7 @@ void insertarUsuarios(char *user, char *contraseña)
     sqlite3_close(db);
 }
 
-void insertarPartida(char *user, int idjuego, int puntmax, char *fechaInicio, char *fechaFin, char *emulador)
+void insertarPartida(char *user, int idjuego, int puntmax, char *fechaInicio, char *fechaFin)
 {
 
     // Abrimos la base de datos
@@ -448,7 +447,7 @@ void insertarPartida(char *user, int idjuego, int puntmax, char *fechaInicio, ch
 
     sqlite3_stmt *stmt;
 
-    char sql[] = "INSERT INTO PARTIDA (user,fecha_inicio, fecha_fin, id_juego, puntuacion_maxima, emulador) VALUES (?, ?, ?, ?,?,?);";
+    char sql[] = "INSERT INTO PARTIDA (user,fecha_inicio, fecha_fin, id_juego, puntuacion_maxima) VALUES (?, ?, ?, ?,?);";
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
@@ -459,12 +458,10 @@ void insertarPartida(char *user, int idjuego, int puntmax, char *fechaInicio, ch
     sqlite3_bind_int(stmt, 4, idjuego);
     sqlite3_bind_int(stmt, 5, puntmax);
 
-    sqlite3_bind_text(stmt, 6, emulador, strlen(emulador), SQLITE_STATIC);
-
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    printf("✅ Partida '%i' guardada correctamente.Emulador:%s\n", idjuego, emulador);
+    printf("✅ Partida '%i' guardada correctamente.\n", idjuego);
 
     sqlite3_close(db);
 }
@@ -478,7 +475,8 @@ int getPuntosTotalesUsuario(char *user, char *emulador)
         return -1; // o algún valor para indicar error
     }
 
-    const char *sql = "SELECT SUM(puntuacion_maxima) FROM PARTIDA WHERE user = ? AND emulador = ?;";
+    // const char *sql = "SELECT SUM(puntuacion_maxima) FROM PARTIDA WHERE user = ? AND emulador = ?;";
+    const char *sql = "SELECT SUM(puntuacion_maxima) FROM PARTIDA p JOIN JUEGO j ON p.id_juego = j.id_juego WHERE p.user = ? AND j.emulador = ?;";
     sqlite3_stmt *stmt;
     int totalPuntos = 0;
 
