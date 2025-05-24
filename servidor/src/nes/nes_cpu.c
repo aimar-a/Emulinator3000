@@ -1,6 +1,6 @@
 #include "nes_cpu.h"
 
-void nes_launch(socket_t sock)
+void nes_launch(socket_t sock, char *rom_path)
 {
   nes_terminate = false;
 
@@ -55,8 +55,9 @@ void nes_launch(socket_t sock)
 
   // if (nes_load_rom(nes, "resources/nes-roms/Super_mario_brothers.nes"))
   // if (nes_load_rom(nes, "resources/nes-roms/Donkey Kong (World) (Rev A).nes"))
-  if (nes_load_rom(nes, "resources/nes-roms/Duck Hunt (World).nes"))
+  // if (nes_load_rom(nes, "resources/nes-roms/Duck Hunt (World).nes"))
   // if (nes_load_rom(nes, "resources/nes-roms/Tennis (USA) (GameCube Edition).nes"))
+  if (nes_load_rom(nes, rom_path))
   {
     nes_log_error("ERROR: Failed to load ROM\n");
     free(nes->ppu);

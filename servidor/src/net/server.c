@@ -242,13 +242,14 @@ void clienteConocido(socket_t client_socket, char *username)
     {
       printf("Emulando NES...\n");
       logroNesTester(username);
-      /*char selectedRom[128];
+      char selectedRom[128];
       if (!receiveData(client_socket, selectedRom, sizeof(selectedRom), &bytes_received))
       {
         printf("Error al recibir ROM: %d\n", WSAGetLastError());
-disconnectClient(client_socket);      }
-      printf("ROM seleccionada: %s\n", selectedRom);*/
-      servirNES(client_socket);
+        disconnectClient(client_socket);
+      }
+      printf("ROM seleccionada: %s\n", selectedRom);
+      servirNES(client_socket, selectedRom);
       // checkear la puntuacion acumulada para NES
       // checkear la puntuacion acumulada para Chip8
       // estoy dando por hecho que se comprueba si tienes ya el logro o no
@@ -333,8 +334,7 @@ disconnectClient(client_socket);      }
       printf("Enviando ROMs CHIP8...\n");
       char **romOptions; // Array para almacenar nombres de ROMs
       int romCount = 0;
-      // loadRomsFromDirectory("resources/chip8-roms/games", romOptions, &romCount);
-      romCount = getJuegosDisponibles(&romOptions);
+      romCount = getJuegosDisponibles(&romOptions, "CHIP8");
       printf("Cantidad de ROMs: %d\n", romCount);
 
       if (!sendData(client_socket, (char *)&romCount, sizeof(romCount)))
@@ -354,7 +354,24 @@ disconnectClient(client_socket);      }
     }
     case 0x03: // Enviar ROMs NES
       printf("Enviando ROMs NES...\n");
-      // Implementar similar a CHIP8
+      char **romOptions; // Array para almacenar nombres de ROMs
+      int romCount = 0;
+      romCount = getJuegosDisponibles(&romOptions, "NES");
+      printf("Cantidad de ROMs: %d\n", romCount);
+
+      if (!sendData(client_socket, (char *)&romCount, sizeof(romCount)))
+      {
+        printf("Error al enviar conteo ROMs: %d\n", WSAGetLastError());
+        disconnectClient(client_socket);
+      }
+      for (int i = 0; i < romCount; i++)
+      {
+        if (!sendData(client_socket, romOptions[i], strlen(romOptions[i]) + 1))
+        {
+          printf("Error al enviar ROM: %d\n", WSAGetLastError());
+          disconnectClient(client_socket);
+        }
+      }
       break;
     case 0x11: // Ver Logros
       printf("Ver Logros..\n");
@@ -620,7 +637,7 @@ void servirChip8(socket_t sock, char *selectedRom, char *username)
 
   char fullRomPath[512];
 
-  sprintf(fullRomPath, "resources/chip8-roms/games/%s", selectedRom);
+  sprintf(fullRomPath, "resources/chip8-roms/%s", selectedRom);
 
   // Verificar si el archivo ROM existe
   FILE *file = fopen(fullRomPath, "rb");
@@ -708,9 +725,23 @@ void servirChip8(socket_t sock, char *selectedRom, char *username)
   chip8terminate(chip8, username);
 }
 
-void servirNES(socket_t sock)
+void servirNES(socket_t sock, char *selectedRom)
 {
-  nes_launch(sock);
+  // Verificar si el archivo ROM existe
+  char fullRomPath[512];
+  sprintf(fullRomPath, "resources/nes-roms/%s.nes", selectedRom);
+  FILE *file = fopen(fullRomPath, "rb");
+  if (file == NULL)
+  {
+    printf("Error: No se pudo abrir la ROM %s\n", fullRomPath);
+    return;
+  }
+  fclose(file);
+
+  printf("ROM recibida en el servidor: %s (longitud: %zu)\n", fullRomPath, strlen(fullRomPath));
+
+  // Inicializar emulador NES
+  nes_launch(sock, fullRomPath);
   printf("INFO: NES emulation finished\n");
   return;
 }

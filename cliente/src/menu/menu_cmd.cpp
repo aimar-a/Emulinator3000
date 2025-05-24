@@ -239,11 +239,9 @@ void menuInicial(socket_t sock)
       //  menuListaROMs();
       break;
     case '2':
-      // opcion_socket = 0x03; // Recibir ROMs NES
-      // net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
-      opcion_socket = 0xE1; // Emular NES
+      opcion_socket = 0x03; // Recibir ROMs NES
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
-      emulate_nes(sock);
+      menuListaROMsNES(sock);
       // menuAdvertenciaNES();
       break;
     case 'p':
@@ -1135,4 +1133,104 @@ void menuVerAmigos(socket_t sock) // cambiar el metodo para que coja sock
   free(nombreJuegos);
     free(tiemposSegundos); */
   }
+}
+
+void menuListaROMsNES(socket_t sock)
+{
+  char roms[200][256];
+  int romCount = 0;
+
+  printf("Listado de ROMs disponibles:\n");
+  net::receive_data(sock, &romCount, sizeof(romCount));
+  // Recibir la lista de ROMs
+  for (int i = 0; i < romCount; i++)
+  {
+    net::receive_data(sock, roms[i], sizeof(roms[i]));
+  }
+
+  if (romCount == 0)
+  {
+    printf("No se encontraron ROMs.\n");
+    return;
+  }
+
+  int pagina = 0;
+  int totalPaginas = (romCount + 19) / 20;
+
+  while (1)
+  {
+    clearScreen();
+    printf("Listado de ROMs NES (Pagina %d de %d):\n", pagina + 1, totalPaginas);
+
+    for (int i = pagina * 20; i < (pagina + 1) * 20 && i < romCount; i++)
+    {
+      printf("%d. %s\n", i + 1, roms[i]);
+    }
+
+    printf("\nOpciones:\n");
+    printf("<. Pagina anterior\n");
+    printf(">. Pagina siguiente\n");
+    printf("0. Salir\n");
+    printf("Seleccione un ROM para ejecutar (1-%d) o navegar (<, >): ", romCount);
+
+    char opcion[MAX_STRING_LENGTH];
+    getString(opcion, MAX_STRING_LENGTH);
+
+    if (opcion[1] == '\0')
+    {
+      // Si solo se ingreso un caracter
+      if (opcion[0] == '<' && pagina > 0)
+      {
+        pagina--;
+        continue;
+      }
+      else if (opcion[0] == '>' && pagina < totalPaginas - 1)
+      {
+        pagina++;
+        continue;
+      }
+      else if (opcion[0] == '0')
+      {
+        printf("Saliendo...\n");
+        Sleep(1000);
+        return;
+      }
+      else if (opcion[0] >= '1' && opcion[0] <= '9')
+      {
+        int seleccion = opcion[0] - '0';
+        uint8_t opcion_socket = 0xE1; // Emular NES
+        net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
+        net::send_data(sock, roms[seleccion - 1], strlen(roms[seleccion - 1]) + 1);
+        printf("Cargando ROM: %s\n", roms[seleccion - 1]);
+        emulate_nes(sock);
+        return;
+      }
+    }
+    else
+    {
+      // Si se ingreso mas de un caracter, ver si puede ser un numero de una rom
+      int seleccion = atoi(opcion);
+      if (seleccion >= 1 && seleccion <= romCount)
+      {
+        uint8_t opcion_socket = 0xE1; // Emular NES
+        net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
+        net::send_data(sock, roms[seleccion - 1], strlen(roms[seleccion - 1]) + 1);
+        printf("Cargando ROM: %s\n", roms[seleccion - 1]);
+        emulate_nes(sock);
+        return;
+      }
+    }
+    // Si no se ingreso una opcion valida
+    printf("Opcion invalida\n");
+    Sleep(1000);
+    printf("Volviendo al menu....\n");
+    Sleep(1000);
+  }
+  // Liberar memoria
+  for (int i = 0; i < romCount; i++)
+  {
+    // free(roms[i]); // No es necesario liberar cada rom, ya que son strings dentro de un array estático
+  }
+  // free(roms);
+  return;
 }

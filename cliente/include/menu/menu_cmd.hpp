@@ -41,5 +41,6 @@ void menuVerTiempoJugado(socket_t sock);
 void mostrarPartidasJugadas(socket_t sock, char *nombreJuego);
 void menuVerAmigos(socket_t sock);
 void menuLogros(socket_t sock);
+void menuListaROMsNES(socket_t sock);
 
 #endif // !MENU_H
