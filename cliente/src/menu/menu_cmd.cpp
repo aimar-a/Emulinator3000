@@ -706,8 +706,7 @@ void menuPerfil(socket_t sock)
     printf("PERFIL DE USUARIO\n");
     printf("Seleccione una opcion:\n");
     printf("1. Ver Logros\n");
-    printf("2. Ver Amigos\n");
-    printf("3. Ver Tiempo Jugado\n");
+    printf("2. Ver Tiempo Jugado\n");
     printf("0. Volver\n");
     printf("Opcion: ");
 
@@ -720,7 +719,7 @@ void menuPerfil(socket_t sock)
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       menuLogros(sock);
       break;
-    case '2':
+    case '3':
       opcion_socket = 0x12; // Ver Amigos
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       // menuVerAmigos(sock); // Da un segmentation fault lo corrijo mañana
@@ -729,7 +728,7 @@ void menuPerfil(socket_t sock)
       printf("Volviendo al menu....\n");
       Sleep(1000);
       break;
-    case '3':
+    case '2':
       opcion_socket = 0x13; // Ver Tiempo jugado
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       menuVerTiempoJugado(sock);
@@ -922,9 +921,7 @@ void menuVerTiempoJugado(socket_t sock) // cambiar el metodo para que coja sock
       printf("%d horas      %d minutos      %d segundos\n", horas, minutos, segundos);
     }
 
-    printf("\nNumero del juego para ver partidas jugadas\n");
-
-    printf("0. Volver\n");
+        printf("0. Volver\n");
     printf("Seleccione una opcion: ");
     char opcion[MAX_STRING_LENGTH];
     getString(opcion, MAX_STRING_LENGTH);
