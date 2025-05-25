@@ -15,7 +15,7 @@
 #include "nes_apu.h"
 #include "network_util.h"
 
-void nes_launch(socket_t sock, char *rom_path);
+void nes_launch(socket_t sock, char *rom_path, char* currentUser);
 void nes_reset(NES *nes);
 void nes_run(NES *nes, socket_t sock);
 void log_check_ppu_ram(NES *nes);

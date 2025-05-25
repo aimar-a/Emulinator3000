@@ -1,6 +1,9 @@
 #include "nes_cpu.h"
+#include <time.h>
+#include "bd.h"
 
-void nes_launch(socket_t sock, char *rom_path)
+
+void nes_launch(socket_t sock, char *rom_path, char*currentUser)
 {
   nes_terminate = false;
 
@@ -37,6 +40,11 @@ void nes_launch(socket_t sock, char *rom_path)
     free(nes);
     return;
   }
+
+    time_t inicio = time(NULL);  // Obtener el tiempo actual en segundos
+    struct tm *currentTimeInicio = localtime(&inicio);  // Convertir a hora local
+    char fechaInicio[30];
+    strftime(fechaInicio, sizeof(fechaInicio), "%d/%m/%Y %H:%M:%S", currentTimeInicio);
 
   nes_log_instant("INFO: NES structures allocated successfully\n");
 
@@ -89,6 +97,32 @@ void nes_launch(socket_t sock, char *rom_path)
   nes_apu_init(nes->apu);
 
   nes_run(nes, sock);
+
+  int id = getIdJuego(rom_path);
+  time_t fin = time(NULL);  // Obtener el tiempo actual en segundos
+  struct tm *currentTimeFin = localtime(&fin);  // Convertir a hora local
+  char fechaFin[30];
+  strftime(fechaFin, sizeof(fechaFin), "%d/%m/%Y %H:%M:%S", currentTimeFin);
+
+  int tiempoJugado = (int)difftime(fin, inicio);
+
+
+  insertarPartida(currentUser, id, tiempoJugado * 0.5, fechaInicio, fechaFin); // la puntuacion maxima vamos a dejarla asi
+
+    if (hajugado(currentUser, id) == true)
+  {
+
+    // hacemos el update sumando el tiempo que ya habia jugado + el que acaba de jugar
+    int tiempojugadoanterior = getTiempoJugado(currentUser, id);
+    int tiempoTotal = tiempojugadoanterior + tiempoJugado;
+    updateTiempoJugado(tiempoTotal, currentUser, id); // SI ha jugado a este juego hacemos update
+  }
+  else
+  {
+
+    insertarTiempoJugado(tiempoJugado, currentUser, id); // si el usuario NO ha jugado a este juego hacemos insert.
+  }
+
 }
 
 void nes_reset(NES *nes)
