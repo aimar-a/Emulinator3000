@@ -249,7 +249,7 @@ void clienteConocido(socket_t client_socket, char *username)
         disconnectClient(client_socket);
       }
       printf("ROM seleccionada: %s\n", selectedRom);
-      servirNES(client_socket, selectedRom);
+      servirNES(client_socket, selectedRom, username);
       // checkear la puntuacion acumulada para NES
       // checkear la puntuacion acumulada para Chip8
       // estoy dando por hecho que se comprueba si tienes ya el logro o no
@@ -725,7 +725,7 @@ void servirChip8(socket_t sock, char *selectedRom, char *username)
   chip8terminate(chip8, username);
 }
 
-void servirNES(socket_t sock, char *selectedRom)
+void servirNES(socket_t sock, char *selectedRom, char*username)
 {
   // Verificar si el archivo ROM existe
   char fullRomPath[512];
@@ -741,7 +741,7 @@ void servirNES(socket_t sock, char *selectedRom)
   printf("ROM recibida en el servidor: %s (longitud: %zu)\n", fullRomPath, strlen(fullRomPath));
 
   // Inicializar emulador NES
-  nes_launch(sock, fullRomPath);
+  nes_launch(sock, fullRomPath, username);
   printf("INFO: NES emulation finished\n");
   return;
 }

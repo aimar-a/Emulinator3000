@@ -334,7 +334,7 @@ void cargarPartidasDeCSV(char *nombreArchivo)
         int idjuego, puntmax;
 
         int camposLeidos = sscanf(linea, "%[^,],%[^,],%[^,],%d,%d", user, fechaInicio, fechaFin, &idjuego, &puntmax);
-        if (camposLeidos == 6)
+        if (camposLeidos == 5)
         {
 
             insertarPartida(user, idjuego, puntmax, fechaInicio, fechaFin);
