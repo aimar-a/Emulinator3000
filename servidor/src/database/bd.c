@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include "sqlite3.h"
 #include <string.h>
 #include "bd.h"
@@ -680,6 +681,37 @@ void insertarAmigos(char *user1, char *user2, char *estado)
     sqlite3_finalize(stmt);
 
     printf("✅ Usuarios '%s' y '%s' han registrados su amistad en estado '%s' correctamente.\n", user1, user2, estado);
+
+    int cantidad1 = contarAmigos(user1);
+    int cantidad2 = contarAmigos(user2);
+
+    // Conseguimos la fecha
+
+    time_t t = time(NULL);               // Obtener tiempo actual
+    struct tm *tm_info = localtime(&t);  // Convertir a fecha local
+    char hoy[11];
+    if (tm_info != NULL) {
+        strftime(hoy, sizeof(hoy), "%Y-%m-%d", tm_info);  // Formatear como string
+    } else {
+        hoy[0] = '\0'; // En caso de error
+    }
+
+    int FirstFriend = 14;
+    int SocialLife = 15;
+
+    if (cantidad1 >= 1) {
+        insertarLogrosUsuarios(user1, FirstFriend, hoy);
+    } else if (cantidad1 >= 3)
+    {
+        insertarLogrosUsuarios(user1, SocialLife, hoy);
+    }
+    
+    if (cantidad2 >= 1) {
+        insertarLogrosUsuarios(user2, FirstFriend, hoy);
+    } else if (cantidad2 >= 3)
+    {
+        insertarLogrosUsuarios(user2, SocialLife, hoy);
+    }
 
     sqlite3_close(db);
 }
@@ -1619,4 +1651,39 @@ int getLogros(char *user, char ***nombreLogros, char ***descripcionLogros, char 
     sqlite3_finalize(stmt);
     sqlite3_close(db);
     return cantidadLogros;
+}
+
+int contarAmigos(char* user) {
+    sqlite3 *db;
+
+    if (abrirBaseDeDatos(&db))
+    {
+        // Error al abrir la base de datos
+        return -1; // o algún valor para indicar error
+    }
+
+    char* sql = "SELECT COUNT(user1) FROM AMIGOS WHERE user1 = ? or user2 = ?";
+
+    sqlite3_stmt *stmt;
+
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        printf("Error preparando la consulta: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return -1;
+    }
+
+    // Bind de parámetros
+    sqlite3_bind_text(stmt, 1, user, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, user, -1, SQLITE_TRANSIENT);
+
+    rc = sqlite3_step(stmt);
+
+    printf("%i", rc);
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+
+    return rc;
 }

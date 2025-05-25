@@ -60,5 +60,6 @@ void cargarAmigosDeCSV(char *nombreArchivo);
 void cargarTiempoJugadoDeCSV(char *nombreArchivo);
 void cargarLogrosDeCSV(char *nombreArchivo);
 void cargarUsuariosDeCSV(char *nombreArchivo);
+int contarAmigos(char* user);
 
 #endif
