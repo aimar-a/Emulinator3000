@@ -706,7 +706,8 @@ void menuPerfil(socket_t sock)
     printf("PERFIL DE USUARIO\n");
     printf("Seleccione una opcion:\n");
     printf("1. Ver Logros\n");
-    printf("2. Ver Tiempo Jugado\n");
+    printf("2. Ver Amigos\n");
+    printf("3. Ver Tiempo Jugado\n");
     printf("0. Volver\n");
     printf("Opcion: ");
 
@@ -719,16 +720,15 @@ void menuPerfil(socket_t sock)
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       menuLogros(sock);
       break;
-    case '3':
+    case '2':
       opcion_socket = 0x12; // Ver Amigos
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
-      // menuVerAmigos(sock); // Da un segmentation fault lo corrijo mañana
-      printf("Ver Amigos no implementado\n");
+      menuVerAmigos(sock); // Da un segmentation fault lo corrijo mañana
       Sleep(1000);
       printf("Volviendo al menu....\n");
       Sleep(1000);
       break;
-    case '2':
+    case '3':
       opcion_socket = 0x13; // Ver Tiempo jugado
       net::send_data(sock, &opcion_socket, sizeof(opcion_socket));
       menuVerTiempoJugado(sock);
@@ -921,7 +921,7 @@ void menuVerTiempoJugado(socket_t sock) // cambiar el metodo para que coja sock
       printf("%d horas      %d minutos      %d segundos\n", horas, minutos, segundos);
     }
 
-        printf("0. Volver\n");
+    printf("0. Volver\n");
     printf("Seleccione una opcion: ");
     char opcion[MAX_STRING_LENGTH];
     getString(opcion, MAX_STRING_LENGTH);
@@ -1052,17 +1052,34 @@ void mostrarPartidasJugadas(socket_t sock, char *nombreJuego)
 void menuVerAmigos(socket_t sock) // cambiar el metodo para que coja sock
 {
   char **nombreAmigos = NULL;
-  int *cantidadAmigos = 0;
+  char **estadoAmigos = NULL;
+  int cantidadAmigos = 0;
 
   // recibimos la cantidad del servidor
   net::receive_data(sock, &cantidadAmigos, sizeof(cantidadAmigos));
+  if (cantidadAmigos < 0)
+  {
+    printf("Error al obtener la cantidad de amigos\n");
+    Sleep(1000);
+    printf("Volviendo al menu....\n");
+    Sleep(1000);
+    return;
+  }
 
   // recibimos la lista de nombres de juegos
-  nombreAmigos = (char **)malloc(*cantidadAmigos * sizeof(char *));
-  for (int i = 0; i < *cantidadAmigos; i++)
+  nombreAmigos = (char **)malloc(cantidadAmigos * sizeof(char *));
+  for (int i = 0; i < cantidadAmigos; i++)
   {
     nombreAmigos[i] = (char *)malloc(MAX_STRING_LENGTH);
     net::receive_data(sock, nombreAmigos[i], MAX_STRING_LENGTH);
+  }
+
+  // recibimos la lista de estados de los amigos
+  estadoAmigos = (char **)malloc(cantidadAmigos * sizeof(char *));
+  for (int i = 0; i < cantidadAmigos; i++)
+  {
+    estadoAmigos[i] = (char *)malloc(MAX_STRING_LENGTH);
+    net::receive_data(sock, estadoAmigos[i], MAX_STRING_LENGTH);
   }
 
   while (1)
@@ -1071,21 +1088,28 @@ void menuVerAmigos(socket_t sock) // cambiar el metodo para que coja sock
     printf("--- Amigos ---\n");
     printf("Cantidad de Amigos: %i\n", cantidadAmigos);
 
-    if (*cantidadAmigos == -1)
+    if (cantidadAmigos == -1)
     {
       printf("Error al obtener los amigos\n");
       return;
     }
-    if (*cantidadAmigos == 0)
+    if (cantidadAmigos == 0)
     {
       printf("No tienes amigos\n");
       return;
     }
     printf("Amigos de %s:\n", currentUser);
-    for (int i = 0; i < *cantidadAmigos; i++)
+    for (int i = 0; i < cantidadAmigos; i++)
     {
-
-      printf("%d. - %s \n", i + 1, nombreAmigos[i]);
+      printf("%d. - %s", i + 1, nombreAmigos[i]);
+      int espacios = 50 - strlen(nombreAmigos[i]);
+      if (espacios < 0)
+        espacios = 0;
+      for (int j = 0; j < espacios; j++)
+      {
+        printf(" ");
+      }
+      printf("Estado: %s\n", estadoAmigos[i]);
     }
 
     // printf("\nNumero del amigo para ver sus datos\n");
@@ -1099,11 +1123,13 @@ void menuVerAmigos(socket_t sock) // cambiar el metodo para que coja sock
       printf("Volviendo...\n");
       Sleep(1000);
       // Liberar memoria
-      for (int i = 0; i < *cantidadAmigos; i++)
+      for (int i = 0; i < cantidadAmigos; i++)
       {
         free(nombreAmigos[i]);
+        free(estadoAmigos[i]);
       }
       free(nombreAmigos);
+      free(estadoAmigos);
       return;
     }
 

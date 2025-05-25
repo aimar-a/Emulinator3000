@@ -431,28 +431,47 @@ void clienteConocido(socket_t client_socket, char *username)
       printf("Ver Amigos...\n");
       int cantidadAmig = 0;
       char **nombreAmigos = NULL;
-      int *cantidadAmigos = &cantidadAmig;
+      char **estadoAmigos = NULL;
 
       // Obtenemos la cantidad de amigos y resto de datos
-      nombreAmigos = getNombreAmigos(username, cantidadAmigos);
+      cantidadAmig = getNombreAmigos(username, &nombreAmigos, &estadoAmigos);
 
-      if (!sendData(client_socket, &cantidadAmigos, sizeof(cantidadAmigos)))
+      // Enviar cantidad de amigos
+      if (!sendData(client_socket, &cantidadAmig, sizeof(cantidadAmig)))
       {
-        printf("Error al enviar CantidadAmigos: %d \n", WSAGetLastError());
+        printf("Error al enviar CantidadAmigos: %d\n", WSAGetLastError());
         disconnectClient(client_socket);
       }
 
       // Enviar la lista de Amigos
-
-      for (int i = 0; i < cantidadAmigos; i++)
+      for (int i = 0; i < cantidadAmig; i++)
       {
-        if (!sendData(client_socket, nombreAmigos[i], sizeof(nombreAmigos[i])))
+        if (!sendData(client_socket, nombreAmigos[i], strlen(nombreAmigos[i]) + 1))
         {
-          printf("Error al enviar nombreAmigos: %d\n", WSAGetLastError());
+          printf("Error al enviar NombreAmigo: %d\n", WSAGetLastError());
           disconnectClient(client_socket);
         }
       }
 
+      // Enviar la lista de Estados de Amigos
+      for (int i = 0; i < cantidadAmig; i++)
+      {
+        if (!sendData(client_socket, estadoAmigos[i], strlen(estadoAmigos[i]) + 1))
+        {
+          printf("Error al enviar EstadoAmigo: %d\n", WSAGetLastError());
+          disconnectClient(client_socket);
+        }
+      }
+
+      // Liberar memoria
+      for (int i = 0; i < cantidadAmig; i++)
+      {
+        free(nombreAmigos[i]);
+        free(estadoAmigos[i]);
+      }
+      free(nombreAmigos);
+      free(estadoAmigos);
+      printf("Datos de amigos enviados\n");
       break;
 
     case 0x13: // Ver Tiempo Jugado
@@ -476,7 +495,7 @@ void clienteConocido(socket_t client_socket, char *username)
       // Enviar lista de nombres de juegos
       for (int i = 0; i < cantidadJuegos; i++)
       {
-        if (!sendData(client_socket, nombreJuegos[i], sizeof(nombreJuegos[i])))
+        if (!sendData(client_socket, nombreJuegos[i], strlen(nombreJuegos[i]) + 1))
         {
           printf("Error al enviar NombreJuego: %d\n", WSAGetLastError());
           disconnectClient(client_socket);
@@ -725,7 +744,7 @@ void servirChip8(socket_t sock, char *selectedRom, char *username)
   chip8terminate(chip8, username);
 }
 
-void servirNES(socket_t sock, char *selectedRom, char*currentUser)
+void servirNES(socket_t sock, char *selectedRom, char *currentUser)
 {
   // Verificar si el archivo ROM existe
   char fullRomPath[512];

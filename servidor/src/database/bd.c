@@ -1220,7 +1220,10 @@ int getPartidasDeJuego(char *user, char *nombreJuego, char ***partidas, int **ti
     }
 
     // Obtenemos las partidas jugadas
-    char sql[] = "SELECT id_partida, tiempo_jugado, puntuacion_maxima FROM PARTIDA WHERE user = ? AND id_juego = (SELECT id_juego FROM JUEGO WHERE titulo = ?)";
+    const char *sql = "SELECT p.id_partida, t.tiempo_jugado, p.puntuacion_maxima "
+                      "FROM PARTIDA p "
+                      "LEFT JOIN TIEMPO_JUGADO t ON p.user = t.user AND p.id_juego = t.id_juego "
+                      "WHERE p.user = ? AND p.id_juego = (SELECT id_juego FROM JUEGO WHERE titulo = ?)";
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
     {
         printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
@@ -1422,61 +1425,111 @@ int getJuegosDisponibles(char ***nombreJuegos, char *emulador)
     return count;
 }
 
-char **getNombreAmigos(char *user, int *cantidad)
+int getNombreAmigos(char *user, char ***nombreAmigos, char ***estadoAmigos)
 {
-    *cantidad = 0;
-    char **nombreAmigos;
+    int cantidad = 0;
+    *nombreAmigos = NULL; // Inicializamos el puntero a NULL
+    *estadoAmigos = NULL; // Inicializamos el puntero a NULL
 
     // Abrimos la base de datos
     if (abrirBaseDeDatos(&db))
     {
-        return NULL;
+        return -1;
     }
 
     sqlite3_stmt *stmt;
 
-    const char *sql = "SELECT user1 FROM AMIGOS WHERE user2 = ? AND estado = 'aceptado'";
-
+    const char *sql = "SELECT user2, estado FROM AMIGOS WHERE user1 = ?";
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
     {
-        printf("Error al preparar consulta: %s\n", sqlite3_errmsg(db));
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
-        return NULL;
+        return -1;
     }
-
     sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
-
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-        char *nombre = sqlite3_column_text(stmt, 0);
-
-        // realloc para añadir más espacio
-        char **temp = realloc(nombreAmigos, (*cantidad + 1) * sizeof(char *));
-
-        nombreAmigos[*cantidad] = strdup(nombre);
-
-        if (nombreAmigos[*cantidad] == NULL)
-        {
-            printf("Error al asignar memoria para el nombre del juego\n");
-            for (int i = 0; i < *cantidad; i++)
-            {
-                free(nombreAmigos[i]);
-            }
-            free(nombreAmigos);
-            sqlite3_finalize(stmt);
-            sqlite3_close(db);
-            return NULL;
-        }
-
-        // (*nombreJuegos)[i] = strdup(titulo); // Copiamos el nombre del juego
-
-        // (*tiempos)[i] = tiempoJugado;
-        *cantidad++;
+        cantidad++;
     }
-
     sqlite3_finalize(stmt);
     sqlite3_close(db);
-    return nombreAmigos;
+    if (cantidad == 0)
+    {
+        printf("No se encontraron amigos para el usuario '%s'.\n", user);
+        return 0; // No hay amigos
+    }
+    // Reservamos memoria para los nombres de los amigos y sus estados
+    *nombreAmigos = (char **)malloc(cantidad * sizeof(char *));
+    if (*nombreAmigos == NULL)
+    {
+        printf("Error al asignar memoria para los nombres de los amigos\n");
+        return -1;
+    }
+    *estadoAmigos = (char **)malloc(cantidad * sizeof(char *));
+    if (*estadoAmigos == NULL)
+    {
+        printf("Error al asignar memoria para los estados de los amigos\n");
+        free(*nombreAmigos);
+        return -1;
+    }
+    // Abrimos la base de datos nuevamente para obtener los nombres y estados
+    if (abrirBaseDeDatos(&db))
+    {
+        free(*nombreAmigos);
+        free(*estadoAmigos);
+        return -1;
+    }
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
+        free(*nombreAmigos);
+        free(*estadoAmigos);
+        sqlite3_close(db);
+        return -1;
+    }
+    sqlite3_bind_text(stmt, 1, user, -1, SQLITE_STATIC);
+    int i = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const char *nombre = (const char *)sqlite3_column_text(stmt, 0);
+        const char *estado = (const char *)sqlite3_column_text(stmt, 1);
+
+        (*nombreAmigos)[i] = strdup(nombre); // Copiamos el nombre del amigo
+        if ((*nombreAmigos)[i] == NULL)
+        {
+            printf("Error al asignar memoria para el nombre del amigo\n");
+            for (int j = 0; j < i; j++)
+            {
+                free((*nombreAmigos)[j]);
+            }
+            free(*nombreAmigos);
+            free(*estadoAmigos);
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return -1;
+        }
+
+        (*estadoAmigos)[i] = strdup(estado); // Copiamos el estado del amigo
+        if ((*estadoAmigos)[i] == NULL)
+        {
+            printf("Error al asignar memoria para el estado del amigo\n");
+            for (int j = 0; j < i; j++)
+            {
+                free((*nombreAmigos)[j]);
+                free((*estadoAmigos)[j]);
+            }
+            free(*nombreAmigos);
+            free(*estadoAmigos);
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return -1;
+        }
+
+        i++;
+    }
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return cantidad; // Devolvemos la cantidad de amigos encontrados
 }
 
 int getLogros(char *user, char ***nombreLogros, char ***descripcionLogros, char ***fechaObtencion)
