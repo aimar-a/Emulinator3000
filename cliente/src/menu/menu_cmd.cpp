@@ -1189,7 +1189,7 @@ void menuListaROMsNES(socket_t sock)
     {
       printf("%d. %s\n", i + 1, roms[i]);
     }
-    printf("20. Chorradita de ciberseguridad");
+    printf("20. Chorradita de ciberseguridad"); // Easter egg
 
     printf("\nOpciones:\n");
     printf("<. Pagina anterior\n");
